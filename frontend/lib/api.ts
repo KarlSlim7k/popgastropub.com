@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://pop-perote.com/api'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://popgastropub.com/api'
 
 interface FetchOptions extends RequestInit {
   params?: Record<string, string>

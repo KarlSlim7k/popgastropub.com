@@ -1,10 +1,9 @@
-FROM php:8.4-fpm
+FROM php:8.3-fpm
 
 RUN apt-get update && apt-get install -y \
     git \
     curl \
     libpng-dev \
-    oniguruma-dev \
     libzip-dev \
     unzip \
     libonig-dev \

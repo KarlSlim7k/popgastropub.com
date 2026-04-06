@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
         // Admin user
         User::create([
             'name' => 'Admin POP',
-            'email' => 'admin@pop-perote.com',
+            'email' => 'admin@popgastropub.com',
             'password' => Hash::make('admin123456'),
             'role' => 'admin',
             'phone' => '282-825-32-43',
@@ -34,7 +34,7 @@ class DatabaseSeeder extends Seeder
         // Mesero user
         $meseroUser = User::create([
             'name' => 'Carlos Mesero',
-            'email' => 'carlos@pop-perote.com',
+            'email' => 'carlos@popgastropub.com',
             'password' => Hash::make('mesero123'),
             'role' => 'mesero',
         ]);
