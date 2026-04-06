@@ -7,13 +7,14 @@ services:
       dockerfile: frontend/Dockerfile
     container_name: pop_perote_frontend
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://api.popgastropub.com}
     networks:
       - pop_network
+      - dokploy-network
 
   backend:
     build:
@@ -21,8 +22,8 @@ services:
       dockerfile: backend/Dockerfile
     container_name: pop_perote_backend
     restart: unless-stopped
-    ports:
-      - "9000:9000"
+    expose:
+      - "9000"
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
@@ -42,19 +43,20 @@ services:
     image: nginx:alpine
     container_name: pop_perote_nginx
     restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
+    expose:
+      - "80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./backend:/var/www/html:ro
-      - ./frontend/out:/var/www/frontend:ro
     depends_on:
       - frontend
       - backend
     networks:
       - pop_network
+      - dokploy-network
 
 networks:
   pop_network:
     driver: bridge
+  dokploy-network:
+    external: true
