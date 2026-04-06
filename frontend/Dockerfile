@@ -13,6 +13,6 @@ RUN npm run build
 EXPOSE 3000
 
 ENV NODE_ENV=production
-ENV NEXT_PUBLIC_API_URL=https://popgastropub.com/api
+ENV NEXT_PUBLIC_API_URL=https://api.popgastropub.com
 
 CMD ["npm", "start"]
