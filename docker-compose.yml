@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: pop_perote_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://pop-perote.com/api}
+    networks:
+      - pop_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: pop_perote_backend
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - DB_CONNECTION=mysql
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ./backend/storage:/var/www/html/storage
+      - ./backend/bootstrap/cache:/var/www/html/bootstrap/cache
+    networks:
+      - pop_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: pop_perote_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./backend:/var/www/html:ro
+      - ./frontend/out:/var/www/frontend:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - pop_network
+
+networks:
+  pop_network:
+    driver: bridge
