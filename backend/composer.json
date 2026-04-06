@@ -1,5 +1,5 @@
 {
-  "name": "pop-perote-backend",
+  "name": "pop-perote/backend",
   "type": "project",
   "description": "Laravel API for POP Perote restaurant",
   "keywords": ["laravel", "api", "restaurant", "sushi"],
