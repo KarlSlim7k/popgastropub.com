@@ -8,11 +8,11 @@ RUN npm ci
 
 COPY frontend/ ./
 
+ENV NODE_ENV=production
+ENV NEXT_PUBLIC_API_URL=https://api.popgastropub.com
+
 RUN npm run build
 
 EXPOSE 3000
 
-ENV NODE_ENV=production
-ENV NEXT_PUBLIC_API_URL=https://api.popgastropub.com
-
-CMD ["npm", "start"]
+CMD ["node_modules/.bin/next", "start", "-H", "0.0.0.0"]
