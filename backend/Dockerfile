@@ -17,9 +17,11 @@ WORKDIR /var/www/html
 COPY backend/composer.json /var/www/html/
 COPY backend/composer.lock /var/www/html/
 
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 COPY backend/ /var/www/html/
+
+RUN composer run-script post-autoload-dump
 
 RUN chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
 
