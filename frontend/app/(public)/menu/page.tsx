@@ -51,7 +51,7 @@ export default function Menu() {
 <h2 className="font-headline text-3xl font-black text-on-surface uppercase tracking-tighter">Sushi Selection</h2>
 <div className="h-[1px] flex-grow bg-outline-variant/30"></div>
 </div>
-<div className="editorial-grid">
+<div className="grid grid-cols-3 md:grid-cols-5 gap-4 md:gap-6">
 {/*  Card 1  */}
 <div className="group relative bg-surface-container-low overflow-hidden transition-all duration-500 hover:-translate-y-2">
 <div className="aspect-[4/3] overflow-hidden relative">
@@ -163,7 +163,7 @@ export default function Menu() {
 <h2 className="font-headline text-3xl font-black text-on-surface uppercase tracking-tighter">Wings &amp; Flavors</h2>
 <div className="h-[1px] flex-grow bg-outline-variant/30"></div>
 </div>
-<div className="editorial-grid">
+<div className="grid grid-cols-3 md:grid-cols-5 gap-4 md:gap-6">
 {/*  Card 5  */}
 <div className="group relative bg-surface-container-low overflow-hidden transition-all duration-500 hover:-translate-y-2">
 <div className="aspect-[4/3] overflow-hidden relative">
