@@ -1,0 +1,78 @@
+import type { Config } from 'tailwindcss'
+
+const config: Config = {
+  content: [
+    './app/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './lib/**/*.{ts,tsx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+          'surface': '#131313',
+          'surface-container-lowest': '#0e0e0e',
+          'on-secondary-fixed-variant': '#5d4200',
+          'on-secondary-container': '#e3b96b',
+          'inverse-on-surface': '#313030',
+          'error': '#ffb4ab',
+          'primary-container': '#e46f2d',
+          'on-surface': '#e5e2e1',
+          'on-secondary-fixed': '#271900',
+          'inverse-surface': '#e5e2e1',
+          'on-secondary': '#412d00',
+          'on-error': '#690005',
+          'on-primary-fixed': '#341000',
+          'primary': '#ffb693',
+          'surface-variant': '#353534',
+          'secondary': '#ebc071',
+          'on-tertiary-container': '#541104',
+          'surface-bright': '#3a3939',
+          'on-tertiary': '#5d1808',
+          'surface-tint': '#ffb693',
+          'on-primary-container': '#4b1b00',
+          'secondary-fixed-dim': '#ebc071',
+          'secondary-fixed': '#ffdea5',
+          'surface-container-highest': '#353534',
+          'on-surface-variant': '#dec0b4',
+          'inverse-primary': '#a04100',
+          'surface-container-high': '#2a2a2a',
+          'tertiary': '#ffb4a3',
+          'on-tertiary-fixed': '#3d0600',
+          'on-error-container': '#ffdad6',
+          'on-primary-fixed-variant': '#7a3000',
+          'outline-variant': '#574239',
+          'secondary-container': '#664900',
+          'surface-container-low': '#1c1b1b',
+          'surface-dim': '#131313',
+          'background': '#131313',
+          'tertiary-container': '#d8755e',
+          'tertiary-fixed-dim': '#ffb4a3',
+          'on-primary': '#562000',
+          'surface-container': '#201f1f',
+          'error-container': '#93000a',
+          'tertiary-fixed': '#ffdad2',
+          'on-tertiary-fixed-variant': '#7b2e1c',
+          'on-background': '#e5e2e1',
+          'outline': '#a68b80',
+          'primary-fixed-dim': '#ffb693',
+          'primary-fixed': '#ffdbcb',
+
+        pop: {
+          gold: '#F2C777',
+          lightGold: '#F2C894',
+          orange: '#D96725',
+          brown: '#732817',
+          black: '#0D0D0D',
+        },
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+    },
+  },
+  plugins: [
+    require('@tailwindcss/forms'),
+  ],
+}
+
+export default config

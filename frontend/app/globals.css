@@ -1,0 +1,71 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+:root {
+  --pop-gold: #F2C777;
+  --pop-light-gold: #F2C894;
+  --pop-orange: #D96725;
+  --pop-brown: #732817;
+  --pop-black: #0D0D0D;
+}
+
+body {
+  background-color: var(--pop-black);
+  color: #ffffff;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-pop-gold text-pop-black font-semibold px-6 py-3 rounded-lg hover:bg-pop-lightGold transition-colors duration-200;
+  }
+
+  .btn-secondary {
+    @apply border-2 border-pop-gold text-pop-gold font-semibold px-6 py-3 rounded-lg hover:bg-pop-gold hover:text-pop-black transition-colors duration-200;
+  }
+
+  .card {
+    @apply bg-pop-black border border-pop-gold/20 rounded-xl p-6 hover:border-pop-gold/50 transition-colors duration-200;
+  }
+}
+
+
+/* STITCH STYLES */
+
+h1,
+h2,
+h3,
+.font-epilogue {
+  font-family: 'Epilogue', sans-serif;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.glass {
+  background: rgba(28, 27, 27, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(235, 192, 113, 0.15);
+}
+
+.custom-cursor {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #EBC071;
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1), background 0.2s ease;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: difference;
+}
+
+.no-line {
+  border: none !important;
+}
+
+.tonal-shift {
+  background: linear-gradient(180deg, #131313 0%, #1c1b1b 100%);
+}
