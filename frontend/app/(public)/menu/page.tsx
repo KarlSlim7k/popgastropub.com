@@ -219,15 +219,15 @@ export default function Menu() {
 </section>
 </main>
 {/*  Floating Order Button  */}
-<div className="fixed bottom-8 right-8 z-[60]">
-<button className="bg-primary-container text-white p-6 rounded-full shadow-[0_0_40px_rgba(217,103,37,0.3)] hover:bg-secondary transition-all flex items-center gap-4 group">
+<div className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] z-[60] md:right-8 md:bottom-8">
+<button className="bg-primary-container text-white px-4 py-3 md:p-6 rounded-full shadow-[0_0_40px_rgba(217,103,37,0.3)] hover:bg-secondary transition-all flex items-center gap-3 md:gap-4 group">
 <div className="relative">
-<span className="material-symbols-outlined text-3xl">shopping_cart</span>
+<span className="material-symbols-outlined text-2xl md:text-3xl">shopping_cart</span>
 <span className="absolute -top-2 -right-2 bg-white text-primary-container font-black text-[10px] w-5 h-5 flex items-center justify-center rounded-full">3</span>
 </div>
-<div className="flex flex-col items-start pr-2">
-<span className="font-headline font-black text-sm tracking-widest leading-none">PEDIDO</span>
-<span className="font-headline font-bold text-xs opacity-80 tabular-nums">$550.00</span>
+<div className="flex flex-col items-start pr-1 md:pr-2">
+<span className="font-headline font-black text-xs md:text-sm tracking-widest leading-none">PEDIDO</span>
+<span className="font-headline font-bold text-[11px] md:text-xs opacity-80 tabular-nums">$550.00</span>
 </div>
 </button>
 </div>
