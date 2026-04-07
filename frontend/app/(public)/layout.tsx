@@ -1,11 +1,14 @@
 import React from 'react';
+import Image from 'next/image';
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       {/* Top Navigation Bar */}
       <nav className="fixed top-0 w-full z-50 bg-transparent backdrop-blur-md dark:bg-[#0D0D0D]/80 flex justify-between items-center px-8 py-4 max-w-full no-line">
-        <div className="text-2xl font-black text-[#EBC071] tracking-tighter uppercase font-headline">POP PEROTE</div>
+        <div className="flex items-center justify-center">
+          <Image src="/images/logopop.png" alt="POP PEROTE Logo" width={80} height={40} className="w-auto h-8 md:h-10 object-contain" priority />
+        </div>
         <div className="hidden md:flex items-center space-x-8 font-epilogue font-bold tracking-tight uppercase">
           <a className="text-[#E5E2E1] hover:text-[#FFB693] transition-all duration-300 ease-in-out" href="/">Inicio</a>
           <a className="text-[#E5E2E1] hover:text-[#FFB693] transition-all duration-300 ease-in-out" href="/menu">Menu</a>
