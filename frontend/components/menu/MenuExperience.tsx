@@ -56,7 +56,7 @@ export default function MenuExperience() {
                 NUESTRO MENU
               </h1>
               <p className="mt-5 max-w-xl text-xl text-white/70">
-                Mas de {totalProducts} favoritos entre sushi, alitas y antojos pensados para pedir sin friccion.
+                {totalProducts} platillos reales — sushi, alitas, boneless, crepas y más. El menú completo y actualizado de POP PEROTE.
               </p>
             </div>
             <div className="w-full md:w-96">
@@ -74,7 +74,7 @@ export default function MenuExperience() {
           </div>
 
           <div className="mt-10 flex flex-wrap gap-3">
-            {['Todo', 'Mas vendidos', 'Nuevos', 'Vegano', 'Picante', 'Promociones'].map((filter) => (
+            {['Todo', 'Más Vendidos', 'Nuevos', 'Picante', 'Vegetariano', 'Para Compartir'].map((filter) => (
               <button
                 className="rounded-full border border-[#F2C777]/20 px-5 py-2 text-xs font-black uppercase tracking-[0.25em] text-[#F2C894] transition-colors hover:border-[#F2C777]/45 hover:bg-[#F2C777]/10"
                 key={filter}
@@ -90,7 +90,7 @@ export default function MenuExperience() {
           <div className="flex gap-4 overflow-x-auto pb-2">
             {menuSections.map((section, index) => (
               <a
-                className={`flex-shrink-0 px-8 py-3 font-epilogue text-sm font-black uppercase tracking-[0.25em] transition-colors ${
+                className={`flex-shrink-0 px-5 py-3 font-epilogue text-sm font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-2 ${
                   index === 0
                     ? 'bg-[#D96725] text-white'
                     : 'border border-[#F2C777]/35 text-[#F2C894] hover:bg-[#F2C777]/10'
@@ -98,7 +98,8 @@ export default function MenuExperience() {
                 href={`#${section.id}`}
                 key={section.id}
               >
-                {section.id}
+                <span>{section.emoji}</span>
+                <span className="hidden md:inline">{section.title}</span>
               </a>
             ))}
           </div>
@@ -107,7 +108,8 @@ export default function MenuExperience() {
         {menuSections.map((section) => (
           <section className="mb-24" id={section.id} key={section.id}>
             <div className="mb-10 flex items-center gap-4">
-              <h2 className="font-epilogue text-3xl font-black uppercase tracking-tight text-white">
+              <h2 className="font-epilogue text-3xl font-black uppercase tracking-tight text-white flex items-center gap-3">
+                <span className="text-4xl">{section.emoji}</span>
                 {section.title}
               </h2>
               <div className="h-px flex-grow bg-[#F2C777]/18" />
