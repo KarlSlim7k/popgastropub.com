@@ -60,7 +60,7 @@ export default function MenuExperience() {
                 NUESTRO MENU
               </h1>
               <p className="mt-5 max-w-xl text-xl text-white/70">
-                {totalProducts} platillos reales — sushi, alitas, boneless, crepas y más. El menú completo y actualizado de POP PEROTE.
+                Deleitate con nuestra explosión de sabores: sushi, boneless, snacks y más, preparados al momento con ingredientes frescos y auténticos. ¡Cada bocado es una fiesta para tu paladar!
               </p>
             </div>
             <div className="w-full md:w-96">
