@@ -14,6 +14,10 @@ function formatPrice(value: number) {
   }).format(value);
 }
 
+function renderPrice(price: number, priceLabel?: string) {
+  return priceLabel ?? formatPrice(price);
+}
+
 function badgeClasses(badge?: string) {
   if (!badge) {
     return 'hidden';
@@ -45,7 +49,7 @@ export default function MenuExperience() {
     <>
       <div className="custom-cursor hidden md:block" />
 
-      <main className="mx-auto max-w-7xl px-6 pb-24 pt-32 md:px-12">
+      <main className="mx-auto max-w-7xl px-3 pb-24 pt-28 md:px-12 md:pt-32">
         <header className="mb-16 relative">
           <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
             <div className="max-w-2xl">
@@ -86,11 +90,11 @@ export default function MenuExperience() {
           </div>
         </header>
 
-        <div className="sticky top-[88px] z-40 -mx-6 mb-12 border-b border-[#F2C777]/10 bg-[#0D0D0D]/85 px-6 py-4 backdrop-blur-md md:-mx-12 md:px-12">
-          <div className="flex gap-4 overflow-x-auto pb-2">
+        <div className="sticky top-[72px] md:top-[88px] z-40 -mx-3 mb-8 md:mb-12 border-b border-[#F2C777]/10 bg-[#0D0D0D]/90 px-3 py-2 md:py-4 backdrop-blur-md md:-mx-12 md:px-12">
+          <div className="flex gap-2 md:gap-4 overflow-x-auto pb-1 md:pb-2 scrollbar-none">
             {menuSections.map((section, index) => (
               <a
-                className={`flex-shrink-0 px-5 py-3 font-epilogue text-sm font-black uppercase tracking-[0.2em] transition-colors flex items-center gap-2 ${
+                className={`flex-shrink-0 px-3 py-2 md:px-5 md:py-3 font-epilogue text-base md:text-sm font-black uppercase tracking-[0.1em] md:tracking-[0.2em] transition-colors flex items-center gap-1 md:gap-2 ${
                   index === 0
                     ? 'bg-[#D96725] text-white'
                     : 'border border-[#F2C777]/35 text-[#F2C894] hover:bg-[#F2C777]/10'
@@ -115,13 +119,14 @@ export default function MenuExperience() {
               <div className="h-px flex-grow bg-[#F2C777]/18" />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-3 gap-2 md:gap-4 md:grid-cols-2 xl:grid-cols-3">
               {section.items.map((item) => (
                 <article
-                  className="group overflow-hidden bg-[#181413] transition-transform duration-500 hover:-translate-y-2"
+                  className="group overflow-hidden bg-[#181413] transition-transform duration-500 hover:-translate-y-2 flex flex-col"
                   key={item.id}
                 >
-                  <div className="relative aspect-[4/3] overflow-hidden">
+                  {/* ── Imagen ───────────────────────────────── */}
+                  <div className="relative aspect-square md:aspect-[4/3] overflow-hidden flex-shrink-0">
                     <img
                       alt={item.name}
                       className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
@@ -129,46 +134,54 @@ export default function MenuExperience() {
                     />
                     {item.badge ? (
                       <div
-                        className={`absolute left-4 top-4 px-3 py-1 text-[10px] font-black uppercase tracking-[0.25em] ${badgeClasses(item.badge)}`}
+                        className={`absolute left-2 top-2 md:left-4 md:top-4 px-1.5 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[10px] font-black uppercase tracking-[0.15em] md:tracking-[0.25em] ${badgeClasses(item.badge)}`}
                       >
                         {item.badge}
                       </div>
                     ) : null}
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/80 px-8 text-center opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                    {/* Descripción al hover — solo visible en desktop */}
+                    <div className="hidden md:flex absolute inset-0 items-center justify-center bg-black/80 px-8 text-center opacity-0 transition-opacity duration-500 group-hover:opacity-100">
                       <p className="text-sm leading-6 text-white/80">{item.description}</p>
                     </div>
                   </div>
 
-                  <div className="p-6">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-[11px] font-black uppercase tracking-[0.25em] text-[#F2C777]/60">
-                          {item.category}
-                        </p>
-                        <h3 className="mt-2 font-epilogue text-2xl font-black uppercase tracking-tight text-white">
-                          {item.name}
-                        </h3>
-                      </div>
-                      <div className="flex text-[#F2C777]">
-                        {Array.from({ length: 5 }).map((_, index) => (
-                          <span className="material-symbols-outlined text-[18px]" key={`${item.id}-${index}`}>
-                            {index < item.rating ? 'star' : 'star_half'}
-                          </span>
-                        ))}
-                      </div>
+                  {/* ── Info + Botón ─────────────────────────── */}
+                  <div className="flex flex-col flex-1 p-2 md:p-6">
+                    {/* Categoría (oculta en móvil para ahorrar espacio) */}
+                    <p className="hidden md:block text-[11px] font-black uppercase tracking-[0.25em] text-[#F2C777]/60">
+                      {item.category}
+                    </p>
+
+                    {/* Nombre */}
+                    <h3 className="mt-0 md:mt-2 font-epilogue text-[10px] leading-tight md:text-2xl font-black uppercase tracking-tight text-white line-clamp-2">
+                      {item.name}
+                    </h3>
+
+                    {/* Estrellas — solo desktop */}
+                    <div className="hidden md:flex text-[#F2C777] mt-2">
+                      {Array.from({ length: 5 }).map((_, index) => (
+                        <span className="material-symbols-outlined text-[18px]" key={`${item.id}-${index}`}>
+                          {index < item.rating ? 'star' : 'star_half'}
+                        </span>
+                      ))}
                     </div>
 
-                    <div className="mt-6 flex items-center justify-between gap-4">
-                      <span className="font-epilogue text-2xl font-black text-[#F2C777]">
-                        {formatPrice(item.price)}
+                    {/* Precio + Botón */}
+                    <div className="mt-auto pt-2 md:mt-6 md:pt-0">
+                      {/* Precio */}
+                      <span className="block font-epilogue text-xs md:text-2xl font-black text-[#F2C777] mb-1.5 md:mb-0">
+                        {renderPrice(item.price, item.priceLabel)}
                       </span>
+
+                      {/* Botón — full width en móvil, auto en desktop */}
                       <button
-                        className="inline-flex items-center gap-2 bg-[#D96725] px-5 py-3 font-black uppercase tracking-[0.25em] text-white transition-all hover:bg-[#F2C777] hover:text-[#0D0D0D]"
+                        className="w-full md:w-auto inline-flex items-center justify-center gap-1 md:gap-2 bg-[#D96725] px-2 py-2 md:px-5 md:py-3 text-[9px] md:text-sm font-black uppercase tracking-[0.15em] md:tracking-[0.25em] text-white transition-all hover:bg-[#F2C777] hover:text-[#0D0D0D]"
                         onClick={() => addItem(item)}
                         type="button"
                       >
-                        Agregar
-                        <span className="material-symbols-outlined text-base">add</span>
+                        <span className="md:hidden">+</span>
+                        <span className="hidden md:inline">Agregar</span>
+                        <span className="material-symbols-outlined text-[12px] md:text-base">add</span>
                       </button>
                     </div>
                   </div>

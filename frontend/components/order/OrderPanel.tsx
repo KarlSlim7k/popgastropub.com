@@ -24,6 +24,10 @@ function formatPrice(value: number) {
   }).format(value);
 }
 
+function renderPrice(price: number, priceLabel?: string) {
+  return priceLabel ?? formatPrice(price);
+}
+
 function buildWhatsappLink(
   items: { name: string; quantity: number }[],
   fulfillment: FulfillmentType,
@@ -142,7 +146,7 @@ function EmptyState({
                   </p>
                 </div>
                 <span className="font-epilogue text-lg font-black text-[#F2C777]">
-                  {formatPrice(item.price)}
+                  {renderPrice(item.price, item.priceLabel)}
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-white/60">{item.description}</p>
@@ -267,7 +271,9 @@ export default function OrderPanel({
                           </button>
                         </div>
                         <span className="font-epilogue text-xl font-black text-[#F2C777]">
-                          {formatPrice(item.price * item.quantity)}
+                          {item.priceLabel && item.quantity === 1
+                            ? item.priceLabel
+                            : formatPrice(item.price * item.quantity)}
                         </span>
                       </div>
                     </article>

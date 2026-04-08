@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { MenuItem } from './order-data';
 
-export type CartItem = Pick<MenuItem, 'id' | 'name' | 'price' | 'category'> & {
+export type CartItem = Pick<MenuItem, 'id' | 'name' | 'price' | 'priceLabel' | 'category'> & {
   quantity: number;
 };
 
@@ -94,6 +94,7 @@ export function useOrderCart(): OrderCartState {
           id: item.id,
           name: item.name,
           price: item.price,
+          priceLabel: item.priceLabel,
           category: item.category,
           quantity: 1,
         },
