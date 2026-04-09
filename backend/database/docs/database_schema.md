@@ -3,7 +3,7 @@
 > **Motor:** MariaDB 10.6+ / InnoDB  
 > **Charset:** `utf8mb4` / `utf8mb4_unicode_ci`  
 > **Zona horaria:** `UTC-6` (Centro México)  
-> **Versión del schema:** `1.0.0`  
+> **Versión del schema:** `1.0.0` *(revisado 2026-04-09)*  
 > **Archivo SQL:** `backend/database/mariadb/001_schema_pop_perote.sql`
 
 ---
@@ -21,6 +21,9 @@
 | 7 | **Facturación CFDI 4.0** | `datos_fiscales_clientes`, `solicitudes_cfdi`, `cfdi_log` | Ciclo de vida completo de facturas electrónicas |
 | 8 | **Engagement** | `testimonios` | Reseñas y testimonios de clientes |
 | 9 | **Config & Auditoría** | `configuracion`, `activity_log` | Parámetros del sistema y trazabilidad |
+| 10 | **Horarios** | `horarios_atencion`, `horarios_especiales` | Horarios regulares semanales y días festivos/cierres |
+| 11 | **Contenido Web** | `contenido_web`, `galeria` | CMS ligero: textos, imágenes y galería del sitio público |
+| 12 | **Reservaciones** | `reservaciones` | Solicitudes de mesa (beneficio POP VIP / Elite) |
 
 ---
 
@@ -33,8 +36,10 @@ erDiagram
         VARCHAR nombre
         VARCHAR apellidos
         VARCHAR email UK
+        DATE fecha_nacimiento
         ENUM rol "cliente|mesero|admin"
         TINYINT activo
+        BIGINT referido_por FK
     }
 
     categorias_menu {
@@ -178,6 +183,8 @@ erDiagram
     users ||--o{ datos_fiscales_clientes : "guarda"
     users ||--o{ solicitudes_cfdi : "solicita"
     users ||--o{ testimonios : "escribe"
+    users ||--o{ reservaciones : "realiza"
+    users ||--o{ users : "refiere"
 
     categorias_menu ||--o{ productos : "contiene"
     productos }o--o{ promociones : "incluido en"
@@ -215,8 +222,11 @@ erDiagram
         VARCHAR email UK
         VARCHAR password
         VARCHAR telefono
+        DATE fecha_nacimiento
+        VARCHAR avatar_url
         ENUM rol "cliente|mesero|admin"
         TINYINT activo
+        BIGINT referido_por FK
         TIMESTAMP deleted_at
     }
 
@@ -239,6 +249,7 @@ erDiagram
 
     users ||--o{ personal_access_tokens : "posee tokens"
     users ||--o{ password_reset_tokens : "solicita reset"
+    users }o--o| users : "referido_por"
 ```
 
 ### Roles del Sistema
@@ -693,6 +704,112 @@ erDiagram
 
     activity_log }o--o| users : "realizada por"
 ```
+
+---
+
+## Módulo 10 — Horarios de Atención
+
+```mermaid
+erDiagram
+    horarios_atencion {
+        TINYINT id PK
+        TINYINT dia_semana "0=Lunes…6=Domingo"
+        VARCHAR dia_nombre
+        TIME hora_apertura
+        TIME hora_cierre
+        TINYINT activo
+        BIGINT updated_by FK
+    }
+
+    horarios_especiales {
+        BIGINT id PK
+        DATE fecha UK
+        VARCHAR nombre
+        ENUM tipo "cerrado|horario_especial"
+        TIME hora_apertura
+        TIME hora_cierre
+        TINYINT activo
+        BIGINT updated_by FK
+    }
+```
+
+> Ambas tablas se gestionan desde el panel admin. `horarios_especiales` prevalece sobre `horarios_atencion` cuando existe una entrada para la fecha consultada.
+
+---
+
+## Módulo 11 — Contenido Web (CMS Ligero)
+
+```mermaid
+erDiagram
+    contenido_web {
+        BIGINT id PK
+        VARCHAR seccion "hero|about|contacto|footer|seo…"
+        VARCHAR clave UK
+        TEXT valor
+        ENUM tipo "texto|html|imagen_url|json|color|url"
+        TINYINT activo
+        SMALLINT orden
+        BIGINT updated_by FK
+    }
+
+    galeria {
+        BIGINT id PK
+        VARCHAR titulo
+        VARCHAR imagen_url
+        VARCHAR imagen_thumb
+        ENUM categoria "platos|ambiente|eventos|promociones|equipo|general"
+        SMALLINT orden
+        TINYINT activo
+        BIGINT updated_by FK
+    }
+```
+
+### Secciones predefinidas `contenido_web`
+
+| Sección | Descripción |
+|---------|-------------|
+| `hero` | Título, subtítulo, CTA e imagen principal del landing |
+| `about` | Historia del restaurante, valores, chef |
+| `contacto` | Dirección, teléfono, email, mapa embed URL |
+| `footer` | Texto legal, horarios resumidos, redes sociales |
+| `seo` | Meta title, meta description, OG image por página |
+
+---
+
+## Módulo 12 — Reservaciones
+
+```mermaid
+erDiagram
+    reservaciones {
+        BIGINT id PK
+        BIGINT user_id FK
+        VARCHAR nombre
+        VARCHAR telefono
+        TINYINT personas
+        DATE fecha
+        TIME hora
+        VARCHAR ocasion
+        ENUM estado "pendiente|confirmada|cancelada|completada|no_show"
+        BIGINT confirmada_por FK
+        TIMESTAMP confirmada_at
+    }
+
+    reservaciones }o--o| users : "cliente registrado"
+```
+
+### Flujo de Estado
+
+```mermaid
+stateDiagram-v2
+    [*] --> pendiente : Cliente solicita
+    pendiente --> confirmada : Admin confirma
+    pendiente --> cancelada : Cliente/admin cancela
+    confirmada --> completada : Visita completada
+    confirmada --> cancelada : Cancela antes de fecha
+    confirmada --> no_show : No se presentó
+```
+
+> Reservaciones prioritarias son un beneficio de niveles **POP VIP** y **POP Elite**. Clientes no registrados pueden reservar igual pero sin beneficios de prioridad.
 
 ---
 

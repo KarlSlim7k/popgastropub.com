@@ -1,6 +1,25 @@
 version: '3.8'
 
 services:
+  mariadb:
+    image: mariadb:10.11
+    container_name: pop_perote_mariadb
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=pop_perote
+      - MYSQL_USER=pop_user
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - pop_db_data:/var/lib/mysql
+    networks:
+      - pop_network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   frontend:
     build:
       context: .
@@ -28,14 +47,17 @@ services:
       - APP_ENV=production
       - APP_DEBUG=false
       - DB_CONNECTION=mysql
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT:-3306}
-      - DB_DATABASE=${DB_DATABASE}
-      - DB_USERNAME=${DB_USERNAME}
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_DATABASE=pop_perote
+      - DB_USERNAME=pop_user
       - DB_PASSWORD=${DB_PASSWORD}
     volumes:
       - ./backend/storage:/var/www/html/storage
       - ./backend/bootstrap/cache:/var/www/html/bootstrap/cache
+    depends_on:
+      mariadb:
+        condition: service_healthy
     networks:
       - pop_network
 
@@ -54,9 +76,37 @@ services:
     networks:
       - pop_network
       - dokploy-network
+      - default
+    labels:
+      - traefik.http.routers.popperoteweb-sistemapopperote-4hogw4-4-web.rule=Host(`api.popgastropub.com`)
+      - traefik.http.routers.popperoteweb-sistemapopperote-4hogw4-4-web.entrypoints=web
+      - traefik.http.services.popperoteweb-sistemapopperote-4hogw4-4-web.loadbalancer.server.port=80
+      - traefik.http.routers.popperoteweb-sistemapopperote-4hogw4-4-web.service=popperoteweb-sistemapopperote-4hogw4-4-web
+      - traefik.http.routers.popperoteweb-sistemapopperote-4hogw4-4-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.popperoteweb-sistemapopperote-4hogw4-4-websecure.rule=Host(`api.popgastropub.com`)
+      - traefik.http.routers.popperoteweb-sistemapopperote-4hogw4-4-websecure.entrypoints=websecure
+      - traefik.http.services.popperoteweb-sistemapopperote-4hogw4-4-websecure.loadbalancer.server.port=80
+      - traefik.http.routers.popperoteweb-sistemapopperote-4hogw4-4-websecure.service=popperoteweb-sistemapopperote-4hogw4-4-websecure
+      - traefik.http.routers.popperoteweb-sistemapopperote-4hogw4-4-websecure.tls.certresolver=letsencrypt
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.popperoteweb-sistemapopperote-4hogw4-3-web.rule=Host(`popgastropub.com`)
+      - traefik.http.routers.popperoteweb-sistemapopperote-4hogw4-3-web.entrypoints=web
+      - traefik.http.services.popperoteweb-sistemapopperote-4hogw4-3-web.loadbalancer.server.port=80
+      - traefik.http.routers.popperoteweb-sistemapopperote-4hogw4-3-web.service=popperoteweb-sistemapopperote-4hogw4-3-web
+      - traefik.http.routers.popperoteweb-sistemapopperote-4hogw4-3-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.popperoteweb-sistemapopperote-4hogw4-3-websecure.rule=Host(`popgastropub.com`)
+      - traefik.http.routers.popperoteweb-sistemapopperote-4hogw4-3-websecure.entrypoints=websecure
+      - traefik.http.services.popperoteweb-sistemapopperote-4hogw4-3-websecure.loadbalancer.server.port=80
+      - traefik.http.routers.popperoteweb-sistemapopperote-4hogw4-3-websecure.service=popperoteweb-sistemapopperote-4hogw4-3-websecure
+      - traefik.http.routers.popperoteweb-sistemapopperote-4hogw4-3-websecure.tls.certresolver=letsencrypt
+      - traefik.enable=true
 
 networks:
   pop_network:
     driver: bridge
   dokploy-network:
     external: true
+
+volumes:
+  pop_db_data:
+    driver: local

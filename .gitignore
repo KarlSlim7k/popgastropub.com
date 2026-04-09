@@ -46,5 +46,7 @@ media/
 *.mov
 *.avi
 
-# Documentacion
+# Documentacion / Base de datos
 docs/
+database/docs/
+database/mariadb/

@@ -1,7 +1,7 @@
 -- =============================================================================
 -- POP PEROTE — Schema MariaDB / CFDI 4.0
 -- Versión: 1.0.0
--- Fecha: 2026-04-08
+-- Fecha: 2026-04-09
 -- Motor: MariaDB 10.6+ / InnoDB
 -- Charset: utf8mb4 / Collation: utf8mb4_unicode_ci
 -- =============================================================================
@@ -32,10 +32,12 @@ CREATE TABLE IF NOT EXISTS users (
     email_verified_at   TIMESTAMP       NULL     DEFAULT NULL,
     password            VARCHAR(255)    NOT NULL,
     telefono            VARCHAR(20)     NULL,
+    fecha_nacimiento    DATE            NULL                    COMMENT 'Para bonus automático de cumpleaños',
     avatar_url          VARCHAR(500)    NULL,
     -- Roles del sistema: cliente | mesero | admin
     rol                 ENUM('cliente','mesero','admin') NOT NULL DEFAULT 'cliente',
     activo              TINYINT(1)      NOT NULL DEFAULT 1,
+    referido_por        BIGINT UNSIGNED NULL                    COMMENT 'FK a users: quién refirió a este cliente',
     remember_token      VARCHAR(100)    NULL,
     created_at          TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -44,7 +46,11 @@ CREATE TABLE IF NOT EXISTS users (
     PRIMARY KEY (id),
     UNIQUE KEY uq_users_email (email),
     INDEX idx_users_rol (rol),
-    INDEX idx_users_activo (activo)
+    INDEX idx_users_activo (activo),
+    INDEX idx_users_referido (referido_por),
+    CONSTRAINT fk_users_referido
+        FOREIGN KEY (referido_por) REFERENCES users(id)
+        ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Usuarios del sistema: clientes, meseros y administradores';
 
@@ -309,6 +315,9 @@ CREATE TABLE IF NOT EXISTS pop_points_transacciones (
         ON UPDATE CASCADE ON DELETE SET NULL,
     CONSTRAINT fk_ppt_admin
         FOREIGN KEY (admin_id) REFERENCES users(id)
+        ON UPDATE CASCADE ON DELETE SET NULL,
+    CONSTRAINT fk_ppt_pedido
+        FOREIGN KEY (pedido_id) REFERENCES pedidos(id)
         ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Historial completo de movimientos de POP Points';
@@ -451,6 +460,9 @@ CREATE TABLE IF NOT EXISTS bar_stars_transacciones (
         ON UPDATE CASCADE ON DELETE SET NULL,
     CONSTRAINT fk_bst_admin
         FOREIGN KEY (admin_id) REFERENCES users(id)
+        ON UPDATE CASCADE ON DELETE SET NULL,
+    CONSTRAINT fk_bst_pedido_item
+        FOREIGN KEY (pedido_item_id) REFERENCES pedido_items(id)
         ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Movimientos de puntos del ranking POP Bar Stars por mesero';
@@ -670,6 +682,146 @@ CREATE TABLE IF NOT EXISTS activity_log (
   COMMENT='Log de auditoría de acciones administrativas';
 
 -- =============================================================================
+-- MÓDULO 10: HORARIOS DE ATENCIÓN
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- 10.1 horarios_atencion — Horarios regulares semanales
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS horarios_atencion (
+    id              TINYINT UNSIGNED    NOT NULL AUTO_INCREMENT,
+    dia_semana      TINYINT UNSIGNED    NOT NULL COMMENT '0=Lunes … 6=Domingo',
+    dia_nombre      VARCHAR(12)         NOT NULL,
+    hora_apertura   TIME                NOT NULL,
+    hora_cierre     TIME                NOT NULL,
+    activo          TINYINT(1)          NOT NULL DEFAULT 1,
+    updated_at      TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by      BIGINT UNSIGNED     NULL    COMMENT 'Admin que modificó el horario',
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_horario_dia (dia_semana),
+    CONSTRAINT fk_horario_updated_by
+        FOREIGN KEY (updated_by) REFERENCES users(id)
+        ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Horarios de atención regulares por día de la semana (0=Lunes…6=Domingo)';
+
+-- -----------------------------------------------------------------------------
+-- 10.2 horarios_especiales — Días festivos o con horario diferente
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS horarios_especiales (
+    id              BIGINT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    fecha           DATE                NOT NULL,
+    nombre          VARCHAR(150)        NOT NULL COMMENT 'Ej: Día Festivo, Navidad, Inventario',
+    tipo            ENUM('cerrado','horario_especial') NOT NULL DEFAULT 'cerrado',
+    hora_apertura   TIME                NULL    COMMENT 'Solo si tipo = horario_especial',
+    hora_cierre     TIME                NULL,
+    activo          TINYINT(1)          NOT NULL DEFAULT 1,
+    created_at      TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by      BIGINT UNSIGNED     NULL,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_hesp_fecha (fecha),
+    INDEX idx_hesp_fecha (fecha),
+    CONSTRAINT fk_hesp_updated_by
+        FOREIGN KEY (updated_by) REFERENCES users(id)
+        ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Horarios especiales: días festivos o cierres temporales';
+
+-- =============================================================================
+-- MÓDULO 11: CONTENIDO WEB (CMS LIGERO)
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- 11.1 contenido_web — Bloques de texto e imagen editables del sitio
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS contenido_web (
+    id          BIGINT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    seccion     VARCHAR(80)         NOT NULL COMMENT 'hero, about, contacto, footer, seo, etc.',
+    clave       VARCHAR(100)        NOT NULL COMMENT 'Identificador del bloque dentro de la sección',
+    valor       TEXT                NULL,
+    tipo        ENUM('texto','html','imagen_url','json','color','url') NOT NULL DEFAULT 'texto',
+    activo      TINYINT(1)          NOT NULL DEFAULT 1,
+    orden       SMALLINT UNSIGNED   NOT NULL DEFAULT 0,
+    created_at  TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by  BIGINT UNSIGNED     NULL,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_cw_seccion_clave (seccion, clave),
+    INDEX idx_cw_seccion (seccion, activo),
+    CONSTRAINT fk_cw_updated_by
+        FOREIGN KEY (updated_by) REFERENCES users(id)
+        ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Bloques de contenido editables del sitio público (CMS ligero)';
+
+-- -----------------------------------------------------------------------------
+-- 11.2 galeria — Imágenes y medios para el sitio público
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS galeria (
+    id              BIGINT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    titulo          VARCHAR(200)        NULL,
+    descripcion     TEXT                NULL,
+    imagen_url      VARCHAR(500)        NOT NULL,
+    imagen_thumb    VARCHAR(500)        NULL    COMMENT 'Miniatura optimizada para listados',
+    categoria       ENUM('platos','ambiente','eventos','promociones','equipo','general')
+                                        NOT NULL DEFAULT 'general',
+    orden           SMALLINT UNSIGNED   NOT NULL DEFAULT 0,
+    activo          TINYINT(1)          NOT NULL DEFAULT 1,
+    created_at      TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by      BIGINT UNSIGNED     NULL,
+
+    PRIMARY KEY (id),
+    INDEX idx_gal_categoria (categoria, activo, orden),
+    CONSTRAINT fk_gal_updated_by
+        FOREIGN KEY (updated_by) REFERENCES users(id)
+        ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Galería de imágenes del sitio: platos, ambiente, eventos, equipo';
+
+-- =============================================================================
+-- MÓDULO 12: RESERVACIONES
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- 12.1 reservaciones — Solicitudes de mesas (beneficio POP VIP / Elite)
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS reservaciones (
+    id              BIGINT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    user_id         BIGINT UNSIGNED     NULL    COMMENT 'NULL si reserva sin cuenta registrada',
+    nombre          VARCHAR(150)        NOT NULL,
+    telefono        VARCHAR(20)         NOT NULL,
+    email           VARCHAR(191)        NULL,
+    personas        TINYINT UNSIGNED    NOT NULL DEFAULT 2,
+    fecha           DATE                NOT NULL,
+    hora            TIME                NOT NULL,
+    ocasion         VARCHAR(100)        NULL    COMMENT 'Ej: Cumpleaños, Aniversario, Negocio',
+    notas           TEXT                NULL,
+    estado          ENUM('pendiente','confirmada','cancelada','completada','no_show')
+                                        NOT NULL DEFAULT 'pendiente',
+    confirmada_por  BIGINT UNSIGNED     NULL    COMMENT 'Admin que confirmó',
+    confirmada_at   TIMESTAMP           NULL,
+    created_at      TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    INDEX idx_res_user (user_id),
+    INDEX idx_res_fecha (fecha, hora),
+    INDEX idx_res_estado (estado),
+    CONSTRAINT fk_res_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON UPDATE CASCADE ON DELETE SET NULL,
+    CONSTRAINT fk_res_confirmada_por
+        FOREIGN KEY (confirmada_por) REFERENCES users(id)
+        ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Reservaciones de mesa: pendiente→confirmada→completada / cancelada / no_show';
+
+-- =============================================================================
 -- DATOS INICIALES (SEEDS ESENCIALES)
 -- =============================================================================
 
@@ -707,7 +859,20 @@ INSERT INTO configuracion (clave, valor, tipo, descripcion) VALUES
 ('restaurant_regimen',     '601',                 'string',  'Régimen fiscal del emisor (Ley Personas Morales)'),
 ('whatsapp_numero',        '522828253243',        'string',  'Número WhatsApp Business del restaurante'),
 ('foodbooking_company_uid','04f4d10b-2c07-4411-895d-4437eb890919', 'string', 'UID de empresa en FoodBooking'),
-('bebida_del_mes_multiplicador', '2.0',           'decimal', 'Multiplicador de puntos Bar Stars para bebida del mes');
+('bebida_del_mes_multiplicador', '2.0',           'decimal', 'Multiplicador de puntos Bar Stars para bebida del mes'),
+('bebida_del_mes_producto_id',   '0',             'integer', 'ID del producto "bebida del mes" (0 = sin asignar)'),
+('reserva_max_personas',         '20',            'integer', 'Máximo de personas por reservación'),
+('reserva_anticipacion_horas',   '2',             'integer', 'Horas mínimas de anticipación para reservar');
+
+-- Horarios de atención por defecto — ajustar según horario real del restaurante
+INSERT INTO horarios_atencion (dia_semana, dia_nombre, hora_apertura, hora_cierre) VALUES
+(0, 'Lunes',     '13:00:00', '22:00:00'),
+(1, 'Martes',    '13:00:00', '22:00:00'),
+(2, 'Miércoles', '13:00:00', '23:00:00'),
+(3, 'Jueves',    '13:00:00', '22:00:00'),
+(4, 'Viernes',   '13:00:00', '23:00:00'),
+(5, 'Sábado',    '12:00:00', '23:00:00'),
+(6, 'Domingo',   '12:00:00', '21:00:00');
 
 SET foreign_key_checks = 1;
 
