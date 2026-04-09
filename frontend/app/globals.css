@@ -50,16 +50,23 @@ h3,
 }
 
 .custom-cursor {
-  width: 24px;
-  height: 24px;
-  border: 2px solid #EBC071;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--pop-gold);
   border-radius: 50%;
   position: fixed;
   pointer-events: none;
   z-index: 9999;
-  transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1), background 0.2s ease;
-  transform: translate(-50%, -50%);
+  transition: transform 0.15s cubic-bezier(0.23, 1, 0.32, 1), background 0.15s ease, border-color 0.15s ease;
+  transform: translate(-50%, -50%) scale(1);
   mix-blend-mode: difference;
+  will-change: left, top, transform;
+}
+
+@media (pointer: fine) {
+  * {
+    cursor: none !important;
+  }
 }
 
 .no-line {

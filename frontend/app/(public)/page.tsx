@@ -1,12 +1,54 @@
 /* eslint-disable @next/next/no-img-element */
-import React from 'react';
+'use client';
+
+import React, { useEffect, useRef } from 'react';
 
 export default function Home() {
+  const cursorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const cursor = cursorRef.current;
+    if (!cursor) return;
+
+    const move = (e: MouseEvent) => {
+      cursor.style.left = `${e.clientX}px`;
+      cursor.style.top = `${e.clientY}px`;
+    };
+
+    const grow = () => {
+      cursor.style.transform = 'translate(-50%, -50%) scale(1.8)';
+      cursor.style.borderColor = '#D96725';
+      cursor.style.background = 'rgba(217,103,37,0.08)';
+    };
+
+    const shrink = () => {
+      cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+      cursor.style.borderColor = '#EBC071';
+      cursor.style.background = 'transparent';
+    };
+
+    window.addEventListener('mousemove', move);
+
+    const hoverTargets = document.querySelectorAll('a, button, [role="button"], input, .group');
+    hoverTargets.forEach((el) => {
+      el.addEventListener('mouseenter', grow);
+      el.addEventListener('mouseleave', shrink);
+    });
+
+    return () => {
+      window.removeEventListener('mousemove', move);
+      hoverTargets.forEach((el) => {
+        el.removeEventListener('mouseenter', grow);
+        el.removeEventListener('mouseleave', shrink);
+      });
+    };
+  }, []);
+
   return (
     <>
 
       {/*  Custom Cursor  */}
-      <div className="custom-cursor hidden md:block" id="cursor"></div>
+      <div className="custom-cursor hidden md:block" ref={cursorRef}></div>
 
       {/*  Navigation Shell (TopNavBar)  */}
       

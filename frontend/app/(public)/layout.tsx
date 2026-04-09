@@ -82,7 +82,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       </footer>
 
       {/* Mobile Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-[#0D0D0D]/95 backdrop-blur-xl border-t border-[#F2C777]/10 shadow-[0_-10px_30px_rgba(217,103,37,0.08)]">
+      <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 grid grid-cols-5 items-center py-3 pb-safe bg-[#0D0D0D]/95 backdrop-blur-xl border-t border-[#F2C777]/10 shadow-[0_-10px_30px_rgba(217,103,37,0.08)]">
         <a className="flex flex-col items-center justify-center text-[#E5E2E1]/60 hover:text-[#FFB693] transition-transform duration-300" href="/">
           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>home</span>
           <span className="font-manrope text-[10px] font-bold uppercase tracking-widest mt-1">Inicio</span>
