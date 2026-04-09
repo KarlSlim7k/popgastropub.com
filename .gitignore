@@ -45,3 +45,6 @@ media/
 *.mp4
 *.mov
 *.avi
+
+# Documentacion
+docs/
