@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 export default function AdminFacturacionPage() {
   return (
     <main className="ml-64 mt-[60px] p-8 min-h-screen">

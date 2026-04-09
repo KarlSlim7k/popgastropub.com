@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 export default function RankingPage() {
   return (
     <main className="pt-20 pb-24 md:pb-12 md:pl-64 min-h-screen px-6 md:px-12 bg-surface">
@@ -8,7 +6,7 @@ export default function RankingPage() {
 <div className="lg:col-span-5 flex items-center gap-6">
 <div className="relative">
 <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-secondary via-primary to-transparent">
-<img className="w-full h-full rounded-full object-cover" data-alt="professional headshot of a friendly waiter in dark modern restaurant uniform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkENiruVzKXJcyA9U_yr4Vg6acgmPfqCD_DFn7Rpg2fgMywIOglHHbq__Gsrd0J1hSNsWCqcFMJjPHU-g866_H8TSIH9SKZ50wFHWvYvlP8BFyd0kSIDkiaAtkfF0-zHlS8eI6QqrD1BrMBsyAnMbGDI3emBcYGohvOMcFjWUXttKB1YP9pH-rqbOlwMJGxHFI38WX2CBu-k1jetw5yQRDXhapEyYnaSIA9rRfHs4vYYdtBL5T9keBiI3HKSuRzM2L1jZQDZfH86uL"/>
+<img className="w-full h-full rounded-full object-cover" alt="professional headshot of a friendly waiter in dark modern restaurant uniform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkENiruVzKXJcyA9U_yr4Vg6acgmPfqCD_DFn7Rpg2fgMywIOglHHbq__Gsrd0J1hSNsWCqcFMJjPHU-g866_H8TSIH9SKZ50wFHWvYvlP8BFyd0kSIDkiaAtkfF0-zHlS8eI6QqrD1BrMBsyAnMbGDI3emBcYGohvOMcFjWUXttKB1YP9pH-rqbOlwMJGxHFI38WX2CBu-k1jetw5yQRDXhapEyYnaSIA9rRfHs4vYYdtBL5T9keBiI3HKSuRzM2L1jZQDZfH86uL"/>
 </div>
 <div className="absolute -bottom-1 -right-1 bg-secondary text-surface text-xs font-black p-1 rounded-full shadow-lg">
 <span className="material-symbols-outlined text-[16px]" data-icon="verified" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
@@ -128,7 +126,7 @@ export default function RankingPage() {
 {/* 2nd Place */}
 <div className="w-full md:w-1/3 flex flex-col items-center">
 <div className="relative mb-4">
-<img className="w-20 h-20 rounded-full border-4 border-slate-400" data-alt="close up profile of a waiter in a charcoal restaurant uniform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmXgmaKvBT10WRkAiRu5P1pVaxn9uMe4scNtzWLDyobTc0zo6U9CSX91vkIqugR2-hbShEzU5QTOBktm-SulSZoIS3YKaWvIg3MPKqRdE9kjTQyOI4HTxjjYQ_KPrEV4IZ-znzpDZxNEsrVJAKqvMMvZHuO3xx3VfROIiIQDBIr6lFQ0dBMa91hSPmnk1YJEuLMjH3-1e281g589hy8FO_vgi2JNxCzi7h0bFSYmFlbGGL51-b7EuyNtSPvb8Nlu1uCfz83J29gWWq"/>
+<img className="w-20 h-20 rounded-full border-4 border-slate-400" alt="close up profile of a waiter in a charcoal restaurant uniform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmXgmaKvBT10WRkAiRu5P1pVaxn9uMe4scNtzWLDyobTc0zo6U9CSX91vkIqugR2-hbShEzU5QTOBktm-SulSZoIS3YKaWvIg3MPKqRdE9kjTQyOI4HTxjjYQ_KPrEV4IZ-znzpDZxNEsrVJAKqvMMvZHuO3xx3VfROIiIQDBIr6lFQ0dBMa91hSPmnk1YJEuLMjH3-1e281g589hy8FO_vgi2JNxCzi7h0bFSYmFlbGGL51-b7EuyNtSPvb8Nlu1uCfz83J29gWWq"/>
 <div className="absolute -top-2 -right-2 bg-slate-400 text-surface text-xs font-black w-6 h-6 flex items-center justify-center rounded-full">2</div>
 </div>
 <div className="text-center mb-2">
@@ -145,7 +143,7 @@ export default function RankingPage() {
 <div className="absolute -top-12 left-1/2 -translate-x-1/2">
 <span className="material-symbols-outlined text-secondary text-5xl" data-icon="crown" style={{ fontVariationSettings: "'FILL' 1" }}>crown</span>
 </div>
-<img className="w-24 h-24 rounded-full border-4 border-secondary" data-alt="professional male staff portrait with confident smile in editorial style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB5h0XECwNOMX4MFj7aikwYlrIMnvM4A1vIuNZf6F-541bEu3WEK7drIz2dG-GhF8zxVT5zBrjpc5t2EJuyvqZvWyZY_L_bAea2kyl3ou_Ag9blEj5TkhGSjBjawoqHulwjFz1OllXoOKHKeCUEMj4Wx6Es-LQtOJzrRKOElrxHmnw18e7lYQBNIFBboslwOdCsjAtk7LMk3bxrCtZeeQUlZU9ciOM34juZl19bOZxVwux1cvs_Q39Y7kNel5Gy7iQX5WufBQckVk6"/>
+<img className="w-24 h-24 rounded-full border-4 border-secondary" alt="professional male staff portrait with confident smile in editorial style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB5h0XECwNOMX4MFj7aikwYlrIMnvM4A1vIuNZf6F-541bEu3WEK7drIz2dG-GhF8zxVT5zBrjpc5t2EJuyvqZvWyZY_L_bAea2kyl3ou_Ag9blEj5TkhGSjBjawoqHulwjFz1OllXoOKHKeCUEMj4Wx6Es-LQtOJzrRKOElrxHmnw18e7lYQBNIFBboslwOdCsjAtk7LMk3bxrCtZeeQUlZU9ciOM34juZl19bOZxVwux1cvs_Q39Y7kNel5Gy7iQX5WufBQckVk6"/>
 <div className="absolute -top-2 -right-2 bg-secondary text-surface text-xs font-black w-8 h-8 flex items-center justify-center rounded-full shadow-lg shadow-secondary/20">1</div>
 </div>
 <div className="text-center mb-4">
@@ -159,7 +157,7 @@ export default function RankingPage() {
 {/* 3rd Place */}
 <div className="w-full md:w-1/3 flex flex-col items-center">
 <div className="relative mb-4">
-<img className="w-20 h-20 rounded-full border-4 border-amber-800" data-alt="side profile of a male server in a clean white shirt under dark warm restaurant lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8pKytxzlHd2qY17DzjH_CeA4Ao2NnsPHCm3XHtyycrWpCdw1kpj3wiybZ03R2ps3eGYymypsL2s98Zs2O1bHV8Y-eKuVjNJ_aAgMiEmJ4WEAVZgQ0BgWVrsbJgCHETzvBwzXg7myF5xAJI1zAmxzgH8pex9Ut7qdXp1TZzi9wI0u-TBlOtQNHiI7YmuH99W7OLFZYPnAIim9mdKrLithiBLj7tWpDDCJ9VwUwOoUGk_1Af6SFxl7xfknvewTF0VYPsGFjdHkEhdm3"/>
+<img className="w-20 h-20 rounded-full border-4 border-amber-800" alt="side profile of a male server in a clean white shirt under dark warm restaurant lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8pKytxzlHd2qY17DzjH_CeA4Ao2NnsPHCm3XHtyycrWpCdw1kpj3wiybZ03R2ps3eGYymypsL2s98Zs2O1bHV8Y-eKuVjNJ_aAgMiEmJ4WEAVZgQ0BgWVrsbJgCHETzvBwzXg7myF5xAJI1zAmxzgH8pex9Ut7qdXp1TZzi9wI0u-TBlOtQNHiI7YmuH99W7OLFZYPnAIim9mdKrLithiBLj7tWpDDCJ9VwUwOoUGk_1Af6SFxl7xfknvewTF0VYPsGFjdHkEhdm3"/>
 <div className="absolute -top-2 -right-2 bg-amber-800 text-on-surface text-xs font-black w-6 h-6 flex items-center justify-center rounded-full">3</div>
 </div>
 <div className="text-center mb-2">

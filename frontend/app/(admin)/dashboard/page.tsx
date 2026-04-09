@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 export default function AdminDashboardPage() {
   return (
     <main className="ml-64 pt-20 p-8 min-h-screen">
@@ -110,11 +108,11 @@ export default function AdminDashboardPage() {
 <h2 className="text-xl font-black uppercase font-headline mb-8">Top 5 Platillos</h2>
 <div className="relative w-48 h-48 mx-auto mb-8 flex items-center justify-center">
 {/* Svg representation of a donut chart */}
-<svg className="transform -rotate-90" viewbox="0 0 100 100">
-<circle cx="50" cy="50" fill="transparent" r="40" stroke="#E46F2D" stroke-dasharray="120 251.2" stroke-width="12"></circle>
-<circle cx="50" cy="50" fill="transparent" r="40" stroke="#EBC071" stroke-dasharray="60 251.2" stroke-dashoffset="-120" stroke-width="12"></circle>
-<circle cx="50" cy="50" fill="transparent" r="40" stroke="#FFB4A3" stroke-dasharray="40 251.2" stroke-dashoffset="-180" stroke-width="12"></circle>
-<circle cx="50" cy="50" fill="transparent" r="40" stroke="#353534" stroke-dasharray="31.2 251.2" stroke-dashoffset="-220" stroke-width="12"></circle>
+<svg className="transform -rotate-90" viewBox="0 0 100 100">
+<circle cx="50" cy="50" fill="transparent" r="40" stroke="#E46F2D" strokeDasharray="120 251.2" strokeWidth="12"></circle>
+<circle cx="50" cy="50" fill="transparent" r="40" stroke="#EBC071" strokeDasharray="60 251.2" strokeDashoffset="-120" strokeWidth="12"></circle>
+<circle cx="50" cy="50" fill="transparent" r="40" stroke="#FFB4A3" strokeDasharray="40 251.2" strokeDashoffset="-180" strokeWidth="12"></circle>
+<circle cx="50" cy="50" fill="transparent" r="40" stroke="#353534" strokeDasharray="31.2 251.2" strokeDashoffset="-220" strokeWidth="12"></circle>
 </svg>
 <div className="absolute inset-0 flex flex-col items-center justify-center">
 <span className="text-2xl font-black font-headline">840</span>
