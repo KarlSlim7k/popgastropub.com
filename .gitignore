@@ -40,12 +40,6 @@ Homestead.yaml
 *.pem
 *.key
 
-# Media (large files)
-media/
-*.mp4
-*.mov
-*.avi
-
 # Documentacion / Base de datos
 docs/
 database/docs/
