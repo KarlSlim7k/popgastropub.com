@@ -7,7 +7,7 @@ const navItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: "dashboard" },
   { label: "Gestión Menú", href: "/admin/gestion-menu", icon: "restaurant_menu" },
   { label: "Promociones", href: "/admin/promociones", icon: "sell" },
-  { label: "Puntos POP", href: "/admin/admin/usuarios", icon: "military_tech" }, // Placeholder refined
+  { label: "Puntos POP", href: "/admin/puntos", icon: "military_tech" },
   { label: "Usuarios", href: "/admin/usuarios", icon: "group" },
   { label: "Ranking Staff", href: "/admin/meseros", icon: "star" },
   { label: "Facturación", href: "/admin/facturacion", icon: "receipt_long" },
