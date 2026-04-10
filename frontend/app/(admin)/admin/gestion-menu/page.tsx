@@ -7,162 +7,86 @@ interface MenuItem {
   id: string;
   name: string;
   category: string;
-  price: string;
-  cost: string;
-  stockPercent: number;
-  stockLabel: string;
-  stockColor: string;
+  price: number;
+  cost: number;
+  stock: number; // percentage
+  status: "available" | "low" | "out";
   active: boolean;
   image: string;
-  imageAlt: string;
   orders: number;
   rating: number;
-}
-
-interface CategoryStats {
-  name: string;
-  count: number;
-  revenue: string;
-  icon: string;
-  color: string;
+  hasPromo: boolean;
+  promoPrice?: number;
+  allergens: string[];
 }
 
 export default function AdminGestionMenuPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
 
-  const categories = ["Todos", "Sushi", "Wings", "Boneless", "Crepes", "Snacks", "Bebidas", "Postres"];
+  const categories = ["Todos", "Sushi", "Wings", "Bebidas", "Postres", "Snacks"];
 
-  const categoryStats: CategoryStats[] = [
-    { name: "Sushi", count: 42, revenue: "$85,400", icon: "set_meal", color: "pop-gold" },
-    { name: "Wings", count: 18, revenue: "$32,200", icon: "lunch_dining", color: "pop-orange" },
-    { name: "Bebidas", count: 24, revenue: "$45,600", icon: "local_bar", color: "pop-light-gold" },
-    { name: "Postres", count: 8, revenue: "$12,800", icon: "cake", color: "pop-gold" },
-  ];
-
-  const menuItems: MenuItem[] = [
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([
     {
       id: "SUSHI-001",
       name: "Dragon Roll Especial",
       category: "Sushi",
-      price: "$185.00",
-      cost: "$72.00",
-      stockPercent: 85,
-      stockLabel: "Disponible",
-      stockColor: "bg-pop-gold",
+      price: 185.00,
+      cost: 72.00,
+      stock: 85,
+      status: "available",
       active: true,
       image: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=200&h=150&fit=crop",
-      imageAlt: "Dragon Roll",
       orders: 342,
       rating: 4.9,
-    },
-    {
-      id: "SUSHI-012",
-      name: "Volcano Roll",
-      category: "Sushi",
-      price: "$165.00",
-      cost: "$65.00",
-      stockPercent: 60,
-      stockLabel: "Medio",
-      stockColor: "bg-pop-light-gold",
-      active: true,
-      image: "https://images.unsplash.com/photo-1617196034796-73dfa7b1fd56?w=200&h=150&fit=crop",
-      imageAlt: "Volcano Roll",
-      orders: 256,
-      rating: 4.7,
+      hasPromo: false,
+      allergens: ["Pescado", "Sésamo"],
     },
     {
       id: "WING-001",
       name: "Wings BBQ (12 pzas)",
       category: "Wings",
-      price: "$145.00",
-      cost: "$55.00",
-      stockPercent: 90,
-      stockLabel: "Disponible",
-      stockColor: "bg-pop-gold",
+      price: 145.00,
+      cost: 55.00,
+      stock: 15,
+      status: "low",
       active: true,
       image: "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=200&h=150&fit=crop",
-      imageAlt: "Wings BBQ",
       orders: 428,
       rating: 4.8,
+      hasPromo: true,
+      promoPrice: 120.00,
+      allergens: ["Gluten"],
     },
     {
-      id: "WING-005",
-      name: "Wings Mango Habanero",
-      category: "Wings",
-      price: "$155.00",
-      cost: "$60.00",
-      stockPercent: 25,
-      stockLabel: "Bajo",
-      stockColor: "bg-pop-orange",
-      active: true,
-      image: "https://images.unsplash.com/photo-1527477396000-e27163b8bbe?w=200&h=150&fit=crop",
-      imageAlt: "Wings Mango Habanero",
-      orders: 189,
-      rating: 4.6,
-    },
-    {
-      id: "BONE-001",
-      name: "Boneless Clásicos (500g)",
-      category: "Boneless",
-      price: "$135.00",
-      cost: "$48.00",
-      stockPercent: 70,
-      stockLabel: "Disponible",
-      stockColor: "bg-pop-gold",
-      active: true,
-      image: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=200&h=150&fit=crop",
-      imageAlt: "Boneless",
-      orders: 312,
-      rating: 4.5,
-    },
-    {
-      id: "CREP-003",
-      name: "Crepe Nutella y Fresa",
-      category: "Crepes",
-      price: "$95.00",
-      cost: "$32.00",
-      stockPercent: 15,
-      stockLabel: "Reabastecer",
-      stockColor: "bg-error",
+      id: "SUSHI-004",
+      name: "Acevichado Roll",
+      category: "Sushi",
+      price: 175.00,
+      cost: 68.00,
+      stock: 0,
+      status: "out",
       active: false,
-      image: "https://images.unsplash.com/photo-1519676867240-f03562e64571?w=200&h=150&fit=crop",
-      imageAlt: "Crepe Nutella",
-      orders: 156,
-      rating: 4.4,
+      image: "https://images.unsplash.com/photo-1553621042-f6e147245754?w=200&h=150&fit=crop",
+      orders: 215,
+      rating: 4.6,
+      hasPromo: false,
+      allergens: ["Mariscos"],
     },
-    {
-      id: "BEB-008",
-      name: "Margarita Clásica",
-      category: "Bebidas",
-      price: "$110.00",
-      cost: "$35.00",
-      stockPercent: 95,
-      stockLabel: "Disponible",
-      stockColor: "bg-pop-gold",
-      active: true,
-      image: "https://images.unsplash.com/photo-1544145945-f9043585543f?w=200&h=150&fit=crop",
-      imageAlt: "Margarita",
-      orders: 524,
-      rating: 4.9,
-    },
-    {
-      id: "POST-002",
-      name: "Cheesecake de Frutos Rojos",
-      category: "Postres",
-      price: "$85.00",
-      cost: "$28.00",
-      stockPercent: 40,
-      stockLabel: "Medio",
-      stockColor: "bg-pop-light-gold",
-      active: true,
-      image: "https://images.unsplash.com/photo-1533134242116-79c5e60818a7?w=200&h=150&fit=crop",
-      imageAlt: "Cheesecake",
-      orders: 198,
-      rating: 4.7,
-    },
-  ];
+  ]);
+
+  const toggleActive = (id: string) => {
+    setMenuItems(items => items.map(item => 
+      item.id === id ? { ...item, active: !item.active } : item
+    ));
+  };
+
+  const handleEdit = (item: MenuItem) => {
+    setEditingItem(item);
+    setShowModal(true);
+  };
 
   const filteredItems = menuItems.filter((item) => {
     const matchesCategory = selectedCategory === "Todos" || item.category === selectedCategory;
@@ -174,294 +98,217 @@ export default function AdminGestionMenuPage() {
   return (
     <main className="pt-24 lg:pt-20 p-4 lg:p-10 min-h-screen bg-pop-black">
       {/* Header */}
-      <header className="mb-8 lg:mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+      <header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-          <h1 className="text-4xl lg:text-5xl font-black tracking-tighter text-white font-epilogue uppercase">
-            Gestión de Menú
+          <h1 className="text-4xl lg:text-7xl font-black tracking-tighter text-white font-epilogue uppercase leading-none">
+            Menú
           </h1>
-          <p className="text-gray-400 mt-2 text-base lg:text-lg font-manrope">
-            Administra platillos, categorías y disponibilidad
+          <p className="text-pop-orange mt-2 text-xs font-bold uppercase tracking-[0.3em]">
+            Administración de catálogo · POP Perote
           </p>
         </div>
-        <div className="flex gap-3">
-          <button className="px-4 py-2.5 text-sm font-semibold text-pop-gold border border-pop-gold/30 rounded-lg hover:bg-pop-gold/10 transition-all duration-200 flex items-center gap-2">
-            <span className="material-symbols-outlined text-lg">download</span>
-            Exportar
-          </button>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="px-5 py-2.5 text-sm font-semibold text-pop-black bg-pop-gold rounded-lg hover:bg-pop-light-gold transition-all duration-200 flex items-center gap-2"
-          >
-            <span className="material-symbols-outlined text-lg">add</span>
-            Agregar Platillo
-          </button>
-        </div>
+        <button 
+          onClick={() => { setEditingItem(null); setShowModal(true); }}
+          className="w-full md:w-auto px-8 py-4 bg-pop-gold text-pop-black font-black uppercase text-xs tracking-[0.2em] rounded-lg hover:bg-pop-lightGold transition-all shadow-lg"
+        >
+          Agregar Platillo
+        </button>
       </header>
 
-      {/* Category Stats */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-10" aria-label="Estadísticas por categoría">
-        {categoryStats.map((cat, index) => (
-          <article
-            key={index}
-            className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-6 border-l-4 border-pop-gold hover:border-pop-orange transition-all duration-500 hover:shadow-[0_0_30px_rgba(217,103,37,0.05)] group cursor-pointer"
-          >
-            <div className="flex justify-between items-start mb-4">
-              <div className="p-3 rounded-lg bg-white/5 group-hover:bg-pop-gold/10 transition-colors">
-                <span className="material-symbols-outlined text-pop-gold text-3xl transition-transform group-hover:scale-110">
-                  {cat.icon}
-                </span>
-              </div>
-              <span className="text-[10px] font-bold text-pop-gold bg-pop-gold/10 px-3 py-1 rounded-full uppercase tracking-widest">
-                {cat.count} items
-              </span>
-            </div>
-            <h3 className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold mb-2">
-              {cat.name}
-            </h3>
-            <p className="text-3xl font-black text-white tracking-tighter font-epilogue">{cat.revenue}</p>
-          </article>
-        ))}
-      </section>
-
-      {/* Filters */}
-      <section className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-6 border border-white/5 mb-8">
-        <div className="flex flex-col lg:flex-row gap-4">
-          {/* Search */}
-          <div className="flex-1 relative">
-            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xl">
-              search
-            </span>
-            <input
-              type="text"
-              placeholder="Buscar platillo por nombre o ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-gray-800/50 border border-white/10 rounded-lg pl-12 pr-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 focus:ring-1 focus:ring-pop-gold/20 transition-all"
-            />
-          </div>
-          {/* Category Filter */}
-          <div className="flex flex-wrap gap-2">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all duration-200 ${
-                  selectedCategory === cat
-                    ? "bg-pop-gold text-pop-black"
-                    : "bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+      {/* Stats Summary - Scrollable on mobile */}
+      <section className="flex lg:grid lg:grid-cols-4 gap-4 lg:gap-6 mb-10 overflow-x-auto no-scrollbar pb-2">
+        <div className="min-w-[160px] flex-1 bg-[#1C1B1B] p-5 rounded-2xl border border-white/5">
+          <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Items</p>
+          <p className="text-2xl font-black text-white">{menuItems.length}</p>
+        </div>
+        <div className="min-w-[160px] flex-1 bg-[#1C1B1B] p-5 rounded-2xl border border-white/5">
+          <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Margen</p>
+          <p className="text-2xl font-black text-green-400">58%</p>
+        </div>
+        <div className="min-w-[160px] flex-1 bg-[#1C1B1B] p-5 rounded-2xl border border-white/5">
+          <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Agotados</p>
+          <p className="text-2xl font-black text-pop-orange">{menuItems.filter(i => i.status === 'out').length}</p>
+        </div>
+        <div className="min-w-[160px] flex-1 bg-[#1C1B1B] p-5 rounded-2xl border border-white/5">
+          <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Categorías</p>
+          <p className="text-2xl font-black text-pop-gold">{categories.length - 1}</p>
         </div>
       </section>
 
-      {/* Menu Items Table */}
-      <section className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl border border-white/5 overflow-hidden">
-        <div className="p-6 border-b border-white/5">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-xl font-black uppercase font-epilogue tracking-tighter text-white">
-                Catálogo de Platillos
-              </h2>
-              <p className="text-xs text-pop-orange font-bold uppercase tracking-widest mt-1">
-                {filteredItems.length} platillos encontrados
-              </p>
-            </div>
-          </div>
+      {/* Controls: Search & Categories (Stacked on mobile) */}
+      <div className="bg-[#1C1B1B] p-5 lg:p-6 rounded-2xl border border-white/5 mb-8 space-y-4">
+        <div className="relative">
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">search</span>
+          <input 
+            type="text" 
+            placeholder="Buscar por nombre o ID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-pop-black border border-white/10 rounded-xl py-4 pl-12 pr-6 text-sm text-white focus:border-pop-gold outline-none"
+          />
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full" role="table">
-            <thead>
-              <tr className="border-b border-gray-800 text-xs uppercase tracking-wider text-gray-500">
-                <th className="pb-4 px-6 text-left font-medium">Platillo</th>
-                <th className="pb-4 text-left font-medium">Categoría</th>
-                <th className="pb-4 text-left font-medium">Precio</th>
-                <th className="pb-4 text-left font-medium">Costo</th>
-                <th className="pb-4 text-left font-medium">Margen</th>
-                <th className="pb-4 text-left font-medium">Stock</th>
-                <th className="pb-4 text-left font-medium">Pedidos</th>
-                <th className="pb-4 text-left font-medium">Rating</th>
-                <th className="pb-4 text-right font-medium">Estado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-800/50">
-              {filteredItems.map((item, index) => {
-                const margin = ((parseFloat(item.price.replace('$', '')) - parseFloat(item.cost.replace('$', ''))) / parseFloat(item.price.replace('$', '')) * 100).toFixed(0);
-                return (
-                  <tr key={index} className="hover:bg-gray-800/30 transition-colors duration-200">
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800">
-                          <img
-                            className="w-full h-full object-cover"
-                            src={item.image}
-                            alt={item.imageAlt}
-                            loading="lazy"
-                          />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-white text-sm">{item.name}</p>
-                          <p className="text-[10px] text-gray-500 uppercase mt-0.5">ID: {item.id}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4">
-                      <span className="bg-gray-800 px-2.5 py-1 text-xs font-medium text-gray-300 rounded-md">
-                        {item.category}
-                      </span>
-                    </td>
-                    <td className="py-4 font-mono font-semibold text-white text-sm">{item.price}</td>
-                    <td className="py-4 font-mono text-gray-400 text-sm">{item.cost}</td>
-                    <td className="py-4">
-                      <span className={`text-xs font-bold px-2 py-1 rounded ${
-                        parseInt(margin) >= 60
-                          ? "bg-pop-gold/10 text-pop-gold"
-                          : parseInt(margin) >= 40
-                          ? "bg-pop-light-gold/10 text-pop-light-gold"
-                          : "bg-pop-orange/10 text-pop-orange"
-                      }`}>
-                        {margin}%
-                      </span>
-                    </td>
-                    <td className="py-4">
-                      <div className="w-24 bg-gray-800 h-1.5 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${item.stockColor}`}
-                          style={{ width: `${item.stockPercent}%` }}
-                        />
-                      </div>
-                      <p className="text-xs text-gray-400 mt-1.5">{item.stockLabel}</p>
-                    </td>
-                    <td className="py-4 text-gray-300 font-mono text-sm">{item.orders}</td>
-                    <td className="py-4">
-                      <div className="flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-pop-gold text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
-                          star
-                        </span>
-                        <span className="text-gray-300 font-semibold text-sm">{item.rating}</span>
-                      </div>
-                    </td>
-                    <td className="py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                            item.active ? "bg-pop-gold" : "bg-gray-700"
-                          }`}
-                          aria-label={item.active ? "Desactivar" : "Activar"}
-                        >
-                          <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
-                              item.active ? "translate-x-6" : "translate-x-1"
-                            }`}
-                          />
-                        </button>
-                        <div className="flex gap-1">
-                          <button className="p-1.5 hover:bg-pop-gold/10 rounded transition-colors" title="Editar">
-                            <span className="material-symbols-outlined text-pop-gold text-lg">edit</span>
-                          </button>
-                          <button className="p-1.5 hover:bg-error/10 rounded transition-colors" title="Eliminar">
-                            <span className="material-symbols-outlined text-error text-lg">delete</span>
-                          </button>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="flex overflow-x-auto gap-2 no-scrollbar py-1">
+          {categories.map(cat => (
+            <button 
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-4 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${
+                selectedCategory === cat ? 'bg-pop-gold text-pop-black border-pop-gold' : 'bg-transparent text-gray-500 border-white/10 hover:border-white/20'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
-      </section>
+      </div>
 
-      {/* Add Platillo Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowAddModal(false)}>
-          <div className="bg-[#1C1B1B] border border-white/10 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 border-b border-white/5 flex justify-between items-center">
-              <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white">
-                Agregar Platillo
-              </h2>
-              <button onClick={() => setShowAddModal(false)} className="text-gray-500 hover:text-white transition-colors">
-                <span className="material-symbols-outlined text-2xl">close</span>
-              </button>
-            </div>
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Nombre del Platillo</label>
-                  <input
-                    type="text"
-                    placeholder="Ej: Dragon Roll Especial"
-                    className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all"
-                  />
+      {/* Product List: Desktop Table / Mobile Cards */}
+      <div className="space-y-4">
+        {/* Header for Desktop */}
+        <div className="hidden lg:grid grid-cols-6 gap-4 px-8 py-4 bg-white/[0.02] text-[10px] font-black uppercase text-gray-500 tracking-[0.2em] border-b border-white/5">
+           <div className="col-span-2">Platillo</div>
+           <div>Categoría</div>
+           <div>PVP / Costo</div>
+           <div>Inventario</div>
+           <div className="text-right">Estado / Acciones</div>
+        </div>
+
+        {/* Dynamic Items */}
+        {filteredItems.map(item => (
+          <article key={item.id} className="bg-[#1C1B1B] lg:bg-transparent rounded-2xl lg:rounded-none p-5 lg:p-0 border border-white/5 lg:border-none lg:grid lg:grid-cols-6 lg:gap-4 lg:px-8 lg:py-6 lg:items-center hover:bg-white/[0.02] transition-all">
+             {/* Mobile: Top Row | Desktop: Info */}
+             <div className="lg:col-span-2 flex items-center gap-4 mb-4 lg:mb-0">
+                <div className="w-20 h-16 lg:w-16 lg:h-12 rounded-xl bg-pop-black border border-white/10 overflow-hidden shadow-lg">
+                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Categoría</label>
-                  <select className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-pop-gold/50 transition-all">
-                    <option value="">Seleccionar categoría</option>
-                    {categories.filter(c => c !== "Todos").map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
+                   <p className="text-base lg:text-sm font-black text-white uppercase leading-none">{item.name}</p>
+                   <p className="text-[9px] text-gray-500 mt-1 uppercase font-black tracking-widest">ID: {item.id}</p>
+                </div>
+             </div>
+
+             {/* Mobile: Specs | Desktop: Cells */}
+             <div className="grid grid-cols-2 lg:block gap-4 mb-4 lg:mb-0">
+                <div className="lg:hidden text-[9px] font-black text-gray-500 uppercase">Categoría</div>
+                <div className="text-right lg:text-left">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-pop-orange/80">{item.category}</span>
+                </div>
+                
+                <div className="lg:hidden text-[9px] font-black text-gray-500 uppercase">PVP / Costo</div>
+                <div className="text-right lg:text-left font-mono">
+                  <span className="text-white font-bold">${item.price}</span>
+                  <span className="text-[10px] text-gray-500 ml-2 lg:block lg:ml-0 lg:mt-0.5">/ ${item.cost}</span>
+                </div>
+             </div>
+
+             <div className="mb-6 lg:mb-0">
+                <div className="lg:hidden text-[9px] font-black text-gray-500 uppercase mb-2">Inventario</div>
+                <div className="flex items-center gap-3">
+                   <div className="flex-1 lg:max-w-[100px] h-1.5 bg-white/5 rounded-full overflow-hidden">
+                      <div className={`h-full ${item.status === 'out' ? 'bg-red-500' : item.status === 'low' ? 'bg-pop-orange' : 'bg-pop-gold'}`} style={{ width: `${item.stock}%` }} />
+                   </div>
+                   <span className="text-[10px] font-black text-white">{item.stock}%</span>
+                </div>
+             </div>
+
+             {/* Action Row */}
+             <div className="flex items-center justify-between lg:justify-end gap-3 pt-4 lg:pt-0 border-t lg:border-none border-white/5">
+                <button 
+                  onClick={() => toggleActive(item.id)}
+                  className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
+                    item.active ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                  }`}
+                >
+                  {item.active ? 'Activo' : 'Pausado'}
+                </button>
+                <div className="flex gap-2">
+                   <button onClick={() => handleEdit(item)} className="w-10 h-10 flex items-center justify-center bg-white/5 text-pop-gold rounded-xl hover:bg-pop-gold/10">
+                     <span className="material-symbols-outlined text-base">edit</span>
+                   </button>
+                   <button className="w-10 h-10 flex items-center justify-center bg-white/5 text-red-400 rounded-xl hover:bg-red-500/10">
+                     <span className="material-symbols-outlined text-base">delete</span>
+                   </button>
+                </div>
+             </div>
+          </article>
+        ))}
+      </div>
+
+      {/* Edit/Add Modal - Improved for Mobile */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+          <div className="absolute inset-0 bg-pop-black/90 backdrop-blur-xl" onClick={() => setShowModal(false)} />
+          <div className="relative bg-[#1C1B1B] border-t md:border border-white/10 w-full max-w-2xl rounded-t-3xl md:rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300">
+            <header className="p-6 lg:p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
+              <div>
+                <h2 className="text-xl lg:text-2xl font-black uppercase font-epilogue tracking-tighter text-white">
+                  {editingItem ? 'Editar Plato' : 'Nuevo Plato'}
+                </h2>
+                <p className="text-[10px] text-pop-orange font-bold uppercase tracking-widest mt-1">Configuración Técnica</p>
+              </div>
+              <button onClick={() => setShowModal(false)} className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-full text-gray-500">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </header>
+
+            <form className="p-6 lg:p-8 space-y-6 max-h-[70vh] overflow-y-auto no-scrollbar">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Nombre</label>
+                  <input type="text" defaultValue={editingItem?.name} className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Categoría</label>
+                  <select defaultValue={editingItem?.category} className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none">
+                    {categories.filter(c => c !== 'Todos').map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Precio de Venta ($)</label>
-                  <input
-                    type="number"
-                    placeholder="0.00"
-                    className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all"
-                  />
+
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                <div className="space-y-2 col-span-1">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Precio ($)</label>
+                  <input type="number" defaultValue={editingItem?.price} className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none" />
                 </div>
-                <div>
-                  <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Costo ($)</label>
-                  <input
-                    type="number"
-                    placeholder="0.00"
-                    className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all"
-                  />
+                <div className="space-y-2 col-span-1">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Costo ($)</label>
+                  <input type="number" defaultValue={editingItem?.cost} className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none" />
                 </div>
-                <div>
-                  <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Stock Inicial (%)</label>
-                  <input
-                    type="number"
-                    placeholder="100"
-                    className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all"
-                  />
+                <div className="col-span-2 md:col-span-1 bg-pop-gold/5 border border-pop-gold/10 p-4 rounded-xl flex items-center justify-between">
+                   <p className="text-[9px] font-black uppercase tracking-widest text-pop-gold">Margen</p>
+                   <p className="text-lg font-black text-white">61%</p>
                 </div>
               </div>
-              <div>
-                <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Descripción</label>
-                <textarea
-                  rows={3}
-                  placeholder="Descripción del platillo..."
-                  className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all resize-none"
-                />
+
+              <div className="space-y-4">
+                 <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Alérgenos</label>
+                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                   {["Pescado", "Mariscos", "Sésamo", "Gluten", "Lácteos"].map(alg => (
+                     <label key={alg} className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-3 rounded-xl cursor-pointer hover:border-pop-gold transition-all">
+                       <input type="checkbox" defaultChecked={editingItem?.allergens.includes(alg)} className="w-4 h-4 rounded accent-pop-gold" />
+                       <span className="text-[10px] font-bold text-white uppercase">{alg}</span>
+                     </label>
+                   ))}
+                 </div>
               </div>
-              <div>
-                <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">URL de Imagen</label>
-                <input
-                  type="text"
-                  placeholder="https://..."
-                  className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all"
-                />
+              
+              <div className="p-5 bg-pop-orange/5 border border-pop-orange/10 rounded-2xl flex items-center justify-between">
+                <div>
+                  <h4 className="text-white font-bold text-sm">Oferta Flash</h4>
+                  <p className="text-[8px] text-pop-orange uppercase tracking-widest font-black">Multiplicador de Visibilidad</p>
+                </div>
+                <input type="checkbox" defaultChecked={editingItem?.hasPromo} className="w-6 h-6 accent-pop-orange" />
               </div>
-            </div>
-            <div className="p-6 border-t border-white/5 flex justify-end gap-3">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="px-6 py-2.5 text-sm font-semibold text-gray-400 border border-gray-700 rounded-lg hover:bg-gray-800/50 transition-all"
-              >
+            </form>
+
+            <footer className="p-6 lg:p-8 border-t border-white/5 flex gap-3">
+              <button onClick={() => setShowModal(false)} type="button" className="flex-1 py-4 text-gray-500 font-black uppercase text-[10px] tracking-widest">
                 Cancelar
               </button>
-              <button className="px-6 py-2.5 text-sm font-semibold text-pop-black bg-pop-gold rounded-lg hover:bg-pop-light-gold transition-all">
-                Guardar Platillo
+              <button type="button" className="flex-[2] py-4 bg-pop-gold text-pop-black font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-pop-lightGold shadow-lg">
+                {editingItem ? 'Guardar Cambios' : 'Crear Platillo'}
               </button>
-            </div>
+            </footer>
           </div>
         </div>
       )}

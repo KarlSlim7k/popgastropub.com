@@ -99,29 +99,11 @@ export default function AdminDashboardPage() {
     { initials: "RG", name: "Ricardo G.", orders: 142, rating: 4.9, points: 2450 },
     { initials: "SL", name: "Sofía L.", orders: 128, rating: 4.8, points: 1920 },
     { initials: "MA", name: "Marco A.", orders: 115, rating: 4.7, points: 1680 },
-    { initials: "LC", name: "Laura C.", orders: 98, rating: 4.6, points: 1450 },
-    { initials: "JP", name: "Jorge P.", orders: 87, rating: 4.5, points: 1280 },
   ];
 
   const recentActivity: ActivityItem[] = [
-    {
-      type: "registro",
-      title: "Nuevo Registro",
-      description: "Juan P. se ha unido al programa",
-      time: "Hace 2 min",
-    },
-    {
-      type: "canje",
-      title: "Canje de Premio",
-      description: "Margarita (vía Sofía L.)",
-      time: "Hace 15 min",
-    },
-    {
-      type: "meta",
-      title: "Meta Alcanzada",
-      description: "Ricardo G. completó objetivo diario",
-      time: "Hace 1 hora",
-    },
+    { type: "registro", title: "Nuevo Registro", description: "Juan P. se ha unido al programa", time: "Hace 2 min" },
+    { type: "canje", title: "Canje de Premio", description: "Margarita (vía Sofía L.)", time: "Hace 15 min" },
   ];
 
   const menuItems: MenuItem[] = [
@@ -149,355 +131,200 @@ export default function AdminDashboardPage() {
       image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200&h=150&fit=crop",
       imageAlt: "Ensalada fresca",
     },
-    {
-      id: "POP-088",
-      name: "Old Fashioned Perote",
-      category: "Cócteles",
-      price: "$125.00",
-      stockPercent: 100,
-      stockLabel: "Stock Completo",
-      stockColor: "bg-pop-gold",
-      active: false,
-      image: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=200&h=150&fit=crop",
-      imageAlt: "Cóctel premium",
-    },
   ];
-
-  const getActivityColor = (type: ActivityItem["type"]) => {
-    switch (type) {
-      case "registro":
-        return "bg-primary-container shadow-[0_0_15px_rgba(228,111,45,0.4)]";
-      case "canje":
-        return "bg-secondary shadow-[0_0_15px_rgba(235,192,113,0.3)]";
-      case "meta":
-        return "bg-tertiary shadow-[0_0_15px_rgba(255,180,163,0.3)]";
-    }
-  };
-
-  const getActivityLabelColor = (type: ActivityItem["type"]) => {
-    switch (type) {
-      case "registro":
-        return "text-primary-container";
-      case "canje":
-        return "text-secondary";
-      case "meta":
-        return "text-tertiary";
-    }
-  };
 
   return (
     <main className="pt-24 lg:pt-20 p-4 lg:p-10 min-h-screen bg-pop-black">
-      {/* Header Section */}
-      <header className="mb-8 lg:mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+      {/* Responsive Header */}
+      <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
         <div>
-          <h1 className="text-4xl lg:text-5xl font-black tracking-tighter text-white font-epilogue uppercase">
-            Control Central
+          <h1 className="text-4xl lg:text-7xl font-black tracking-tighter text-white font-epilogue uppercase leading-none">
+            Dashboard
           </h1>
-          <p className="text-gray-400 mt-2 text-base lg:text-lg font-manrope">
-            Monitoreo en tiempo real y supervisión gastronómica de POP Perote
+          <p className="text-pop-orange mt-2 text-xs font-bold uppercase tracking-[0.3em]">
+            Supervisión Directiva · POP Perote Digital
           </p>
         </div>
-        <div className="flex gap-3">
-          <button className="px-4 py-2.5 text-sm font-semibold text-pop-gold border border-pop-gold/30 rounded-lg hover:bg-pop-gold/10 transition-all duration-200 flex items-center gap-2">
-            <span className="material-symbols-outlined text-lg">download</span>
-            Exportar
-          </button>
-          <button className="px-5 py-2.5 text-sm font-semibold text-pop-black bg-pop-gold rounded-lg hover:bg-pop-light-gold transition-all duration-200 flex items-center gap-2">
-            <span className="material-symbols-outlined text-lg">visibility</span>
-            Vista en Vivo
-          </button>
+        <div className="flex w-full sm:w-auto gap-2">
+           <button className="flex-1 sm:flex-none px-6 py-3 bg-pop-gold text-pop-black text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-pop-lightGold transition-all">
+             Vista en Vivo
+           </button>
         </div>
       </header>
 
-      {/* KPI Grid */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8 mb-10" aria-label="Métricas principales">
-        {kpiData.map((kpi, index) => (
-          <article
-            key={index}
-            className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-6 border-l-4 border-pop-gold hover:border-pop-orange transition-all duration-500 hover:shadow-[0_0_30px_rgba(217,103,37,0.05)] group"
-          >
-            <div className="flex justify-between items-start mb-4">
-              <div className={`p-3 rounded-lg bg-white/5 group-hover:bg-pop-gold/10 transition-colors`}>
-                <span className={`material-symbols-outlined text-pop-gold text-3xl transition-transform group-hover:scale-110`}>
-                  {kpi.icon}
-                </span>
+      {/* KPI Grid - Responsive columns */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-10">
+        {kpiData.map((kpi, idx) => (
+          <article key={idx} className="bg-[#1C1B1B] p-6 rounded-2xl border border-white/5 hover:border-pop-gold/30 transition-all group">
+            <div className="flex justify-between items-start mb-6">
+              <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-pop-gold/10 transition-all">
+                <span className="material-symbols-outlined text-pop-gold text-2xl">{kpi.icon}</span>
               </div>
-              <span className="text-[10px] font-bold text-pop-gold bg-pop-gold/10 px-3 py-1 rounded-full uppercase tracking-widest">
+              <span className="text-[10px] font-black text-pop-gold bg-pop-gold/10 px-3 py-1 rounded-full uppercase tracking-widest leading-none">
                 {kpi.trend}
               </span>
             </div>
-            <h3 className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold mb-2">
-              {kpi.label}
-            </h3>
-            <p className="text-4xl font-black text-white tracking-tighter font-epilogue">{kpi.value}</p>
+            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">{kpi.label}</p>
+            <p className="text-4xl font-black text-white tracking-tighter font-epilogue leading-none">{kpi.value}</p>
           </article>
         ))}
       </section>
 
-      {/* Charts Section */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-8">
-        {/* Bar Chart: Pedidos por Día */}
-        <article className="lg:col-span-2 bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-8 border border-white/5">
+      {/* Charts - Stacked on mobile */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        <article className="lg:col-span-2 bg-[#1C1B1B] p-6 lg:p-8 rounded-2xl border border-white/5 overflow-hidden">
           <div className="flex justify-between items-center mb-10">
-            <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white">Pedidos por Día</h2>
-            <div className="flex gap-2 bg-gray-800/50 p-1 rounded-lg">
-              <button
-                onClick={() => setChartPeriod("7D")}
-                className={`px-3 py-1.5 text-xs font-semibold uppercase rounded-md transition-all ${
-                  chartPeriod === "7D"
-                    ? "bg-pop-gold text-pop-black"
-                    : "text-gray-400 hover:text-white"
-                }`}
-              >
-                7D
-              </button>
-              <button
-                onClick={() => setChartPeriod("30D")}
-                className={`px-3 py-1.5 text-xs font-semibold uppercase rounded-md transition-all ${
-                  chartPeriod === "30D"
-                    ? "bg-pop-gold text-pop-black"
-                    : "text-gray-400 hover:text-white"
-                }`}
-              >
-                30D
-              </button>
+            <h2 className="text-xl font-black uppercase tracking-tighter text-white font-epilogue">Facturación Diaria</h2>
+            <div className="flex bg-pop-black/50 p-1 rounded-lg">
+              {["7D", "30D"].map(p => (
+                <button 
+                  key={p} 
+                  onClick={() => setChartPeriod(p as any)}
+                  className={`px-3 py-1.5 text-[10px] font-black rounded-md uppercase transition-all ${chartPeriod === p ? 'bg-pop-gold text-pop-black' : 'text-gray-500'}`}
+                >
+                  {p}
+                </button>
+              ))}
             </div>
           </div>
-          <div className="h-64 flex items-end justify-between gap-3">
-            {barData.map((item, index) => (
-              <div key={index} className="flex flex-col items-center gap-2 flex-1 group">
-                <div className="w-full relative h-[85%] bg-gray-800/50 rounded-t-md overflow-hidden">
-                  <div
-                    className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-pop-gold to-pop-light-gold rounded-t-md transition-all duration-500 group-hover:opacity-90"
-                    style={{ height: `${item.value}%` }}
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-xs font-bold text-pop-black bg-white/80 px-2 py-0.5 rounded">
-                      {item.value}%
-                    </span>
-                  </div>
+          <div className="h-64 flex items-end justify-between gap-2 overflow-x-auto no-scrollbar pb-2">
+            {barData.map((d, i) => (
+              <div key={i} className="flex flex-col items-center flex-1 min-w-[30px] group">
+                <div className="w-full relative h-48 bg-white/5 rounded-t-lg overflow-hidden">
+                  <div className="absolute bottom-0 left-0 right-0 bg-pop-gold group-hover:bg-pop-lightGold transition-all rounded-t-lg shadow-[0_0_15px_rgba(242,199,119,0.2)]" style={{ height: `${d.value}%` }} />
                 </div>
-                <span className="text-xs font-medium text-gray-500">{item.day}</span>
+                <span className="text-[9px] font-black text-gray-500 mt-3 uppercase tracking-tighter">{d.day}</span>
               </div>
             ))}
           </div>
         </article>
 
-        {/* Donut Chart: Top Platillos */}
-        <article className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-8 border border-white/5">
-          <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white mb-10">Top Platillos</h2>
-          <div className="relative w-44 h-44 mx-auto mb-6">
-            <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 100 100">
-              {donutData.reduce(
-                (acc, item, index) => {
-                  const circumference = 2 * Math.PI * 40;
-                  const strokeDasharray = `${(item.percent / 100) * circumference} ${circumference}`;
-                  const strokeDashoffset = -acc.offset;
-                  acc.offset += (item.percent / 100) * circumference;
-
-                  acc.elements.push(
-                    <circle
-                      key={index}
-                      cx="50"
-                      cy="50"
-                      fill="transparent"
-                      r="40"
-                      stroke={item.color}
-                      strokeDasharray={strokeDasharray}
-                      strokeDashoffset={strokeDashoffset}
-                      strokeWidth="10"
-                      className="transition-all duration-300 hover:opacity-80"
-                    />
-                  );
-                  return acc;
-                },
-                { offset: 0, elements: [] as React.ReactElement[] }
-              ).elements}
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-2xl font-bold text-white">840</span>
-              <span className="text-xs text-gray-400">Total</span>
-            </div>
-          </div>
-          <ul className="space-y-3">
-            {donutData.map((item, index) => (
-              <li key={index} className="flex justify-between items-center text-sm">
-                <div className="flex items-center gap-2.5">
-                  <span
-                    className="w-3 h-3 rounded-sm"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="text-gray-300 font-medium">{item.name}</span>
+        <article className="bg-[#1C1B1B] p-6 lg:p-8 rounded-2xl border border-white/5">
+           <h2 className="text-xl font-black uppercase tracking-tighter text-white font-epilogue mb-10">Mix de Ventas</h2>
+           <div className="space-y-6">
+              {donutData.map((d, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                    <span className="text-gray-400">{d.name}</span>
+                    <span className="text-white">{d.percent}%</span>
+                  </div>
+                  <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-full bg-pop-gold" style={{ width: `${d.percent}%`, backgroundColor: d.color }} />
+                  </div>
                 </div>
-                <span className="text-gray-400 font-semibold">{item.percent}%</span>
-              </li>
-            ))}
-          </ul>
+              ))}
+           </div>
         </article>
       </section>
 
-      {/* Secondary Grid */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-        {/* Top 5 Meseros del Mes */}
-        <article className="lg:col-span-2 bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-8 border border-white/5">
-          <div className="flex justify-between items-center mb-10">
-            <div>
-              <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white">Top 5 Meseros del Mes</h2>
-              <p className="text-xs text-pop-orange font-bold uppercase tracking-widest mt-2">Ranking por ventas y calificación</p>
-            </div>
-            <span className="material-symbols-outlined text-pop-gold text-4xl">
-              workspace_premium
-            </span>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full" role="table">
-              <thead>
-                <tr className="border-b border-gray-800 text-xs uppercase tracking-wider text-gray-500">
-                  <th className="pb-4 text-left font-medium">Mesero</th>
-                  <th className="pb-4 text-left font-medium">Pedidos</th>
-                  <th className="pb-4 text-left font-medium">Calificación</th>
-                  <th className="pb-4 text-right font-medium">Puntos</th>
+      {/* Desktop Tables (Hidden on Mobile) */}
+      <section className="hidden lg:grid grid-cols-2 gap-8 mb-10">
+        <article className="bg-[#1C1B1B] rounded-2xl border border-white/5 overflow-hidden">
+           <header className="p-6 border-b border-white/5 flex justify-between items-center">
+             <h3 className="text-sm font-black text-white uppercase tracking-widest font-epilogue">Top Meseros</h3>
+             <span className="material-symbols-outlined text-pop-gold">stars</span>
+           </header>
+           <table className="w-full text-left">
+              <thead className="bg-white/[0.01] text-[10px] font-black uppercase text-gray-500 tracking-widest">
+                <tr>
+                   <th className="py-4 px-6">Mesero</th>
+                   <th className="py-4 px-4">Órdenes</th>
+                   <th className="py-4 px-6 text-right">Puntos</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-800/50">
-                {topWaiters.map((waiter, index) => (
-                  <tr
-                    key={index}
-                    className="hover:bg-gray-800/30 transition-colors duration-200"
-                  >
-                    <td className="py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-xs font-bold text-pop-gold">
-                          {waiter.initials}
-                        </div>
-                        <span className="font-semibold text-white">{waiter.name}</span>
-                      </div>
+              <tbody className="divide-y divide-white/5">
+                {topWaiters.map((w, idx) => (
+                  <tr key={idx} className="hover:bg-white/[0.01] transition-colors">
+                    <td className="py-5 px-6">
+                       <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-pop-gold text-pop-black flex items-center justify-center font-black text-[10px]">
+                            {w.initials}
+                          </div>
+                          <span className="text-sm font-bold text-white">{w.name}</span>
+                       </div>
                     </td>
-                    <td className="py-4 text-gray-300 font-mono">{waiter.orders}</td>
-                    <td className="py-4">
-                      <div className="flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-pop-gold text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
-                          star
-                        </span>
-                        <span className="text-gray-300 font-semibold">{waiter.rating}</span>
-                      </div>
+                    <td className="py-5 px-4 font-mono text-xs text-gray-400">{w.orders}</td>
+                    <td className="py-5 px-6 text-right font-black text-pop-gold text-xs">{w.points.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+           </table>
+        </article>
+
+        <article className="bg-[#1C1B1B] rounded-2xl border border-white/5 overflow-hidden">
+           <header className="p-6 border-b border-white/5 flex justify-between items-center">
+             <h3 className="text-sm font-black text-white uppercase tracking-widest font-epilogue">Menú en Vivo</h3>
+             <span className="material-symbols-outlined text-pop-orange">inventory_2</span>
+           </header>
+           <table className="w-full text-left">
+              <thead className="bg-white/[0.01] text-[10px] font-black uppercase text-gray-500 tracking-widest">
+                <tr>
+                   <th className="py-4 px-6">Platillo</th>
+                   <th className="py-4 px-4 text-right">Stock</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {menuItems.map((m, idx) => (
+                  <tr key={idx} className="hover:bg-white/[0.01] transition-colors">
+                    <td className="py-3 px-6">
+                       <div className="flex items-center gap-3">
+                          <img src={m.image} alt={m.name} className="w-10 h-8 rounded object-cover border border-white/10" />
+                          <span className="text-xs font-bold text-white">{m.name}</span>
+                       </div>
                     </td>
-                    <td className="py-4 text-right font-mono font-bold text-pop-gold">
-                      {waiter.points.toLocaleString()}
+                    <td className="py-3 px-4 text-right">
+                       <div className="inline-flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${m.stockPercent < 50 ? 'bg-pop-orange' : 'bg-pop-gold'}`} />
+                          <span className="text-[10px] font-black text-white">{m.stockPercent}%</span>
+                       </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
-        </article>
-
-        {/* Recent Activity Timeline */}
-        <article className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-8 border border-white/5">
-          <div className="mb-10">
-            <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white">Actividad Reciente</h2>
-            <p className="text-xs text-pop-orange font-bold uppercase tracking-widest mt-2">Últimas acciones del equipo</p>
-          </div>
-          <div className="space-y-6 relative">
-            <div className="absolute left-3.5 top-2 bottom-2 w-px bg-gray-800" />
-            {recentActivity.map((activity, index) => (
-              <div key={index} className="relative pl-10">
-                <div
-                  className={`absolute left-1.5 top-1.5 w-4 h-4 rounded-full ring-4 ring-gray-900 ${getActivityColor(activity.type)}`}
-                />
-                <p className={`text-xs font-semibold uppercase tracking-wide ${getActivityLabelColor(activity.type)}`}>
-                  {activity.title}
-                </p>
-                <p className="text-sm font-medium text-gray-300 mt-1">
-                  {activity.description}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
-              </div>
-            ))}
-          </div>
+           </table>
         </article>
       </section>
 
-      {/* Menu Management */}
-      <section className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-8 border border-white/5">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
-          <div>
-            <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white">Gestión de Menú</h2>
-            <p className="text-xs text-pop-orange font-bold uppercase tracking-widest mt-2">Control de platillos y disponibilidad en vivo</p>
-          </div>
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-pop-gold text-pop-black font-semibold text-sm rounded-lg hover:bg-pop-light-gold transition-all duration-200">
-            <span className="material-symbols-outlined text-lg">add</span>
-            Agregar Platillo
-          </button>
+      {/* Mobile Card Views (Shown only on Mobile) */}
+      <section className="lg:hidden space-y-6">
+        <h3 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-4">Métricas Operativas</h3>
+        {/* Waiters Mobile List */}
+        <div className="space-y-3">
+           {topWaiters.map((w, idx) => (
+             <article key={idx} className="bg-[#1C1B1B] p-4 rounded-xl border border-white/5 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                   <div className="w-10 h-10 rounded-full bg-pop-gold text-pop-black flex items-center justify-center font-black text-xs">
+                     {w.initials}
+                   </div>
+                   <div>
+                     <p className="text-sm font-black text-white leading-tight">{w.name}</p>
+                     <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">{w.orders} órdenes servidas</p>
+                   </div>
+                </div>
+                <div className="text-right">
+                   <p className="text-xs font-black text-pop-gold">{w.points.toLocaleString()}</p>
+                   <p className="text-[8px] text-gray-500 uppercase font-black">PTS</p>
+                </div>
+             </article>
+           ))}
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full" role="table">
-            <thead>
-              <tr className="border-b border-gray-800 text-xs uppercase tracking-wider text-gray-500">
-                <th className="pb-4 text-left font-medium">Platillo</th>
-                <th className="pb-4 text-left font-medium">Categoría</th>
-                <th className="pb-4 text-left font-medium">Precio</th>
-                <th className="pb-4 text-left font-medium">Stock</th>
-                <th className="pb-4 text-right font-medium">Estado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-800/50">
-              {menuItems.map((item, index) => (
-                <tr key={index} className="hover:bg-gray-800/30 transition-colors duration-200">
-                  <td className="py-5">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800">
-                        <img
-                          className="w-full h-full object-cover"
-                          src={item.image}
-                          alt={item.imageAlt}
-                          loading="lazy"
-                        />
+        
+        {/* Menu Mobile List */}
+        <div className="space-y-3">
+           {menuItems.map((m, idx) => (
+             <article key={idx} className="bg-[#1C1B1B] p-4 rounded-xl border border-white/5 flex items-center gap-4">
+                <img src={m.image} alt={m.name} className="w-16 h-12 rounded-lg object-cover border border-white/10" />
+                <div className="flex-1">
+                   <p className="text-xs font-black text-white uppercase">{m.name}</p>
+                   <div className="flex items-center gap-2 mt-1">
+                      <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+                         <div className={`h-full ${m.stockPercent < 50 ? 'bg-pop-orange' : 'bg-pop-gold'}`} style={{ width: `${m.stockPercent}%` }} />
                       </div>
-                      <div>
-                        <p className="font-semibold text-white">{item.name}</p>
-                        <p className="text-xs text-gray-500 uppercase mt-0.5">ID: {item.id}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-5">
-                    <span className="bg-gray-800 px-2.5 py-1 text-xs font-medium text-gray-300 rounded-md">
-                      {item.category}
-                    </span>
-                  </td>
-                  <td className="py-5 font-mono font-semibold text-white">{item.price}</td>
-                  <td className="py-5">
-                    <div className="w-24 bg-gray-800 h-1.5 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full ${item.stockColor}`}
-                        style={{ width: `${item.stockPercent}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-gray-400 mt-1.5">{item.stockLabel}</p>
-                  </td>
-                  <td className="py-5 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                          item.active ? "bg-pop-gold" : "bg-gray-700"
-                        }`}
-                        aria-label={item.active ? "Desactivar" : "Activar"}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
-                            item.active ? "translate-x-6" : "translate-x-1"
-                          }`}
-                        />
-                      </button>
-                      <span className={`text-xs font-semibold ${item.active ? "text-pop-gold" : "text-gray-500"}`}>
-                        {item.active ? "Activo" : "Inactivo"}
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      <span className="text-[10px] font-black text-white">{m.stockPercent}%</span>
+                   </div>
+                </div>
+             </article>
+           ))}
         </div>
       </section>
     </main>
