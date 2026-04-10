@@ -5,12 +5,12 @@ import { usePathname } from "next/navigation";
 
 const navItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: "dashboard" },
-  { label: "Gestión Menú", href: "/admin/admin/gestion-menu", icon: "restaurant_menu" },
-  { label: "Promociones", href: "/admin/admin/promociones", icon: "sell" },
-  { label: "Puntos POP", href: "/admin/dashboard", icon: "military_tech" }, // Placeholder link
-  { label: "Usuarios", href: "/admin/admin/usuarios", icon: "group" },
-  { label: "Ranking Staff", href: "/admin/admin/meseros", icon: "star" },
-  { label: "Configuración", href: "/admin/dashboard", icon: "settings" }, // Placeholder link
+  { label: "Gestión Menú", href: "/admin/gestion-menu", icon: "restaurant_menu" },
+  { label: "Promociones", href: "/admin/promociones", icon: "sell" },
+  { label: "Puntos POP", href: "/admin/admin/usuarios", icon: "military_tech" }, // Placeholder refined
+  { label: "Usuarios", href: "/admin/usuarios", icon: "group" },
+  { label: "Ranking Staff", href: "/admin/meseros", icon: "star" },
+  { label: "Facturación", href: "/admin/facturacion", icon: "receipt_long" },
 ];
 
 interface AdminSidebarProps {
