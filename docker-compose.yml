@@ -44,7 +44,7 @@ services:
     expose:
       - "9000"
     command: >
-      sh -c "mkdir -p /var/www/html/storage/framework/cache/data /var/www/html/storage/framework/sessions /var/www/html/storage/framework/views /var/www/html/storage/logs /var/www/html/bootstrap/cache && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && chmod -R ug+rwX /var/www/html/storage /var/www/html/bootstrap/cache && php-fpm"
+      sh -c "if [ -z \"$$APP_KEY\" ]; then export APP_KEY=$$(php -r 'echo \"base64:\".base64_encode(random_bytes(32));'); fi; mkdir -p /var/www/html/storage/framework/cache/data /var/www/html/storage/framework/sessions /var/www/html/storage/framework/views /var/www/html/storage/logs /var/www/html/bootstrap/cache && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && chmod -R ug+rwX /var/www/html/storage /var/www/html/bootstrap/cache && php-fpm"
     environment:
       - APP_ENV=production
       - APP_DEBUG=${APP_DEBUG:-false}
