@@ -9,7 +9,7 @@ RUN npm ci
 COPY frontend/ ./
 
 ENV NODE_ENV=production
-ENV NEXT_PUBLIC_API_URL=https://api.popgastropub.com
+ENV NEXT_PUBLIC_API_URL=https://api.popgastropub.com/api
 
 RUN npm run build
 
