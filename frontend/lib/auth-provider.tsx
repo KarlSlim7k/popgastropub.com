@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState, createContext, useContext, useCallback } from 'react';
+import { useEffect, useState, createContext, useContext, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAuthSession, clearAuthSession, getRoleDashboard, type AuthSession } from './auth-session';
+import { getAuthSession, clearAuthSession, getRoleDashboard, normalizeRole, type AuthSession } from './auth-session';
 
 interface AuthContextType {
   session: AuthSession | null;
@@ -61,6 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function RequireRole({ roles, children }: { roles: string[]; children: React.ReactNode }) {
   const { session, isLoading } = useAuth();
   const router = useRouter();
+  const normalizedAllowedRoles = useMemo(() => roles.map((role) => normalizeRole(role)), [roles]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -68,10 +69,10 @@ export function RequireRole({ roles, children }: { roles: string[]; children: Re
       router.replace('/login');
       return;
     }
-    if (!roles.includes(session.user.role ?? 'cliente')) {
+    if (!normalizedAllowedRoles.includes(normalizeRole(session.user.role))) {
       router.replace(getRoleDashboard(session.user.role));
     }
-  }, [session, isLoading, roles, router]);
+  }, [session, isLoading, normalizedAllowedRoles, router]);
 
   if (isLoading) {
     return (
@@ -82,7 +83,7 @@ export function RequireRole({ roles, children }: { roles: string[]; children: Re
   }
 
   if (!session) return null;
-  if (!roles.includes(session.user.role ?? 'cliente')) return null;
+  if (!normalizedAllowedRoles.includes(normalizeRole(session.user.role))) return null;
 
   return <>{children}</>;
 }

@@ -317,7 +317,7 @@ export default function DashboardClientePage() {
           <span className="material-symbols-outlined mb-1">shopping_bag</span>
           Factura
         </a>
-        <a className="flex flex-col items-center justify-center text-orange-400 bg-stone-900 rounded-xl px-4 py-1 font-epilogue text-[10px]" href="/dashboard/puntos">
+        <a className="flex flex-col items-center justify-center text-orange-400 bg-stone-900 rounded-xl px-4 py-1 font-epilogue text-[10px]" href="/puntos">
           <span className="material-symbols-outlined mb-1" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
           Perfil
         </a>

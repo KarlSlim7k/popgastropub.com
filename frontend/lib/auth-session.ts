@@ -59,8 +59,12 @@ export function clearAuthSession(): void {
   window.sessionStorage.removeItem(AUTH_SESSION_KEY);
 }
 
+export function normalizeRole(role?: string): string {
+  return (role ?? 'cliente').trim().toLowerCase();
+}
+
 export function getRoleDashboard(role?: string): string {
-  switch (role) {
+  switch (normalizeRole(role)) {
     case 'admin':
       return '/admin/dashboard';
     case 'mesero':
