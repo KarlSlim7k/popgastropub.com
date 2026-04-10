@@ -5,9 +5,9 @@ import { usePathname } from "next/navigation";
 
 const bottomNavItems = [
   { label: "Dashboard", href: "/staff/dashboard", icon: "dashboard" },
-  { label: "Órdenes", href: "/staff/dashboard", icon: "restaurant" },
+  { label: "Menú", href: "/staff/menu", icon: "restaurant" },
   { label: "Ranking", href: "/staff/ranking", icon: "military_tech" },
-  { label: "Perfil", href: "/staff/dashboard", icon: "person" },
+  { label: "Reservas", href: "/staff/reservaciones", icon: "calendar_month" },
 ];
 
 export default function StaffBottomNav() {

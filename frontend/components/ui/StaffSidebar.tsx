@@ -7,10 +7,10 @@ import { useAuth } from "@/lib/auth-provider";
 
 const navItems = [
   { label: "Mi Dashboard", href: "/staff/dashboard", icon: "dashboard" },
-  { label: "Reservaciones", href: "/staff/dashboard", icon: "calendar_month" }, // Placeholder
-  { label: "Carta / Menú", href: "/staff/dashboard", icon: "restaurant_menu" }, // Placeholder
+  { label: "Reservaciones", href: "/staff/reservaciones", icon: "calendar_month" },
+  { label: "Carta / Menú", href: "/staff/menu", icon: "restaurant_menu" },
   { label: "Ranking POP Stars", href: "/staff/ranking", icon: "star" },
-  { label: "Analíticas", href: "/staff/dashboard", icon: "monitoring" }, // Placeholder
+  { label: "Analíticas", href: "/staff/analiticas", icon: "monitoring" },
 ];
 
 interface StaffSidebarProps {
