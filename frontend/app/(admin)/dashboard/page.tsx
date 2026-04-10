@@ -166,35 +166,35 @@ export default function AdminDashboardPage() {
   const getActivityColor = (type: ActivityItem["type"]) => {
     switch (type) {
       case "registro":
-        return "bg-pop-gold";
+        return "bg-primary-container shadow-[0_0_15px_rgba(228,111,45,0.4)]";
       case "canje":
-        return "bg-pop-orange";
+        return "bg-secondary shadow-[0_0_15px_rgba(235,192,113,0.3)]";
       case "meta":
-        return "bg-pop-light-gold";
+        return "bg-tertiary shadow-[0_0_15px_rgba(255,180,163,0.3)]";
     }
   };
 
   const getActivityLabelColor = (type: ActivityItem["type"]) => {
     switch (type) {
       case "registro":
-        return "text-pop-gold";
+        return "text-primary-container";
       case "canje":
-        return "text-pop-orange";
+        return "text-secondary";
       case "meta":
-        return "text-pop-light-gold";
+        return "text-tertiary";
     }
   };
 
   return (
-    <main className="ml-64 pt-20 p-6 lg:p-8 min-h-screen bg-pop-black">
+    <main className="pt-20 p-6 lg:p-10 min-h-screen bg-pop-black">
       {/* Header Section */}
       <header className="mb-8 lg:mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
-          <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-white">
-            Panel de Control
+          <h1 className="text-4xl lg:text-5xl font-black tracking-tighter text-white font-epilogue uppercase">
+            Control Central
           </h1>
-          <p className="text-gray-400 mt-2 text-sm lg:text-base">
-            Monitoreo en tiempo real del rendimiento de POP Perote
+          <p className="text-gray-400 mt-2 text-base lg:text-lg font-manrope">
+            Monitoreo en tiempo real y supervisión gastronómica de POP Perote
           </p>
         </div>
         <div className="flex gap-3">
@@ -214,22 +214,22 @@ export default function AdminDashboardPage() {
         {kpiData.map((kpi, index) => (
           <article
             key={index}
-            className="bg-gray-900/70 backdrop-blur-sm rounded-xl p-5 lg:p-6 border-l-4 border-pop-gold hover:border-pop-light-gold transition-all duration-300 hover:shadow-lg hover:shadow-pop-gold/5"
+            className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-6 border-l-4 border-pop-gold hover:border-pop-orange transition-all duration-500 hover:shadow-[0_0_30px_rgba(217,103,37,0.05)] group"
           >
             <div className="flex justify-between items-start mb-4">
-              <div className={`p-2.5 rounded-lg bg-${kpi.color}/10`}>
-                <span className={`material-symbols-outlined text-${kpi.color} text-2xl`}>
+              <div className={`p-3 rounded-lg bg-white/5 group-hover:bg-pop-gold/10 transition-colors`}>
+                <span className={`material-symbols-outlined text-pop-gold text-3xl transition-transform group-hover:scale-110`}>
                   {kpi.icon}
                 </span>
               </div>
-              <span className="text-xs font-semibold text-pop-gold bg-pop-gold/10 px-2.5 py-1 rounded-full">
+              <span className="text-[10px] font-bold text-pop-gold bg-pop-gold/10 px-3 py-1 rounded-full uppercase tracking-widest">
                 {kpi.trend}
               </span>
             </div>
-            <h3 className="text-xs uppercase tracking-wider text-gray-400 font-medium mb-2">
+            <h3 className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold mb-2">
               {kpi.label}
             </h3>
-            <p className="text-3xl font-bold text-white tracking-tight">{kpi.value}</p>
+            <p className="text-4xl font-black text-white tracking-tighter font-epilogue">{kpi.value}</p>
           </article>
         ))}
       </section>
@@ -237,9 +237,9 @@ export default function AdminDashboardPage() {
       {/* Charts Section */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-8">
         {/* Bar Chart: Pedidos por Día */}
-        <article className="lg:col-span-2 bg-gray-900/70 backdrop-blur-sm rounded-xl p-6 lg:p-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-white">Pedidos por Día</h2>
+        <article className="lg:col-span-2 bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-8 border border-white/5">
+          <div className="flex justify-between items-center mb-10">
+            <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white">Pedidos por Día</h2>
             <div className="flex gap-2 bg-gray-800/50 p-1 rounded-lg">
               <button
                 onClick={() => setChartPeriod("7D")}
@@ -284,8 +284,8 @@ export default function AdminDashboardPage() {
         </article>
 
         {/* Donut Chart: Top Platillos */}
-        <article className="bg-gray-900/70 backdrop-blur-sm rounded-xl p-6 lg:p-8">
-          <h2 className="text-xl font-semibold text-white mb-6">Top Platillos</h2>
+        <article className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-8 border border-white/5">
+          <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white mb-10">Top Platillos</h2>
           <div className="relative w-44 h-44 mx-auto mb-6">
             <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 100 100">
               {donutData.reduce(
@@ -339,13 +339,13 @@ export default function AdminDashboardPage() {
       {/* Secondary Grid */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-8">
         {/* Top 5 Meseros del Mes */}
-        <article className="lg:col-span-2 bg-gray-900/70 backdrop-blur-sm rounded-xl p-6 lg:p-8">
-          <div className="flex justify-between items-center mb-6">
+        <article className="lg:col-span-2 bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-8 border border-white/5">
+          <div className="flex justify-between items-center mb-10">
             <div>
-              <h2 className="text-xl font-semibold text-white">Top Meseros del Mes</h2>
-              <p className="text-sm text-gray-400 mt-1">Ranking por ventas y calificación</p>
+              <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white">Top 5 Meseros del Mes</h2>
+              <p className="text-xs text-pop-orange font-bold uppercase tracking-widest mt-2">Ranking por ventas y calificación</p>
             </div>
-            <span className="material-symbols-outlined text-pop-gold text-3xl">
+            <span className="material-symbols-outlined text-pop-gold text-4xl">
               workspace_premium
             </span>
           </div>
@@ -393,10 +393,10 @@ export default function AdminDashboardPage() {
         </article>
 
         {/* Recent Activity Timeline */}
-        <article className="bg-gray-900/70 backdrop-blur-sm rounded-xl p-6 lg:p-8">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-white">Actividad Reciente</h2>
-            <p className="text-sm text-gray-400 mt-1">Últimas acciones del equipo</p>
+        <article className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-8 border border-white/5">
+          <div className="mb-10">
+            <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white">Actividad Reciente</h2>
+            <p className="text-xs text-pop-orange font-bold uppercase tracking-widest mt-2">Últimas acciones del equipo</p>
           </div>
           <div className="space-y-6 relative">
             <div className="absolute left-3.5 top-2 bottom-2 w-px bg-gray-800" />
@@ -419,11 +419,11 @@ export default function AdminDashboardPage() {
       </section>
 
       {/* Menu Management */}
-      <section className="bg-gray-900/70 backdrop-blur-sm rounded-xl p-6 lg:p-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+      <section className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-8 border border-white/5">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-white">Gestión de Menú</h2>
-            <p className="text-sm text-gray-400 mt-1">Control de platillos y disponibilidad</p>
+            <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white">Gestión de Menú</h2>
+            <p className="text-xs text-pop-orange font-bold uppercase tracking-widest mt-2">Control de platillos y disponibilidad en vivo</p>
           </div>
           <button className="flex items-center gap-2 px-4 py-2.5 bg-pop-gold text-pop-black font-semibold text-sm rounded-lg hover:bg-pop-light-gold transition-all duration-200">
             <span className="material-symbols-outlined text-lg">add</span>
