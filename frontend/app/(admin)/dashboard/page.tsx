@@ -1,352 +1,505 @@
+"use client";
+
+import { useState } from "react";
+
+// Types
+interface KPIData {
+  label: string;
+  value: string;
+  trend: string;
+  trendUp: boolean;
+  icon: string;
+  color: string;
+}
+
+interface WaiterData {
+  initials: string;
+  name: string;
+  orders: number;
+  rating: number;
+  points: number;
+}
+
+interface MenuItem {
+  id: string;
+  name: string;
+  category: string;
+  price: string;
+  stockPercent: number;
+  stockLabel: string;
+  stockColor: string;
+  active: boolean;
+  image: string;
+  imageAlt: string;
+}
+
+interface ActivityItem {
+  type: "registro" | "canje" | "meta";
+  title: string;
+  description: string;
+  time: string;
+}
+
 export default function AdminDashboardPage() {
+  const [chartPeriod, setChartPeriod] = useState<"7D" | "30D">("30D");
+
+  const kpiData: KPIData[] = [
+    {
+      label: "Usuarios Totales",
+      value: "1,540",
+      trend: "+12%",
+      trendUp: true,
+      icon: "group",
+      color: "pop-gold",
+    },
+    {
+      label: "Pedidos del Mes",
+      value: "840",
+      trend: "+5%",
+      trendUp: true,
+      icon: "receipt_long",
+      color: "pop-orange",
+    },
+    {
+      label: "Puntos Emitidos",
+      value: "125,000",
+      trend: "Crecimiento",
+      trendUp: true,
+      icon: "token",
+      color: "pop-light-gold",
+    },
+    {
+      label: "Ventas Bebidas",
+      value: "$45,600",
+      trend: "En vivo",
+      trendUp: true,
+      icon: "payments",
+      color: "pop-gold",
+    },
+  ];
+
+  const barData = [
+    { day: "LUN", value: 40 },
+    { day: "MAR", value: 60 },
+    { day: "MIÉ", value: 55 },
+    { day: "JUE", value: 85 },
+    { day: "VIE", value: 70 },
+    { day: "SÁB", value: 95 },
+    { day: "DOM", value: 80 },
+  ];
+
+  const donutData = [
+    { name: "Perote Burger Supreme", percent: 45, color: "#F2C777" },
+    { name: "Tacos de Ribeye", percent: 25, color: "#D96725" },
+    { name: "Pasta Obsidian", percent: 15, color: "#F2C894" },
+    { name: "Otros", percent: 15, color: "#732817" },
+  ];
+
+  const topWaiters: WaiterData[] = [
+    { initials: "RG", name: "Ricardo G.", orders: 142, rating: 4.9, points: 2450 },
+    { initials: "SL", name: "Sofía L.", orders: 128, rating: 4.8, points: 1920 },
+    { initials: "MA", name: "Marco A.", orders: 115, rating: 4.7, points: 1680 },
+    { initials: "LC", name: "Laura C.", orders: 98, rating: 4.6, points: 1450 },
+    { initials: "JP", name: "Jorge P.", orders: 87, rating: 4.5, points: 1280 },
+  ];
+
+  const recentActivity: ActivityItem[] = [
+    {
+      type: "registro",
+      title: "Nuevo Registro",
+      description: "Juan P. se ha unido al programa",
+      time: "Hace 2 min",
+    },
+    {
+      type: "canje",
+      title: "Canje de Premio",
+      description: "Margarita (vía Sofía L.)",
+      time: "Hace 15 min",
+    },
+    {
+      type: "meta",
+      title: "Meta Alcanzada",
+      description: "Ricardo G. completó objetivo diario",
+      time: "Hace 1 hora",
+    },
+  ];
+
+  const menuItems: MenuItem[] = [
+    {
+      id: "POP-001",
+      name: "Perote Burger Supreme",
+      category: "Plato Principal",
+      price: "$185.00",
+      stockPercent: 85,
+      stockLabel: "Alta Demanda",
+      stockColor: "bg-pop-gold",
+      active: true,
+      image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&h=150&fit=crop",
+      imageAlt: "Hamburguesa gourmet",
+    },
+    {
+      id: "POP-004",
+      name: "Zen Garden Bowl",
+      category: "Ensaladas",
+      price: "$140.00",
+      stockPercent: 30,
+      stockLabel: "Reabastecer",
+      stockColor: "bg-pop-orange",
+      active: true,
+      image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200&h=150&fit=crop",
+      imageAlt: "Ensalada fresca",
+    },
+    {
+      id: "POP-088",
+      name: "Old Fashioned Perote",
+      category: "Cócteles",
+      price: "$125.00",
+      stockPercent: 100,
+      stockLabel: "Stock Completo",
+      stockColor: "bg-pop-gold",
+      active: false,
+      image: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=200&h=150&fit=crop",
+      imageAlt: "Cóctel premium",
+    },
+  ];
+
+  const getActivityColor = (type: ActivityItem["type"]) => {
+    switch (type) {
+      case "registro":
+        return "bg-pop-gold";
+      case "canje":
+        return "bg-pop-orange";
+      case "meta":
+        return "bg-pop-light-gold";
+    }
+  };
+
+  const getActivityLabelColor = (type: ActivityItem["type"]) => {
+    switch (type) {
+      case "registro":
+        return "text-pop-gold";
+      case "canje":
+        return "text-pop-orange";
+      case "meta":
+        return "text-pop-light-gold";
+    }
+  };
+
   return (
-    <main className="ml-64 pt-20 p-8 min-h-screen">
-{/* Header Section */}
-<div className="mb-10 flex justify-between items-end">
-<div>
-<h1 className="text-4xl font-black font-headline text-on-surface tracking-tighter uppercase">Central Control</h1>
-<p className="text-on-surface-variant font-body mt-2">Real-time performance monitoring &amp; gastronomic oversight.</p>
-</div>
-<div className="flex gap-3">
-<button className="bg-[#1C1B1B] text-primary px-4 py-2 text-sm font-bold uppercase tracking-widest border border-outline-variant hover:border-primary transition-all">Export Report</button>
-<button className="bg-primary-container text-on-primary-container px-6 py-2 text-sm font-black uppercase tracking-widest hover:scale-[0.98] transition-transform">Live View</button>
-</div>
-</div>
-{/* KPI Grid */}
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-<div className="bg-surface-container-low p-6 border-l-4 border-primary">
-<div className="flex justify-between items-start mb-4">
-<span className="material-symbols-outlined text-primary" data-icon="group">group</span>
-<span className="text-xs font-mono font-bold text-primary">+12%</span>
-</div>
-<h3 className="text-xs uppercase tracking-widest text-on-surface-variant font-bold">Usuarios Totales</h3>
-<p className="text-3xl font-black font-headline mt-2 mono-nums">1,540</p>
-</div>
-<div className="bg-surface-container-low p-6 border-l-4 border-secondary">
-<div className="flex justify-between items-start mb-4">
-<span className="material-symbols-outlined text-secondary" data-icon="receipt_long">receipt_long</span>
-<span className="text-xs font-mono font-bold text-secondary">+5%</span>
-</div>
-<h3 className="text-xs uppercase tracking-widest text-on-surface-variant font-bold">Pedidos del Mes</h3>
-<p className="text-3xl font-black font-headline mt-2 mono-nums">840</p>
-</div>
-<div className="bg-surface-container-low p-6 border-l-4 border-tertiary">
-<div className="flex justify-between items-start mb-4">
-<span className="material-symbols-outlined text-tertiary" data-icon="token">token</span>
-<span className="text-xs font-mono font-bold text-tertiary">Growth</span>
-</div>
-<h3 className="text-xs uppercase tracking-widest text-on-surface-variant font-bold">Puntos Emitidos</h3>
-<p className="text-3xl font-black font-headline mt-2 mono-nums">125,000</p>
-</div>
-<div className="bg-surface-container-low p-6 border-l-4 border-primary-container">
-<div className="flex justify-between items-start mb-4">
-<span className="material-symbols-outlined text-primary-container" data-icon="payments">payments</span>
-<span className="text-xs font-mono font-bold text-primary-container">Live</span>
-</div>
-<h3 className="text-xs uppercase tracking-widest text-on-surface-variant font-bold">Ventas Bebidas</h3>
-<p className="text-3xl font-black font-headline mt-2 mono-nums">$45,600</p>
-</div>
-</div>
-{/* Graphs & Analytics Section */}
-<div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-{/* Bar Chart: Pedidos por Día */}
-<div className="lg:col-span-2 bg-surface-container-low p-8 relative overflow-hidden">
-<div className="flex justify-between items-center mb-8">
-<h2 className="text-xl font-black uppercase font-headline">Pedidos por Día</h2>
-<div className="flex gap-2">
-<button className="bg-[#2A2A2A] p-1 px-3 text-[10px] font-bold uppercase">7D</button>
-<button className="bg-primary text-on-primary p-1 px-3 text-[10px] font-bold uppercase">30D</button>
-</div>
-</div>
-<div className="h-64 flex items-end justify-between gap-2">
-<div className="flex flex-col items-center gap-2 flex-1">
-<div className="w-full bg-primary/20 h-[40%] relative group">
-<div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
-</div>
-<span className="text-[10px] font-mono text-on-surface-variant">MON</span>
-</div>
-<div className="flex flex-col items-center gap-2 flex-1">
-<div className="w-full bg-primary/20 h-[60%] relative group">
-<div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
-</div>
-<span className="text-[10px] font-mono text-on-surface-variant">TUE</span>
-</div>
-<div className="flex flex-col items-center gap-2 flex-1">
-<div className="w-full bg-primary/20 h-[55%] relative group">
-<div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
-</div>
-<span className="text-[10px] font-mono text-on-surface-variant">WED</span>
-</div>
-<div className="flex flex-col items-center gap-2 flex-1">
-<div className="w-full bg-primary/20 h-[85%] relative group">
-<div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
-</div>
-<span className="text-[10px] font-mono text-on-surface-variant">THU</span>
-</div>
-<div className="flex flex-col items-center gap-2 flex-1">
-<div className="w-full bg-primary/20 h-[70%] relative group">
-<div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
-</div>
-<span className="text-[10px] font-mono text-on-surface-variant">FRI</span>
-</div>
-<div className="flex flex-col items-center gap-2 flex-1">
-<div className="w-full bg-primary/20 h-[95%] relative group">
-<div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
-</div>
-<span className="text-[10px] font-mono text-on-surface-variant">SAT</span>
-</div>
-<div className="flex flex-col items-center gap-2 flex-1">
-<div className="w-full bg-primary/20 h-[80%] relative group">
-<div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
-</div>
-<span className="text-[10px] font-mono text-on-surface-variant">SUN</span>
-</div>
-</div>
-</div>
-{/* Donut Chart: Top 5 Platillos */}
-<div className="bg-surface-container-low p-8">
-<h2 className="text-xl font-black uppercase font-headline mb-8">Top 5 Platillos</h2>
-<div className="relative w-48 h-48 mx-auto mb-8 flex items-center justify-center">
-{/* Svg representation of a donut chart */}
-<svg className="transform -rotate-90" viewBox="0 0 100 100">
-<circle cx="50" cy="50" fill="transparent" r="40" stroke="#E46F2D" strokeDasharray="120 251.2" strokeWidth="12"></circle>
-<circle cx="50" cy="50" fill="transparent" r="40" stroke="#EBC071" strokeDasharray="60 251.2" strokeDashoffset="-120" strokeWidth="12"></circle>
-<circle cx="50" cy="50" fill="transparent" r="40" stroke="#FFB4A3" strokeDasharray="40 251.2" strokeDashoffset="-180" strokeWidth="12"></circle>
-<circle cx="50" cy="50" fill="transparent" r="40" stroke="#353534" strokeDasharray="31.2 251.2" strokeDashoffset="-220" strokeWidth="12"></circle>
-</svg>
-<div className="absolute inset-0 flex flex-col items-center justify-center">
-<span className="text-2xl font-black font-headline">840</span>
-<span className="text-[10px] uppercase text-on-surface-variant">Total Orders</span>
-</div>
-</div>
-<ul className="space-y-3">
-<li className="flex justify-between items-center text-xs">
-<div className="flex items-center gap-2">
-<span className="w-3 h-3 bg-primary-container rounded-sm"></span>
-<span className="font-bold">Perote Burger Supreme</span>
-</div>
-<span className="font-mono">45%</span>
-</li>
-<li className="flex justify-between items-center text-xs">
-<div className="flex items-center gap-2">
-<span className="w-3 h-3 bg-secondary rounded-sm"></span>
-<span className="font-bold">Tacos de Ribeye</span>
-</div>
-<span className="font-mono">25%</span>
-</li>
-<li className="flex justify-between items-center text-xs">
-<div className="flex items-center gap-2">
-<span className="w-3 h-3 bg-tertiary rounded-sm"></span>
-<span className="font-bold">Pasta Obsidian</span>
-</div>
-<span className="font-mono">15%</span>
-</li>
-</ul>
-</div>
-</div>
-{/* Secondary Data Grid */}
-<div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-{/* Top 5 Meseros del Mes */}
-<div className="lg:col-span-2 bg-surface-container-low p-8">
-<div className="flex justify-between items-center mb-6">
-<h2 className="text-xl font-black uppercase font-headline">Top 5 Meseros del Mes</h2>
-<span className="material-symbols-outlined text-secondary" data-icon="workspace_premium">workspace_premium</span>
-</div>
-<table className="w-full text-left">
-<thead>
-<tr className="border-b border-[#2A2A2A] text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">
-<th className="pb-4">Name</th>
-<th className="pb-4">Orders Served</th>
-<th className="pb-4">Avg. Rating</th>
-<th className="pb-4 text-right">Points</th>
-</tr>
-</thead>
-<tbody className="text-sm">
-<tr className="border-b border-[#2A2A2A]/50 hover:bg-[#2A2A2A]/30 transition-colors">
-<td className="py-4 font-bold flex items-center gap-3">
-<div className="w-8 h-8 rounded-full bg-[#353534] flex items-center justify-center text-[10px]">RG</div>
-                                Ricardo G.
-                            </td>
-<td className="py-4 font-mono">142</td>
-<td className="py-4">
-<div className="flex items-center text-secondary">
-<span className="material-symbols-outlined text-xs" data-icon="star" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-<span className="ml-1 text-xs">4.9</span>
-</div>
-</td>
-<td className="py-4 text-right font-mono text-primary">2,450</td>
-</tr>
-<tr className="border-b border-[#2A2A2A]/50 hover:bg-[#2A2A2A]/30 transition-colors">
-<td className="py-4 font-bold flex items-center gap-3">
-<div className="w-8 h-8 rounded-full bg-[#353534] flex items-center justify-center text-[10px]">SL</div>
-                                Sofía L.
-                            </td>
-<td className="py-4 font-mono">128</td>
-<td className="py-4">
-<div className="flex items-center text-secondary">
-<span className="material-symbols-outlined text-xs" data-icon="star" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-<span className="ml-1 text-xs">4.8</span>
-</div>
-</td>
-<td className="py-4 text-right font-mono text-primary">1,920</td>
-</tr>
-<tr className="border-b border-[#2A2A2A]/50 hover:bg-[#2A2A2A]/30 transition-colors">
-<td className="py-4 font-bold flex items-center gap-3">
-<div className="w-8 h-8 rounded-full bg-[#353534] flex items-center justify-center text-[10px]">MA</div>
-                                Marco A.
-                            </td>
-<td className="py-4 font-mono">115</td>
-<td className="py-4">
-<div className="flex items-center text-secondary">
-<span className="material-symbols-outlined text-xs" data-icon="star" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-<span className="ml-1 text-xs">4.7</span>
-</div>
-</td>
-<td className="py-4 text-right font-mono text-primary">1,680</td>
-</tr>
-</tbody>
-</table>
-</div>
-{/* Recent Activity Timeline */}
-<div className="bg-surface-container-low p-8">
-<h2 className="text-xl font-black uppercase font-headline mb-8">Recent Activity</h2>
-<div className="space-y-8 relative before:content-[''] before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1px] before:bg-outline-variant">
-<div className="relative pl-10">
-<div className="absolute left-1 top-1 w-4 h-4 rounded-full bg-primary-container ring-4 ring-surface shadow-[0_0_10px_#e46f2d]"></div>
-<p className="text-xs font-bold uppercase tracking-widest text-primary-container">Nuevo Registro</p>
-<p className="text-sm font-bold mt-1">Juan P. has joined the circle</p>
-<p className="text-[10px] text-on-surface-variant font-mono mt-1">2 MINS AGO</p>
-</div>
-<div className="relative pl-10">
-<div className="absolute left-1 top-1 w-4 h-4 rounded-full bg-secondary ring-4 ring-surface"></div>
-<p className="text-xs font-bold uppercase tracking-widest text-secondary">Canje de Premio</p>
-<p className="text-sm font-bold mt-1">Margarita (via Sofía L.)</p>
-<p className="text-[10px] text-on-surface-variant font-mono mt-1">15 MINS AGO</p>
-</div>
-<div className="relative pl-10">
-<div className="absolute left-1 top-1 w-4 h-4 rounded-full bg-tertiary ring-4 ring-surface"></div>
-<p className="text-xs font-bold uppercase tracking-widest text-tertiary">Meta Alcanzada</p>
-<p className="text-sm font-bold mt-1">Ricardo G. hit Daily Sales Goal</p>
-<p className="text-[10px] text-on-surface-variant font-mono mt-1">1 HOUR AGO</p>
-</div>
-</div>
-</div>
-</div>
-{/* Menu Management Preview */}
-<section className="bg-surface-container-low p-8">
-<div className="flex justify-between items-center mb-8">
-<div>
-<h2 className="text-2xl font-black uppercase font-headline">Menu Management Preview</h2>
-<p className="text-sm text-on-surface-variant">Live menu status and pricing control.</p>
-</div>
-<button className="flex items-center gap-2 bg-[#2A2A2A] px-4 py-2 text-xs font-bold uppercase hover:bg-surface-variant transition-colors">
-<span className="material-symbols-outlined text-sm" data-icon="add">add</span>
-                    Add Item
-                </button>
-</div>
-<div className="overflow-x-auto">
-<table className="w-full text-left">
-<thead>
-<tr className="border-b border-[#2A2A2A] text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">
-<th className="pb-6">Dish / Image</th>
-<th className="pb-6">Category</th>
-<th className="pb-6">Price</th>
-<th className="pb-6">Stock Level</th>
-<th className="pb-6 text-right">Status</th>
-</tr>
-</thead>
-<tbody className="divide-y divide-[#2A2A2A]/50">
-<tr>
-<td className="py-6">
-<div className="flex items-center gap-4">
-<div className="w-16 h-12 bg-[#2A2A2A] rounded-sm overflow-hidden flex-shrink-0">
-<img className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" data-alt="extreme close-up of a juicy gourmet burger with melting cheese and dark editorial lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACdV_8vgzax1oA92g_CZnQXfq8bR7UFYRJvv4yiuZUU6JkBsX3vsL7xwKyunXuF0kQtfSJ8Y8GHagXImCepO7UeNkRvjG-g_hNBBomovQFKF7KdakijvFyj8GwzGuaUFU0T2SNykQBRNL5VNvyl70uH4FazdNrN_Zsuf5JhJm2fRFzW-_CKzD7_p6wNbX25p5pjRhG-Mfl9P4KkXsei_LUuL6mWPXQkTmRx1Qj6YytUSMNIhYnF70aVv5HFYxYSQSdXYt5UMLr2UcJ"/>
-</div>
-<div>
-<p className="font-bold font-headline">Perote Burger Supreme</p>
-<p className="text-[10px] text-on-surface-variant uppercase">ID: POP-001</p>
-</div>
-</div>
-</td>
-<td className="py-6">
-<span className="bg-[#2A2A2A] px-2 py-1 text-[10px] font-bold uppercase">Main Course</span>
-</td>
-<td className="py-6 font-mono font-bold">$18.50</td>
-<td className="py-6">
-<div className="w-24 bg-surface-variant h-1 rounded-full overflow-hidden">
-<div className="bg-primary h-full w-[85%]"></div>
-</div>
-<p className="text-[10px] text-on-surface-variant mt-1">High Demand</p>
-</td>
-<td className="py-6 text-right">
-<button className="relative inline-flex items-center h-5 w-10 rounded-full bg-primary transition-colors focus:outline-none">
-<span className="inline-block w-3 h-3 transform translate-x-6 bg-surface rounded-full transition-transform"></span>
-</button>
-<span className="ml-2 text-[10px] font-bold uppercase text-primary">Activo</span>
-</td>
-</tr>
-<tr>
-<td className="py-6">
-<div className="flex items-center gap-4">
-<div className="w-16 h-12 bg-[#2A2A2A] rounded-sm overflow-hidden flex-shrink-0">
-<img className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" data-alt="vibrant healthy mediterranean salad bowl in a dark ceramic bowl with moody lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwyRAe5r18Tmt-7fxNlLg9VFntmhHSqBnVH5PSGjN1qx-qCb-IzgZ-X9IB7vKiRi1zUohlWjb-e-rpA98DjGC-m3tSiI7RCkOOXcnTyLzIoaFG-fx9gJi06VYd0y2-W_iRUyaOZgnPAWs_eV10FSj7-XDDyndSFkPzQkjLphRBm0jtQVrkciALPn7lf_XcrYqBZoTNjx1fIQ-yKQnQWnu2wS-g4yLLxj7lyG7GixuUeazEJHGJCHPeUv-l4hLJrG0UaFRJ9a_GqUPn"/>
-</div>
-<div>
-<p className="font-bold font-headline">Zen Garden Bowl</p>
-<p className="text-[10px] text-on-surface-variant uppercase">ID: POP-004</p>
-</div>
-</div>
-</td>
-<td className="py-6">
-<span className="bg-[#2A2A2A] px-2 py-1 text-[10px] font-bold uppercase">Salads</span>
-</td>
-<td className="py-6 font-mono font-bold">$14.00</td>
-<td className="py-6">
-<div className="w-24 bg-surface-variant h-1 rounded-full overflow-hidden">
-<div className="bg-tertiary h-full w-[30%]"></div>
-</div>
-<p className="text-[10px] text-on-surface-variant mt-1">Restock Needed</p>
-</td>
-<td className="py-6 text-right">
-<button className="relative inline-flex items-center h-5 w-10 rounded-full bg-primary transition-colors focus:outline-none">
-<span className="inline-block w-3 h-3 transform translate-x-6 bg-surface rounded-full transition-transform"></span>
-</button>
-<span className="ml-2 text-[10px] font-bold uppercase text-primary">Activo</span>
-</td>
-</tr>
-<tr>
-<td className="py-6">
-<div className="flex items-center gap-4">
-<div className="w-16 h-12 bg-[#2A2A2A] rounded-sm overflow-hidden flex-shrink-0">
-<img className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" data-alt="elegant crystal glass with premium whiskey and clear ice sphere on dark mahogany table" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6iU7R6UVHRWrhpwfI3MIGD88wT61TP26SGVA2BHabYdOHBQVgHNKV5eBmUeY3yx8-RUizeZdh--F7aVYKOV5q3NxHYHy3XmlqH4WC-haL3UbVFlOCl3HLpSyjE7huaZ_vUKonXipwumFKKlVph81jGrTxeTZ37am6DK0-EdddQ4jiUgd6txc-jS3URZW5Q7wpMrEpiJuzXdH-m1Uz4hFsxcvuKtQ6eqK6cxHqqgyyMwpsvuI5BDOZDZomqQbSFw8mrw6XiES39hh7"/>
-</div>
-<div>
-<p className="font-bold font-headline">Old Fashioned Perote</p>
-<p className="text-[10px] text-on-surface-variant uppercase">ID: POP-088</p>
-</div>
-</div>
-</td>
-<td className="py-6">
-<span className="bg-[#2A2A2A] px-2 py-1 text-[10px] font-bold uppercase">Cocktails</span>
-</td>
-<td className="py-6 font-mono font-bold">$12.50</td>
-<td className="py-6">
-<div className="w-24 bg-surface-variant h-1 rounded-full overflow-hidden">
-<div className="bg-primary h-full w-[100%]"></div>
-</div>
-<p className="text-[10px] text-on-surface-variant mt-1">Full Stock</p>
-</td>
-<td className="py-6 text-right">
-<button className="relative inline-flex items-center h-5 w-10 rounded-full bg-surface-variant transition-colors focus:outline-none">
-<span className="inline-block w-3 h-3 transform translate-x-1 bg-on-surface-variant rounded-full transition-transform"></span>
-</button>
-<span className="ml-2 text-[10px] font-bold uppercase text-on-surface-variant">Inactivo</span>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-</main>
+    <main className="ml-64 pt-20 p-6 lg:p-8 min-h-screen bg-pop-black">
+      {/* Header Section */}
+      <header className="mb-8 lg:mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+        <div>
+          <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-white">
+            Panel de Control
+          </h1>
+          <p className="text-gray-400 mt-2 text-sm lg:text-base">
+            Monitoreo en tiempo real del rendimiento de POP Perote
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button className="px-4 py-2.5 text-sm font-semibold text-pop-gold border border-pop-gold/30 rounded-lg hover:bg-pop-gold/10 transition-all duration-200 flex items-center gap-2">
+            <span className="material-symbols-outlined text-lg">download</span>
+            Exportar
+          </button>
+          <button className="px-5 py-2.5 text-sm font-semibold text-pop-black bg-pop-gold rounded-lg hover:bg-pop-light-gold transition-all duration-200 flex items-center gap-2">
+            <span className="material-symbols-outlined text-lg">visibility</span>
+            Vista en Vivo
+          </button>
+        </div>
+      </header>
+
+      {/* KPI Grid */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8" aria-label="Métricas principales">
+        {kpiData.map((kpi, index) => (
+          <article
+            key={index}
+            className="bg-gray-900/70 backdrop-blur-sm rounded-xl p-5 lg:p-6 border-l-4 border-pop-gold hover:border-pop-light-gold transition-all duration-300 hover:shadow-lg hover:shadow-pop-gold/5"
+          >
+            <div className="flex justify-between items-start mb-4">
+              <div className={`p-2.5 rounded-lg bg-${kpi.color}/10`}>
+                <span className={`material-symbols-outlined text-${kpi.color} text-2xl`}>
+                  {kpi.icon}
+                </span>
+              </div>
+              <span className="text-xs font-semibold text-pop-gold bg-pop-gold/10 px-2.5 py-1 rounded-full">
+                {kpi.trend}
+              </span>
+            </div>
+            <h3 className="text-xs uppercase tracking-wider text-gray-400 font-medium mb-2">
+              {kpi.label}
+            </h3>
+            <p className="text-3xl font-bold text-white tracking-tight">{kpi.value}</p>
+          </article>
+        ))}
+      </section>
+
+      {/* Charts Section */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-8">
+        {/* Bar Chart: Pedidos por Día */}
+        <article className="lg:col-span-2 bg-gray-900/70 backdrop-blur-sm rounded-xl p-6 lg:p-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold text-white">Pedidos por Día</h2>
+            <div className="flex gap-2 bg-gray-800/50 p-1 rounded-lg">
+              <button
+                onClick={() => setChartPeriod("7D")}
+                className={`px-3 py-1.5 text-xs font-semibold uppercase rounded-md transition-all ${
+                  chartPeriod === "7D"
+                    ? "bg-pop-gold text-pop-black"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
+                7D
+              </button>
+              <button
+                onClick={() => setChartPeriod("30D")}
+                className={`px-3 py-1.5 text-xs font-semibold uppercase rounded-md transition-all ${
+                  chartPeriod === "30D"
+                    ? "bg-pop-gold text-pop-black"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
+                30D
+              </button>
+            </div>
+          </div>
+          <div className="h-64 flex items-end justify-between gap-3">
+            {barData.map((item, index) => (
+              <div key={index} className="flex flex-col items-center gap-2 flex-1 group">
+                <div className="w-full relative h-[85%] bg-gray-800/50 rounded-t-md overflow-hidden">
+                  <div
+                    className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-pop-gold to-pop-light-gold rounded-t-md transition-all duration-500 group-hover:opacity-90"
+                    style={{ height: `${item.value}%` }}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-xs font-bold text-pop-black bg-white/80 px-2 py-0.5 rounded">
+                      {item.value}%
+                    </span>
+                  </div>
+                </div>
+                <span className="text-xs font-medium text-gray-500">{item.day}</span>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        {/* Donut Chart: Top Platillos */}
+        <article className="bg-gray-900/70 backdrop-blur-sm rounded-xl p-6 lg:p-8">
+          <h2 className="text-xl font-semibold text-white mb-6">Top Platillos</h2>
+          <div className="relative w-44 h-44 mx-auto mb-6">
+            <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 100 100">
+              {donutData.reduce(
+                (acc, item, index) => {
+                  const circumference = 2 * Math.PI * 40;
+                  const strokeDasharray = `${(item.percent / 100) * circumference} ${circumference}`;
+                  const strokeDashoffset = -acc.offset;
+                  acc.offset += (item.percent / 100) * circumference;
+
+                  acc.elements.push(
+                    <circle
+                      key={index}
+                      cx="50"
+                      cy="50"
+                      fill="transparent"
+                      r="40"
+                      stroke={item.color}
+                      strokeDasharray={strokeDasharray}
+                      strokeDashoffset={strokeDashoffset}
+                      strokeWidth="10"
+                      className="transition-all duration-300 hover:opacity-80"
+                    />
+                  );
+                  return acc;
+                },
+                { offset: 0, elements: [] as React.ReactElement[] }
+              ).elements}
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-2xl font-bold text-white">840</span>
+              <span className="text-xs text-gray-400">Total</span>
+            </div>
+          </div>
+          <ul className="space-y-3">
+            {donutData.map((item, index) => (
+              <li key={index} className="flex justify-between items-center text-sm">
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className="w-3 h-3 rounded-sm"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="text-gray-300 font-medium">{item.name}</span>
+                </div>
+                <span className="text-gray-400 font-semibold">{item.percent}%</span>
+              </li>
+            ))}
+          </ul>
+        </article>
+      </section>
+
+      {/* Secondary Grid */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-8">
+        {/* Top 5 Meseros del Mes */}
+        <article className="lg:col-span-2 bg-gray-900/70 backdrop-blur-sm rounded-xl p-6 lg:p-8">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-xl font-semibold text-white">Top Meseros del Mes</h2>
+              <p className="text-sm text-gray-400 mt-1">Ranking por ventas y calificación</p>
+            </div>
+            <span className="material-symbols-outlined text-pop-gold text-3xl">
+              workspace_premium
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full" role="table">
+              <thead>
+                <tr className="border-b border-gray-800 text-xs uppercase tracking-wider text-gray-500">
+                  <th className="pb-4 text-left font-medium">Mesero</th>
+                  <th className="pb-4 text-left font-medium">Pedidos</th>
+                  <th className="pb-4 text-left font-medium">Calificación</th>
+                  <th className="pb-4 text-right font-medium">Puntos</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800/50">
+                {topWaiters.map((waiter, index) => (
+                  <tr
+                    key={index}
+                    className="hover:bg-gray-800/30 transition-colors duration-200"
+                  >
+                    <td className="py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-xs font-bold text-pop-gold">
+                          {waiter.initials}
+                        </div>
+                        <span className="font-semibold text-white">{waiter.name}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 text-gray-300 font-mono">{waiter.orders}</td>
+                    <td className="py-4">
+                      <div className="flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-pop-gold text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
+                          star
+                        </span>
+                        <span className="text-gray-300 font-semibold">{waiter.rating}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 text-right font-mono font-bold text-pop-gold">
+                      {waiter.points.toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        {/* Recent Activity Timeline */}
+        <article className="bg-gray-900/70 backdrop-blur-sm rounded-xl p-6 lg:p-8">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-white">Actividad Reciente</h2>
+            <p className="text-sm text-gray-400 mt-1">Últimas acciones del equipo</p>
+          </div>
+          <div className="space-y-6 relative">
+            <div className="absolute left-3.5 top-2 bottom-2 w-px bg-gray-800" />
+            {recentActivity.map((activity, index) => (
+              <div key={index} className="relative pl-10">
+                <div
+                  className={`absolute left-1.5 top-1.5 w-4 h-4 rounded-full ring-4 ring-gray-900 ${getActivityColor(activity.type)}`}
+                />
+                <p className={`text-xs font-semibold uppercase tracking-wide ${getActivityLabelColor(activity.type)}`}>
+                  {activity.title}
+                </p>
+                <p className="text-sm font-medium text-gray-300 mt-1">
+                  {activity.description}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      {/* Menu Management */}
+      <section className="bg-gray-900/70 backdrop-blur-sm rounded-xl p-6 lg:p-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+          <div>
+            <h2 className="text-xl font-semibold text-white">Gestión de Menú</h2>
+            <p className="text-sm text-gray-400 mt-1">Control de platillos y disponibilidad</p>
+          </div>
+          <button className="flex items-center gap-2 px-4 py-2.5 bg-pop-gold text-pop-black font-semibold text-sm rounded-lg hover:bg-pop-light-gold transition-all duration-200">
+            <span className="material-symbols-outlined text-lg">add</span>
+            Agregar Platillo
+          </button>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full" role="table">
+            <thead>
+              <tr className="border-b border-gray-800 text-xs uppercase tracking-wider text-gray-500">
+                <th className="pb-4 text-left font-medium">Platillo</th>
+                <th className="pb-4 text-left font-medium">Categoría</th>
+                <th className="pb-4 text-left font-medium">Precio</th>
+                <th className="pb-4 text-left font-medium">Stock</th>
+                <th className="pb-4 text-right font-medium">Estado</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-800/50">
+              {menuItems.map((item, index) => (
+                <tr key={index} className="hover:bg-gray-800/30 transition-colors duration-200">
+                  <td className="py-5">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800">
+                        <img
+                          className="w-full h-full object-cover"
+                          src={item.image}
+                          alt={item.imageAlt}
+                          loading="lazy"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-white">{item.name}</p>
+                        <p className="text-xs text-gray-500 uppercase mt-0.5">ID: {item.id}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-5">
+                    <span className="bg-gray-800 px-2.5 py-1 text-xs font-medium text-gray-300 rounded-md">
+                      {item.category}
+                    </span>
+                  </td>
+                  <td className="py-5 font-mono font-semibold text-white">{item.price}</td>
+                  <td className="py-5">
+                    <div className="w-24 bg-gray-800 h-1.5 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${item.stockColor}`}
+                        style={{ width: `${item.stockPercent}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1.5">{item.stockLabel}</p>
+                  </td>
+                  <td className="py-5 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+                          item.active ? "bg-pop-gold" : "bg-gray-700"
+                        }`}
+                        aria-label={item.active ? "Desactivar" : "Activar"}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                            item.active ? "translate-x-6" : "translate-x-1"
+                          }`}
+                        />
+                      </button>
+                      <span className={`text-xs font-semibold ${item.active ? "text-pop-gold" : "text-gray-500"}`}>
+                        {item.active ? "Activo" : "Inactivo"}
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
   );
 }
