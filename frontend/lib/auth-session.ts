@@ -68,7 +68,7 @@ export function getRoleDashboard(role?: string): string {
     case 'admin':
       return '/admin/dashboard';
     case 'mesero':
-      return '/ranking';
+      return '/staff/dashboard';
     default:
       return '/puntos';
   }
