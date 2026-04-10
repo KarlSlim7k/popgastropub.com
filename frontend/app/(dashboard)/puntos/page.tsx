@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { fetchWithAuth } from '@/lib/api';
+import { clearAuthSession, getAuthSession } from '@/lib/auth-session';
 
 /* ─── Tipos ──────────────────────────────────────────────────────────────── */
 type TierKey = 'fan' | 'lover' | 'vip' | 'elite';
@@ -35,9 +37,23 @@ interface Reward {
   available: boolean;
 }
 
+interface LoyaltyPointsResponse {
+  points: number;
+  tier: TierKey;
+}
+
+interface AuthMeResponse {
+  id: number;
+  name: string;
+  email: string;
+  role?: string;
+  points?: number;
+  tier?: TierKey;
+}
+
 /* ─── Datos estáticos ────────────────────────────────────────────────────── */
-const USER_POINTS = 1250;
-const USER_NAME = 'Sofía';
+const FALLBACK_USER_POINTS = 0;
+const FALLBACK_USER_NAME = 'Invitado';
 
 const tiers: Tier[] = [
   {
@@ -156,12 +172,69 @@ function PointsBadge({ points, delta }: { points: number; delta?: number }) {
 export default function PuntosPage() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'recompensas' | 'historial' | 'como-ganar'>('dashboard');
   const [selectedReward, setSelectedReward] = useState<string | null>(null);
+  const [currentPoints, setCurrentPoints] = useState<number>(FALLBACK_USER_POINTS);
+  const [currentUserName, setCurrentUserName] = useState<string>(FALLBACK_USER_NAME);
+  const [authNotice, setAuthNotice] = useState<string | null>(null);
 
-  const currentTier = getCurrentTier(USER_POINTS);
+  useEffect(() => {
+    const session = getAuthSession();
+
+    if (!session) {
+      setAuthNotice('Inicia sesión para ver y gestionar tus puntos reales.');
+      return;
+    }
+
+    setCurrentUserName(session.user.name || FALLBACK_USER_NAME);
+
+    Promise.all([
+      fetchWithAuth<LoyaltyPointsResponse>('/loyalty/points', session.token),
+      fetchWithAuth<AuthMeResponse>('/auth/me', session.token),
+    ])
+      .then(([loyalty, me]) => {
+        setCurrentPoints(typeof loyalty.points === 'number' ? loyalty.points : session.user.points ?? FALLBACK_USER_POINTS);
+        setCurrentUserName(me.name || session.user.name || FALLBACK_USER_NAME);
+        setAuthNotice(null);
+      })
+      .catch(() => {
+        clearAuthSession();
+        setCurrentPoints(FALLBACK_USER_POINTS);
+        setCurrentUserName(FALLBACK_USER_NAME);
+        setAuthNotice('Tu sesión expiró. Vuelve a iniciar sesión para consultar tus puntos.');
+      });
+  }, []);
+
+  const pointsHistory = useMemo(() => {
+    if (authNotice) {
+      return [] as HistoryEntry[];
+    }
+
+    if (currentPoints < 50) {
+      return [] as HistoryEntry[];
+    }
+
+    const today = new Date().toLocaleDateString('es-MX', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }).toUpperCase();
+
+    return [
+      {
+        date: today,
+        title: 'Registro de cuenta POP',
+        subtitle: 'Bono de bienvenida aplicado',
+        points: 50,
+        balance: currentPoints,
+        type: 'bonus',
+      },
+    ];
+  }, [authNotice, currentPoints]);
+
+  const currentTier = getCurrentTier(currentPoints);
   const nextTier = getNextTier(currentTier);
-  const ptsToNext = nextTier ? nextTier.minPts - USER_POINTS : 0;
+  const ptsToNext = nextTier ? nextTier.minPts - currentPoints : 0;
   const progress = nextTier
-    ? ((USER_POINTS - currentTier.minPts) / (nextTier.minPts - currentTier.minPts)) * 100
+    ? ((currentPoints - currentTier.minPts) / (nextTier.minPts - currentTier.minPts)) * 100
     : 100;
 
   return (
@@ -183,7 +256,7 @@ export default function PuntosPage() {
                 POP Points · Dashboard
               </p>
               <h1 className="font-epilogue text-4xl md:text-6xl font-black tracking-tighter text-white leading-none">
-                ¡Hola, {USER_NAME}! <span className="wave inline-block">👋</span>
+                ¡Hola, {currentUserName}! <span className="wave inline-block">👋</span>
               </h1>
               <p className="text-white/50 mt-3 text-base max-w-md">
                 Tus logros gastronómicos están listos para ser celebrados hoy.
@@ -220,7 +293,7 @@ export default function PuntosPage() {
                 {/* Puntos grandes */}
                 <div className="mb-5">
                   <span className="font-epilogue font-black tabular-nums text-5xl text-[#F2C777]">
-                    {USER_POINTS.toLocaleString('es-MX')}
+                    {currentPoints.toLocaleString('es-MX')}
                   </span>
                   <span className="ml-2 text-sm font-black uppercase tracking-widest text-[#F2C777]/50">pts</span>
                 </div>
@@ -281,6 +354,12 @@ export default function PuntosPage() {
           ))}
         </div>
 
+        {authNotice && (
+          <div className="mb-8 border border-[#D96725]/40 bg-[#732817]/25 px-4 py-3 text-sm text-[#F2C894]">
+            {authNotice}
+          </div>
+        )}
+
         {/* ═══════════════════════════════════
             TAB: DASHBOARD
         ═══════════════════════════════════ */}
@@ -289,7 +368,7 @@ export default function PuntosPage() {
             {/* Stats rápidas */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               {[
-                { label: 'Puntos Totales', value: USER_POINTS.toLocaleString('es-MX'), unit: 'pts', icon: 'stars' },
+                { label: 'Puntos Totales', value: currentPoints.toLocaleString('es-MX'), unit: 'pts', icon: 'stars' },
                 { label: 'Próximo nivel', value: nextTier ? ptsToNext.toString() : '—', unit: nextTier ? 'pts más' : 'Máximo', icon: 'trending_up' },
                 { label: 'Visitas este mes', value: '3', unit: 'visitas', icon: 'store' },
                 { label: 'Canjeos totales', value: '1', unit: 'recompensa', icon: 'redeem' },
@@ -359,26 +438,30 @@ export default function PuntosPage() {
                 </button>
               </div>
               <div className="space-y-1">
-                {history.slice(0, 3).map((entry, i) => (
-                  <div key={i} className="flex items-center gap-4 py-4 border-b border-[#F2C777]/8 last:border-0">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      entry.type === 'earn' ? 'bg-emerald-500/15' :
-                      entry.type === 'bonus' ? 'bg-[#F2C777]/15' : 'bg-red-500/15'
-                    }`}>
-                      <span className={`material-symbols-outlined text-base ${
-                        entry.type === 'earn' ? 'text-emerald-400' :
-                        entry.type === 'bonus' ? 'text-[#F2C777]' : 'text-red-400'
+                {pointsHistory.length > 0 ? (
+                  pointsHistory.slice(0, 3).map((entry, i) => (
+                    <div key={i} className="flex items-center gap-4 py-4 border-b border-[#F2C777]/8 last:border-0">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        entry.type === 'earn' ? 'bg-emerald-500/15' :
+                        entry.type === 'bonus' ? 'bg-[#F2C777]/15' : 'bg-red-500/15'
                       }`}>
-                        {entry.type === 'earn' ? 'add_circle' : entry.type === 'bonus' ? 'star' : 'remove_circle'}
-                      </span>
+                        <span className={`material-symbols-outlined text-base ${
+                          entry.type === 'earn' ? 'text-emerald-400' :
+                          entry.type === 'bonus' ? 'text-[#F2C777]' : 'text-red-400'
+                        }`}>
+                          {entry.type === 'earn' ? 'add_circle' : entry.type === 'bonus' ? 'star' : 'remove_circle'}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-bold text-sm truncate">{entry.title}</p>
+                        <p className="text-white/40 text-xs">{entry.subtitle} · {entry.date}</p>
+                      </div>
+                      <PointsBadge points={entry.points} delta={entry.points} />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-bold text-sm truncate">{entry.title}</p>
-                      <p className="text-white/40 text-xs">{entry.subtitle} · {entry.date}</p>
-                    </div>
-                    <PointsBadge points={entry.points} delta={entry.points} />
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-sm text-white/45 py-4">Inicia sesión para consultar tus movimientos de puntos.</p>
+                )}
               </div>
             </div>
           </div>
@@ -392,13 +475,13 @@ export default function PuntosPage() {
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <h2 className="font-epilogue font-black text-white uppercase tracking-tight text-2xl">Catálogo de Recompensas</h2>
-                <p className="text-white/40 text-sm mt-1">Saldo disponible: <span className="text-[#F2C777] font-bold">{USER_POINTS.toLocaleString('es-MX')} pts</span></p>
+                <p className="text-white/40 text-sm mt-1">Saldo disponible: <span className="text-[#F2C777] font-bold">{currentPoints.toLocaleString('es-MX')} pts</span></p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {rewards.map((reward) => {
-                const canRedeem = USER_POINTS >= reward.cost;
+                const canRedeem = currentPoints >= reward.cost;
                 const isSelected = selectedReward === reward.id;
                 return (
                   <div
@@ -431,7 +514,7 @@ export default function PuntosPage() {
                         </button>
                       ) : (
                         <span className="text-white/20 text-xs font-bold">
-                          Faltan {(reward.cost - USER_POINTS).toLocaleString('es-MX')} pts
+                          Faltan {(reward.cost - currentPoints).toLocaleString('es-MX')} pts
                         </span>
                       )}
                     </div>
@@ -472,39 +555,43 @@ export default function PuntosPage() {
             </div>
 
             <div className="bg-[#181413] divide-y divide-[#F2C777]/8">
-              {history.map((entry, i) => (
-                <div key={i} className="flex items-center gap-4 px-6 py-5 hover:bg-white/[0.02] transition-colors">
-                  {/* Icono */}
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    entry.type === 'earn' ? 'bg-emerald-500/15' :
-                    entry.type === 'bonus' ? 'bg-[#F2C777]/15' : 'bg-red-500/15'
-                  }`}>
-                    <span className={`material-symbols-outlined text-lg ${
-                      entry.type === 'earn' ? 'text-emerald-400' :
-                      entry.type === 'bonus' ? 'text-[#F2C777]' : 'text-red-400'
+              {pointsHistory.length > 0 ? (
+                pointsHistory.map((entry, i) => (
+                  <div key={i} className="flex items-center gap-4 px-6 py-5 hover:bg-white/[0.02] transition-colors">
+                    {/* Icono */}
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      entry.type === 'earn' ? 'bg-emerald-500/15' :
+                      entry.type === 'bonus' ? 'bg-[#F2C777]/15' : 'bg-red-500/15'
                     }`}>
-                      {entry.type === 'earn' ? 'add_circle' : entry.type === 'bonus' ? 'star' : 'remove_circle'}
-                    </span>
-                  </div>
+                      <span className={`material-symbols-outlined text-lg ${
+                        entry.type === 'earn' ? 'text-emerald-400' :
+                        entry.type === 'bonus' ? 'text-[#F2C777]' : 'text-red-400'
+                      }`}>
+                        {entry.type === 'earn' ? 'add_circle' : entry.type === 'bonus' ? 'star' : 'remove_circle'}
+                      </span>
+                    </div>
 
-                  {/* Texto */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-bold text-sm">{entry.title}</p>
-                    <p className="text-white/40 text-xs mt-0.5">{entry.subtitle}</p>
-                  </div>
+                    {/* Texto */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-bold text-sm">{entry.title}</p>
+                      <p className="text-white/40 text-xs mt-0.5">{entry.subtitle}</p>
+                    </div>
 
-                  {/* Fecha */}
-                  <p className="text-white/30 text-xs hidden md:block flex-shrink-0">{entry.date}</p>
+                    {/* Fecha */}
+                    <p className="text-white/30 text-xs hidden md:block flex-shrink-0">{entry.date}</p>
 
-                  {/* Puntos */}
-                  <div className="text-right flex-shrink-0">
-                    <p className={`font-mono font-black text-sm ${entry.points > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {entry.points > 0 ? '+' : ''}{entry.points} pts
-                    </p>
-                    <p className="text-white/30 text-xs">Saldo: {entry.balance.toLocaleString('es-MX')}</p>
+                    {/* Puntos */}
+                    <div className="text-right flex-shrink-0">
+                      <p className={`font-mono font-black text-sm ${entry.points > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {entry.points > 0 ? '+' : ''}{entry.points} pts
+                      </p>
+                      <p className="text-white/30 text-xs">Saldo: {entry.balance.toLocaleString('es-MX')}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="px-6 py-6 text-sm text-white/45">No hay movimientos disponibles para esta sesión.</p>
+              )}
             </div>
           </div>
         )}

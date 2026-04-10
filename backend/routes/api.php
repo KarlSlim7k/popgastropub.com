@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PromocionController;
 use App\Http\Controllers\FacturaController;
@@ -26,8 +27,14 @@ Route::get('/ubicacion', [UbicacionController::class, 'show']);
 |--------------------------------------------------------------------------
 */
 
-Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:auth-register');
+Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:auth-login');
+Route::get('/auth/social/{provider}/redirect', [SocialAuthController::class, 'redirectToProvider'])
+    ->whereIn('provider', ['google', 'facebook', 'x'])
+    ->middleware('throttle:auth-social');
+Route::get('/auth/social/{provider}/callback', [SocialAuthController::class, 'handleProviderCallback'])
+    ->whereIn('provider', ['google', 'facebook', 'x'])
+    ->middleware('throttle:auth-social');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);

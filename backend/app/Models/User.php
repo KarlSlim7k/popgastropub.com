@@ -19,6 +19,10 @@ class User extends Authenticatable
         'phone',
         'points',
         'tier',
+        'email_verified_at',
+        'oauth_provider',
+        'oauth_provider_id',
+        'avatar_url',
     ];
 
     protected $hidden = [
