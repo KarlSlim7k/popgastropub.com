@@ -47,8 +47,6 @@ export default function MenuExperience() {
 
   return (
     <>
-      <div className="custom-cursor hidden md:block" />
-
       <main className="mx-auto max-w-7xl px-3 pb-24 pt-28 md:px-12 md:pt-32">
         <header className="mb-16 relative">
           <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">

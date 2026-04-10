@@ -9,9 +9,6 @@ export default function Login() {
 
   return (
     <>
-      {/* Custom Cursor */}
-      <div className="custom-cursor"></div>
-      
       {/* Background Layer with "Gold Particles" */}
       <div className="absolute inset-0 z-0 particle-bg opacity-30 pointer-events-none"></div>
       <div className="absolute inset-0 z-0 bg-gradient-to-tr from-surface via-surface to-primary/5 pointer-events-none"></div>
