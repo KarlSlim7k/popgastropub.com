@@ -39,6 +39,11 @@ Homestead.yaml
 # Docker (if any)
 *.pem
 *.key
+.env.bak.*
+docker-compose.yml.bak.*
+
+# Runtime server artifacts
+backend/storage/
 
 # Documentacion / Base de datos
 docs/
