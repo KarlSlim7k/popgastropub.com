@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth-provider";
 
 export default function StaffPerfilPage() {
-  const { session } = useAuth();
+  const { session, logout } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
 
   const userName = session?.user?.name || "Ricardo S.";
@@ -237,6 +237,17 @@ export default function StaffPerfilPage() {
           <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Mis Puntos POP</p>
           <p className="text-lg font-black text-white font-epilogue mt-1">{userPoints > 0 ? `${userPoints} pts` : "—"}</p>
         </div>
+      </section>
+
+      {/* Danger Zone / Logout */}
+      <section className="mt-8 mb-12">
+        <button 
+          onClick={() => logout()}
+          className="w-full bg-red-500/10 border border-red-500/20 text-red-500 py-4 rounded-xl font-black uppercase text-xs tracking-[0.2em] hover:bg-red-500/20 transition-all flex items-center justify-center gap-3"
+        >
+          <span className="material-symbols-outlined">logout</span>
+          Cerrar Sesión Segura
+        </button>
       </section>
     </main>
   );

@@ -21,12 +21,19 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
               PORTAL STAFF
             </span>
           </div>
-          <button 
-            onClick={() => setIsSidebarOpen(true)}
-            className="text-pop-gold p-2 hover:bg-white/5 rounded-lg transition-colors"
-          >
-            <span className="material-symbols-outlined text-2xl">menu</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pop-orange to-pop-gold p-[1.5px] flex-shrink-0">
+              <div className="w-full h-full rounded-full bg-pop-black flex items-center justify-center text-pop-gold font-bold text-[10px] uppercase">
+                MD
+              </div>
+            </div>
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="text-pop-gold p-2 hover:bg-white/5 rounded-lg transition-colors"
+            >
+              <span className="material-symbols-outlined text-2xl">menu</span>
+            </button>
+          </div>
         </header>
 
         <StaffSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
