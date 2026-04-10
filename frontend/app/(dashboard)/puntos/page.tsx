@@ -1,700 +1,327 @@
-'use client';
+import type { Metadata } from 'next';
 
-import { useEffect, useMemo, useState } from 'react';
-import { fetchWithAuth } from '@/lib/api';
-import { clearAuthSession, getAuthSession } from '@/lib/auth-session';
+export const metadata: Metadata = {
+  title: 'POP Perote | Dashboard Cliente',
+  description: 'Tu espacio gastronómico exclusivo en POP Perote. Consulta tus puntos, pedidos y reservas.',
+};
 
-/* ─── Tipos ──────────────────────────────────────────────────────────────── */
-type TierKey = 'fan' | 'lover' | 'vip' | 'elite';
-
-interface Tier {
-  key: TierKey;
-  label: string;
-  minPts: number;
-  maxPts: number | null;
-  icon: string;
-  color: string;
-  glow: string;
-  benefits: string[];
-  multiplier: string;
-}
-
-interface HistoryEntry {
-  date: string;
-  title: string;
-  subtitle: string;
-  points: number;
-  balance: number;
-  type: 'earn' | 'redeem' | 'bonus';
-}
-
-interface Reward {
-  id: string;
-  title: string;
-  cost: number;
-  icon: string;
-  category: string;
-  available: boolean;
-}
-
-interface LoyaltyPointsResponse {
-  points: number;
-  tier: TierKey;
-}
-
-interface AuthMeResponse {
-  id: number;
-  name: string;
-  email: string;
-  role?: string;
-  points?: number;
-  tier?: TierKey;
-}
-
-/* ─── Datos estáticos ────────────────────────────────────────────────────── */
-const FALLBACK_USER_POINTS = 0;
-const FALLBACK_USER_NAME = 'Invitado';
-
-const tiers: Tier[] = [
-  {
-    key: 'fan',
-    label: 'POP Fan',
-    minPts: 0,
-    maxPts: 499,
-    icon: 'military_tech',
-    color: '#A0A0A0',
-    glow: 'rgba(160,160,160,0.25)',
-    multiplier: '×1',
-    benefits: [
-      'Acumula 1 pto por cada $10 MXN',
-      'Acceso a promos básicas',
-      'Notificaciones de promociones',
-    ],
-  },
-  {
-    key: 'lover',
-    label: 'POP Lover',
-    minPts: 500,
-    maxPts: 1499,
-    icon: 'favorite',
-    color: '#FFB693',
-    glow: 'rgba(255,182,147,0.25)',
-    multiplier: '×1.1',
-    benefits: [
-      '+10% puntos por compra',
-      'Promo exclusiva mensual',
-      'Bebida gratis en cumpleaños',
-    ],
-  },
-  {
-    key: 'vip',
-    label: 'POP VIP',
-    minPts: 1500,
-    maxPts: 2999,
-    icon: 'workspace_premium',
-    color: '#EBC071',
-    glow: 'rgba(235,192,113,0.3)',
-    multiplier: '×1.25',
-    benefits: [
-      '+25% puntos por compra',
-      'Rollo gratis cada 5 visitas',
-      'Acceso temprano a promos',
-    ],
-  },
-  {
-    key: 'elite',
-    label: 'POP Elite',
-    minPts: 3000,
-    maxPts: null,
-    icon: 'diamond',
-    color: '#D96725',
-    glow: 'rgba(217,103,37,0.35)',
-    multiplier: '×1.5',
-    benefits: [
-      '+50% puntos por compra',
-      'Mesa reservada prioritaria',
-      'Invitación a eventos exclusivos',
-      '1 buffet gratis al mes',
-    ],
-  },
-];
-
-const history: HistoryEntry[] = [
-  { date: '12 OCT 2024', title: 'Cena Gourmet – Pedido #4567', subtitle: 'Visita presencial', points: 120, balance: 1250, type: 'earn' },
-  { date: '05 OCT 2024', title: 'Take-out Especial', subtitle: 'Pedido a domicilio', points: 85, balance: 1130, type: 'earn' },
-  { date: '28 SEP 2024', title: 'Reseña Google', subtitle: 'Con comprobante de visita', points: 100, balance: 1045, type: 'bonus' },
-  { date: '20 SEP 2024', title: 'Canje – Margarita Gratis', subtitle: 'Canjeo de recompensa', points: -100, balance: 945, type: 'redeem' },
-  { date: '14 SEP 2024', title: 'Check-in Presencial', subtitle: 'Registro en sucursal', points: 25, balance: 1045, type: 'earn' },
-  { date: '07 SEP 2024', title: 'Referido – Carlos M.', subtitle: 'Primer pedido del amigo', points: 200, balance: 1020, type: 'bonus' },
-];
-
-const rewards: Reward[] = [
-  { id: 'r1', title: 'Margarita Gratis', cost: 100, icon: '🍹', category: 'Bebidas', available: true },
-  { id: 'r2', title: 'Orden de Alitas (6 pzas)', cost: 350, icon: '🍗', category: 'Comida', available: true },
-  { id: 'r3', title: 'Postre de Autor', cost: 400, icon: '🍫', category: 'Postre', available: false },
-  { id: 'r4', title: 'Rollo Especial', cost: 500, icon: '🍣', category: 'Sushi', available: false },
-  { id: 'r5', title: 'Buffet POP Elite', cost: 1500, icon: '🎉', category: 'VIP', available: false },
-  { id: 'r6', title: '2×1 en Boneless', cost: 200, icon: '🔥', category: 'Promo', available: false },
-];
-
-const earnWays = [
-  { icon: 'shopping_bag', label: 'Por compra', desc: '1 pto por cada $10 MXN', pts: '+1 pto/$10' },
-  { icon: 'store', label: 'Check-in', desc: 'Visita presencial registrada', pts: '+25 pts' },
-  { icon: 'star', label: 'Reseña Google', desc: 'Con foto como comprobante', pts: '+100 pts' },
-  { icon: 'group_add', label: 'Referir amigo', desc: 'En su primer pedido', pts: '+200 pts' },
-  { icon: 'cake', label: 'Cumpleaños', desc: 'Regalo automático anual', pts: '+150 pts' },
-  { icon: 'share', label: 'Compartir en redes', desc: 'Etiquétanos en tu post', pts: '+30 pts' },
-];
-
-/* ─── Helper: obtener tier actual ────────────────────────────────────────── */
-function getCurrentTier(points: number): Tier {
-  return [...tiers].reverse().find((t) => points >= t.minPts) ?? tiers[0];
-}
-
-function getNextTier(current: Tier): Tier | null {
-  const idx = tiers.findIndex((t) => t.key === current.key);
-  return idx < tiers.length - 1 ? tiers[idx + 1] : null;
-}
-
-/* ─── Componentes internos ───────────────────────────────────────────────── */
-function PointsBadge({ points, delta }: { points: number; delta?: number }) {
+export default function DashboardClientePage() {
   return (
-    <div className="inline-flex items-center gap-1.5">
-      <span className={`font-mono font-black tabular-nums ${delta && delta < 0 ? 'text-red-400' : 'text-[#F2C777]'}`}>
-        {delta ? (delta > 0 ? `+${delta}` : delta) : points.toLocaleString('es-MX')}
-      </span>
-      <span className="text-[10px] font-black uppercase tracking-widest text-[#F2C777]/50">pts</span>
-    </div>
-  );
-}
-
-/* ─── Página principal ───────────────────────────────────────────────────── */
-export default function PuntosPage() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'recompensas' | 'historial' | 'como-ganar'>('dashboard');
-  const [selectedReward, setSelectedReward] = useState<string | null>(null);
-  const [currentPoints, setCurrentPoints] = useState<number>(FALLBACK_USER_POINTS);
-  const [currentUserName, setCurrentUserName] = useState<string>(FALLBACK_USER_NAME);
-  const [authNotice, setAuthNotice] = useState<string | null>(null);
-
-  useEffect(() => {
-    const session = getAuthSession();
-
-    if (!session) {
-      setAuthNotice('Inicia sesión para ver y gestionar tus puntos reales.');
-      return;
-    }
-
-    setCurrentUserName(session.user.name || FALLBACK_USER_NAME);
-
-    Promise.all([
-      fetchWithAuth<LoyaltyPointsResponse>('/loyalty/points', session.token),
-      fetchWithAuth<AuthMeResponse>('/auth/me', session.token),
-    ])
-      .then(([loyalty, me]) => {
-        setCurrentPoints(typeof loyalty.points === 'number' ? loyalty.points : session.user.points ?? FALLBACK_USER_POINTS);
-        setCurrentUserName(me.name || session.user.name || FALLBACK_USER_NAME);
-        setAuthNotice(null);
-      })
-      .catch(() => {
-        clearAuthSession();
-        setCurrentPoints(FALLBACK_USER_POINTS);
-        setCurrentUserName(FALLBACK_USER_NAME);
-        setAuthNotice('Tu sesión expiró. Vuelve a iniciar sesión para consultar tus puntos.');
-      });
-  }, []);
-
-  const pointsHistory = useMemo(() => {
-    if (authNotice) {
-      return [] as HistoryEntry[];
-    }
-
-    if (currentPoints < 50) {
-      return [] as HistoryEntry[];
-    }
-
-    const today = new Date().toLocaleDateString('es-MX', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    }).toUpperCase();
-
-    return [
-      {
-        date: today,
-        title: 'Registro de cuenta POP',
-        subtitle: 'Bono de bienvenida aplicado',
-        points: 50,
-        balance: currentPoints,
-        type: 'bonus',
-      },
-    ];
-  }, [authNotice, currentPoints]);
-
-  const currentTier = getCurrentTier(currentPoints);
-  const nextTier = getNextTier(currentTier);
-  const ptsToNext = nextTier ? nextTier.minPts - currentPoints : 0;
-  const progress = nextTier
-    ? ((currentPoints - currentTier.minPts) / (nextTier.minPts - currentTier.minPts)) * 100
-    : 100;
-
-  return (
-    <main className="min-h-screen bg-[#0D0D0D] pt-20 pb-32">
-
-      {/* ─── Hero personalizado ─── */}
-      <section className="relative overflow-hidden px-6 py-14 md:px-16">
-        {/* Glow ambiental del tier */}
-        <div
-          className="pointer-events-none absolute left-0 top-0 w-full h-full opacity-20 blur-[160px]"
-          style={{ background: `radial-gradient(ellipse 80% 60% at 30% 50%, ${currentTier.glow}, transparent)` }}
-        />
-
-        <div className="relative z-10 max-w-5xl mx-auto">
-          <div className="flex flex-col md:flex-row gap-8 md:items-center justify-between">
-            {/* Saludo */}
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.4em] text-[#F2C777]/50 mb-3">
-                POP Points · Dashboard
-              </p>
-              <h1 className="font-epilogue text-4xl md:text-6xl font-black tracking-tighter text-white leading-none">
-                ¡Hola, {currentUserName}! <span className="wave inline-block">👋</span>
-              </h1>
-              <p className="text-white/50 mt-3 text-base max-w-md">
-                Tus logros gastronómicos están listos para ser celebrados hoy.
-              </p>
-            </div>
-
-            {/* Card de puntos + tier */}
-            <div className="flex-shrink-0 bg-[#181413] border border-[#F2C777]/10 p-6 md:p-8 min-w-[280px] relative overflow-hidden">
-              {/* Glow interior */}
-              <div
-                className="absolute inset-0 opacity-10 blur-2xl"
-                style={{ background: currentTier.glow }}
-              />
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-5">
-                  <span
-                    className="material-symbols-outlined text-3xl"
-                    style={{ color: currentTier.color, fontVariationSettings: "'FILL' 1" }}
-                  >
-                    {currentTier.icon}
-                  </span>
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Tu nivel actual</p>
-                    <p className="font-epilogue font-black text-lg text-white">{currentTier.label}</p>
-                  </div>
-                  <span
-                    className="ml-auto font-black text-xs px-2 py-1 border"
-                    style={{ color: currentTier.color, borderColor: `${currentTier.color}40` }}
-                  >
-                    {currentTier.multiplier}
-                  </span>
-                </div>
-
-                {/* Puntos grandes */}
-                <div className="mb-5">
-                  <span className="font-epilogue font-black tabular-nums text-5xl text-[#F2C777]">
-                    {currentPoints.toLocaleString('es-MX')}
-                  </span>
-                  <span className="ml-2 text-sm font-black uppercase tracking-widest text-[#F2C777]/50">pts</span>
-                </div>
-
-                {/* Barra de progreso */}
-                {nextTier && (
-                  <>
-                    <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-white/40 mb-2">
-                      <span>{currentTier.label}</span>
-                      <span>{nextTier.label}</span>
-                    </div>
-                    <div className="relative h-1.5 bg-[#0D0D0D] rounded-full overflow-hidden mb-2">
-                      <div
-                        className="h-full rounded-full transition-all duration-1000"
-                        style={{
-                          width: `${Math.min(progress, 100)}%`,
-                          background: `linear-gradient(90deg, ${currentTier.color}, ${nextTier.color})`,
-                          boxShadow: `0 0 8px ${currentTier.color}60`,
-                        }}
-                      />
-                    </div>
-                    <p className="text-white/40 text-xs">
-                      Faltan <span className="text-[#F2C777] font-bold">{ptsToNext} pts</span> para {nextTier.label}
-                    </p>
-                  </>
-                )}
-                {!nextTier && (
-                  <p className="text-[#D96725] font-black text-xs uppercase tracking-widest mt-2">
-                    ✦ Nivel máximo alcanzado
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+    <div className="dark">
+      {/* TopNavBar */}
+      <nav className="bg-stone-950/80 backdrop-blur-md fixed top-0 w-full z-50 flex justify-between items-center px-8 py-4 shadow-2xl shadow-orange-900/10">
+        <div className="text-xl font-black text-orange-500 font-epilogue uppercase tracking-widest">Pop Perote</div>
+        <div className="hidden md:flex items-center space-x-12">
+          <a className="font-epilogue uppercase text-sm tracking-widest text-stone-400 hover:text-orange-300 transition-colors" href="#">Explorar</a>
+          <a className="font-epilogue uppercase text-sm tracking-widest text-orange-400 border-b-2 border-orange-500 pb-1" href="#">Mi Mesa</a>
+          <a className="font-epilogue uppercase text-sm tracking-widest text-stone-400 hover:text-orange-300 transition-colors" href="#">Carta</a>
+          <a className="font-epilogue uppercase text-sm tracking-widest text-stone-400 hover:text-orange-300 transition-colors" href="#">Historial</a>
         </div>
-      </section>
-
-      {/* ─── Tabs ─── */}
-      <div className="max-w-5xl mx-auto px-4 md:px-8">
-        <div className="flex overflow-x-auto border-b border-[#F2C777]/10 mb-10 scrollbar-none">
-          {([
-            { key: 'dashboard', label: '📊 Resumen' },
-            { key: 'recompensas', label: '🎁 Recompensas' },
-            { key: 'historial', label: '📋 Historial' },
-            { key: 'como-ganar', label: '💡 Cómo Ganar' },
-          ] as const).map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex-shrink-0 px-5 py-4 font-epilogue font-black uppercase tracking-widest text-sm transition-colors whitespace-nowrap ${
-                activeTab === tab.key
-                  ? 'text-[#F2C777] border-b-2 border-[#F2C777]'
-                  : 'text-white/40 hover:text-white/70'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div className="flex items-center space-x-6">
+          <button className="text-stone-400 hover:text-orange-300 transition-colors">
+            <span className="material-symbols-outlined">notifications</span>
+          </button>
+          <button className="text-stone-400 hover:text-orange-300 transition-colors">
+            <span className="material-symbols-outlined">account_circle</span>
+          </button>
         </div>
+      </nav>
 
-        {authNotice && (
-          <div className="mb-8 border border-[#D96725]/40 bg-[#732817]/25 px-4 py-3 text-sm text-[#F2C894]">
-            {authNotice}
+      <main className="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto">
+        {/* Hero Header */}
+        <header className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+          <div className="space-y-2">
+            <div className="flex items-center gap-4">
+              <h1 className="text-5xl md:text-7xl font-black font-epilogue tracking-tighter text-on-surface">¡Hola, Sofía! 👋</h1>
+              <span className="px-3 py-1 bg-secondary-container text-on-secondary-container font-epilogue text-[10px] font-bold uppercase tracking-widest rounded-lg">VIP Member</span>
+            </div>
+            <p className="text-stone-500 font-body text-lg max-w-md">Es un placer tenerte de vuelta en tu espacio gastronómico exclusivo.</p>
           </div>
-        )}
+          <div className="flex flex-col items-start md:items-end">
+            <span className="text-orange-400 font-epilogue text-4xl font-black tabular-nums">1,250</span>
+            <span className="text-stone-500 font-epilogue uppercase text-xs tracking-[0.2em]">Puntos Acumulados</span>
+          </div>
+        </header>
 
-        {/* ═══════════════════════════════════
-            TAB: DASHBOARD
-        ═══════════════════════════════════ */}
-        {activeTab === 'dashboard' && (
-          <div className="space-y-10">
-            {/* Stats rápidas */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-              {[
-                { label: 'Puntos Totales', value: currentPoints.toLocaleString('es-MX'), unit: 'pts', icon: 'stars' },
-                { label: 'Próximo nivel', value: nextTier ? ptsToNext.toString() : '—', unit: nextTier ? 'pts más' : 'Máximo', icon: 'trending_up' },
-                { label: 'Visitas este mes', value: '3', unit: 'visitas', icon: 'store' },
-                { label: 'Canjeos totales', value: '1', unit: 'recompensa', icon: 'redeem' },
-              ].map((stat, i) => (
-                <div key={i} className="bg-[#181413] p-4 md:p-6 border border-[#F2C777]/8 hover:border-[#F2C777]/20 transition-colors">
-                  <span className="material-symbols-outlined text-[#F2C777]/50 text-xl mb-3 block">{stat.icon}</span>
-                  <p className="font-epilogue font-black text-2xl md:text-3xl text-white tabular-nums">{stat.value}</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mt-1">{stat.unit}</p>
-                  <p className="text-white/40 text-xs mt-0.5">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Escala de tiers */}
-            <div className="bg-[#181413] p-6 md:p-8">
-              <h2 className="font-epilogue font-black text-white uppercase tracking-tight text-xl mb-8 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#F2C777]">military_tech</span>
-                Escala de Prestigio
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {tiers.map((tier) => {
-                  const isActive = tier.key === currentTier.key;
-                  return (
-                    <div
-                      key={tier.key}
-                      className={`relative p-5 border transition-all duration-300 ${
-                        isActive
-                          ? 'border-opacity-60'
-                          : 'border-white/8 opacity-50'
-                      }`}
-                      style={isActive ? { borderColor: `${tier.color}60`, boxShadow: `0 0 20px ${tier.glow}` } : {}}
-                    >
-                      {isActive && (
-                        <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#D96725] text-white text-[9px] font-black px-2 py-0.5 uppercase tracking-widest whitespace-nowrap">
-                          Tu nivel
-                        </div>
-                      )}
-                      <span
-                        className="material-symbols-outlined text-4xl mb-3 block"
-                        style={{ color: tier.color, fontVariationSettings: "'FILL' 1" }}
-                      >
-                        {tier.icon}
-                      </span>
-                      <p className="font-epilogue font-black text-white text-sm uppercase">{tier.label}</p>
-                      <p className="text-[10px] font-bold mt-1" style={{ color: `${tier.color}99` }}>
-                        {tier.maxPts ? `${tier.minPts.toLocaleString('es-MX')} – ${tier.maxPts.toLocaleString('es-MX')} pts` : `${tier.minPts.toLocaleString('es-MX')}+ pts`}
-                      </p>
-                      <p className="text-xs font-black mt-2" style={{ color: tier.color }}>{tier.multiplier} puntos</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Actividad reciente */}
-            <div className="bg-[#181413] p-6 md:p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="font-epilogue font-black text-white uppercase tracking-tight text-xl flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#F2C777]">history</span>
-                  Actividad Reciente
-                </h2>
-                <button
-                  onClick={() => setActiveTab('historial')}
-                  className="text-xs font-black uppercase tracking-widest text-[#F2C777]/60 hover:text-[#F2C777] transition-colors flex items-center gap-1"
-                >
-                  Ver todo <span className="material-symbols-outlined text-sm">arrow_forward</span>
+        {/* Bento Grid Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+          {/* Main Content Area (Column 1-8) */}
+          <div className="md:col-span-8 space-y-12">
+            {/* Quick Actions Grid */}
+            <section>
+              <h2 className="text-stone-500 font-epilogue uppercase text-[10px] tracking-widest mb-6 px-1">Acciones Rápidas</h2>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <button className="glass-card p-6 flex flex-col items-start gap-4 hover:bg-stone-900 transition-all duration-300 group">
+                  <span className="material-symbols-outlined text-orange-400 text-3xl group-hover:scale-110 transition-transform">receipt_long</span>
+                  <span className="font-epilogue font-bold text-sm">Mis Pedidos</span>
+                </button>
+                <button className="glass-card p-6 flex flex-col items-start gap-4 hover:bg-stone-900 transition-all duration-300 group">
+                  <span className="material-symbols-outlined text-orange-400 text-3xl group-hover:scale-110 transition-transform">description</span>
+                  <span className="font-epilogue font-bold text-sm">Factura (CFDI)</span>
+                </button>
+                <button className="glass-card p-6 flex flex-col items-start gap-4 hover:bg-stone-900 transition-all duration-300 group border-primary-container/20">
+                  <span className="material-symbols-outlined text-secondary text-3xl group-hover:scale-110 transition-transform">stars</span>
+                  <span className="font-epilogue font-bold text-sm">POP Points</span>
+                </button>
+                <button className="glass-card p-6 flex flex-col items-start gap-4 hover:bg-stone-900 transition-all duration-300 group">
+                  <span className="material-symbols-outlined text-orange-400 text-3xl group-hover:scale-110 transition-transform">table_restaurant</span>
+                  <span className="font-epilogue font-bold text-sm">Reservar</span>
                 </button>
               </div>
-              <div className="space-y-1">
-                {pointsHistory.length > 0 ? (
-                  pointsHistory.slice(0, 3).map((entry, i) => (
-                    <div key={i} className="flex items-center gap-4 py-4 border-b border-[#F2C777]/8 last:border-0">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        entry.type === 'earn' ? 'bg-emerald-500/15' :
-                        entry.type === 'bonus' ? 'bg-[#F2C777]/15' : 'bg-red-500/15'
-                      }`}>
-                        <span className={`material-symbols-outlined text-base ${
-                          entry.type === 'earn' ? 'text-emerald-400' :
-                          entry.type === 'bonus' ? 'text-[#F2C777]' : 'text-red-400'
-                        }`}>
-                          {entry.type === 'earn' ? 'add_circle' : entry.type === 'bonus' ? 'star' : 'remove_circle'}
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-white font-bold text-sm truncate">{entry.title}</p>
-                        <p className="text-white/40 text-xs">{entry.subtitle} · {entry.date}</p>
-                      </div>
-                      <PointsBadge points={entry.points} delta={entry.points} />
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-white/45 py-4">Inicia sesión para consultar tus movimientos de puntos.</p>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+            </section>
 
-        {/* ═══════════════════════════════════
-            TAB: RECOMPENSAS
-        ═══════════════════════════════════ */}
-        {activeTab === 'recompensas' && (
-          <div className="space-y-8">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div>
-                <h2 className="font-epilogue font-black text-white uppercase tracking-tight text-2xl">Catálogo de Recompensas</h2>
-                <p className="text-white/40 text-sm mt-1">Saldo disponible: <span className="text-[#F2C777] font-bold">{currentPoints.toLocaleString('es-MX')} pts</span></p>
+            {/* Points Tier Section */}
+            <section className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-stone-500 font-epilogue uppercase text-[10px] tracking-widest px-1">Estado POP Points</h2>
+                <a href="/puntos" className="text-primary text-xs font-bold uppercase tracking-widest hover:underline">Ver todo</a>
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {rewards.map((reward) => {
-                const canRedeem = currentPoints >= reward.cost;
-                const isSelected = selectedReward === reward.id;
-                return (
-                  <div
-                    key={reward.id}
-                    className={`relative bg-[#181413] p-6 border transition-all duration-300 group ${
-                      canRedeem
-                        ? 'border-[#F2C777]/15 hover:border-[#F2C777]/40 cursor-pointer'
-                        : 'border-white/5 opacity-60'
-                    } ${isSelected ? 'border-[#D96725]/60 shadow-[0_0_20px_rgba(217,103,37,0.15)]' : ''}`}
-                    onClick={() => canRedeem && setSelectedReward(isSelected ? null : reward.id)}
-                  >
-                    {canRedeem && (
-                      <span className="absolute top-3 right-3 bg-emerald-500/20 text-emerald-400 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 border border-emerald-500/30">
-                        Disponible
-                      </span>
-                    )}
-                    <div className="text-4xl mb-4">{reward.icon}</div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-[#F2C777]/50 mb-1">{reward.category}</p>
-                    <h3 className="font-epilogue font-black text-white text-lg uppercase tracking-tight mb-4">{reward.title}</h3>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="font-mono font-black text-[#F2C777] text-xl">
-                        {reward.cost.toLocaleString('es-MX')} <span className="text-sm text-[#F2C777]/50">pts</span>
-                      </span>
-                      {canRedeem ? (
-                        <button
-                          type="button"
-                          className="bg-[#D96725] hover:bg-[#F2C777] hover:text-[#0D0D0D] text-white font-black text-xs px-4 py-2 transition-all active:scale-95"
-                        >
-                          Canjear
-                        </button>
-                      ) : (
-                        <span className="text-white/20 text-xs font-bold">
-                          Faltan {(reward.cost - currentPoints).toLocaleString('es-MX')} pts
-                        </span>
-                      )}
-                    </div>
+              <div className="bg-surface-container-low p-8 space-y-6">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="text-secondary font-epilogue font-black text-3xl">POP VIP</div>
+                    <div className="text-stone-400 text-sm mt-1">Nivel actual</div>
                   </div>
-                );
-              })}
-            </div>
-
-            {/* Aviso */}
-            <div className="bg-[#1C1B1B] border border-[#F2C777]/10 p-5 flex items-start gap-3">
-              <span className="material-symbols-outlined text-[#F2C777] text-xl flex-shrink-0 mt-0.5">info</span>
-              <p className="text-white/40 text-sm leading-relaxed">
-                Los canjes se aplican en tu próxima visita al restaurante o pedido. Válido hasta 30 días después del canje. No acumulable con otras promociones.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* ═══════════════════════════════════
-            TAB: HISTORIAL
-        ═══════════════════════════════════ */}
-        {activeTab === 'historial' && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
-              <h2 className="font-epilogue font-black text-white uppercase tracking-tight text-2xl">Historial de Puntos</h2>
-              <div className="flex gap-2">
-                {(['earn', 'bonus', 'redeem'] as const).map((type) => (
-                  <span key={type} className={`flex items-center gap-1.5 text-[10px] font-black uppercase px-3 py-1.5 border ${
-                    type === 'earn' ? 'border-emerald-500/30 text-emerald-400' :
-                    type === 'bonus' ? 'border-[#F2C777]/30 text-[#F2C777]' :
-                    'border-red-500/30 text-red-400'
-                  }`}>
-                    <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                    {type === 'earn' ? 'Ganados' : type === 'bonus' ? 'Bonus' : 'Canjeados'}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-[#181413] divide-y divide-[#F2C777]/8">
-              {pointsHistory.length > 0 ? (
-                pointsHistory.map((entry, i) => (
-                  <div key={i} className="flex items-center gap-4 px-6 py-5 hover:bg-white/[0.02] transition-colors">
-                    {/* Icono */}
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      entry.type === 'earn' ? 'bg-emerald-500/15' :
-                      entry.type === 'bonus' ? 'bg-[#F2C777]/15' : 'bg-red-500/15'
-                    }`}>
-                      <span className={`material-symbols-outlined text-lg ${
-                        entry.type === 'earn' ? 'text-emerald-400' :
-                        entry.type === 'bonus' ? 'text-[#F2C777]' : 'text-red-400'
-                      }`}>
-                        {entry.type === 'earn' ? 'add_circle' : entry.type === 'bonus' ? 'star' : 'remove_circle'}
-                      </span>
-                    </div>
-
-                    {/* Texto */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-bold text-sm">{entry.title}</p>
-                      <p className="text-white/40 text-xs mt-0.5">{entry.subtitle}</p>
-                    </div>
-
-                    {/* Fecha */}
-                    <p className="text-white/30 text-xs hidden md:block flex-shrink-0">{entry.date}</p>
-
-                    {/* Puntos */}
-                    <div className="text-right flex-shrink-0">
-                      <p className={`font-mono font-black text-sm ${entry.points > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {entry.points > 0 ? '+' : ''}{entry.points} pts
-                      </p>
-                      <p className="text-white/30 text-xs">Saldo: {entry.balance.toLocaleString('es-MX')}</p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="px-6 py-6 text-sm text-white/45">No hay movimientos disponibles para esta sesión.</p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* ═══════════════════════════════════
-            TAB: CÓMO GANAR
-        ═══════════════════════════════════ */}
-        {activeTab === 'como-ganar' && (
-          <div className="space-y-10">
-            <div>
-              <h2 className="font-epilogue font-black text-white uppercase tracking-tight text-2xl mb-2">
-                Cómo Acumular Puntos
-              </h2>
-              <p className="text-white/40 text-sm">Cada interacción con POP te acerca al siguiente nivel.</p>
-            </div>
-
-            {/* Grid de formas de ganar */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {earnWays.map((way, i) => (
-                <div key={i} className="bg-[#181413] p-6 border border-[#F2C777]/8 hover:border-[#F2C777]/25 transition-colors group">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-[#D96725]/15 flex items-center justify-center flex-shrink-0 group-hover:bg-[#D96725]/25 transition-colors">
-                      <span className="material-symbols-outlined text-[#D96725] text-xl">{way.icon}</span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <p className="font-epilogue font-black text-white text-sm uppercase tracking-tight">{way.label}</p>
-                        <span className="text-[#F2C777] font-mono font-black text-xs whitespace-nowrap">{way.pts}</span>
-                      </div>
-                      <p className="text-white/40 text-xs leading-relaxed">{way.desc}</p>
-                    </div>
+                  <div className="text-right">
+                    <div className="text-on-surface font-bold text-xl tabular-nums">1,250</div>
+                    <div className="text-stone-500 text-xs uppercase tracking-widest">de 1,500 para Elite</div>
                   </div>
                 </div>
-              ))}
-            </div>
-
-            {/* Tabla de beneficios por tier */}
-            <div className="bg-[#181413] p-6 md:p-8">
-              <h3 className="font-epilogue font-black text-white uppercase tracking-tight text-xl mb-6 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#F2C777]">table_chart</span>
-                Beneficios por Nivel
-              </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[500px]">
-                  <thead>
-                    <tr className="border-b border-[#F2C777]/10">
-                      <th className="text-left text-[10px] font-black uppercase tracking-widest text-white/30 pb-4 pr-4">Beneficio</th>
-                      {tiers.map((t) => (
-                        <th key={t.key} className="text-center pb-4 px-2">
-                          <span className="material-symbols-outlined text-xl block mx-auto" style={{ color: t.color, fontVariationSettings: "'FILL' 1" }}>{t.icon}</span>
-                          <span className="text-[10px] font-black uppercase tracking-wider block mt-1" style={{ color: t.color }}>{t.label.replace('POP ', '')}</span>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#F2C777]/8">
-                    {[
-                      { benefit: 'Multiplicador de puntos', values: ['×1', '×1.1', '×1.25', '×1.5'] },
-                      { benefit: 'Promo exclusiva mensual', values: ['—', '✓', '✓', '✓'] },
-                      { benefit: 'Bebida gratis cumpleaños', values: ['—', '✓', '✓', '✓'] },
-                      { benefit: 'Acceso temprano promos', values: ['—', '—', '✓', '✓'] },
-                      { benefit: 'Rollo gratis (5 visitas)', values: ['—', '—', '✓', '✓'] },
-                      { benefit: 'Mesa prioritaria', values: ['—', '—', '—', '✓'] },
-                      { benefit: 'Buffet mensual gratis', values: ['—', '—', '—', '✓'] },
-                    ].map((row, i) => (
-                      <tr key={i}>
-                        <td className="text-white/50 text-sm py-3 pr-4">{row.benefit}</td>
-                        {row.values.map((val, j) => (
-                          <td key={j} className="text-center py-3 px-2">
-                            <span className={`text-sm font-bold ${val === '✓' ? 'text-emerald-400' : val === '—' ? 'text-white/15' : 'text-[#F2C777] font-mono'}`}>
-                              {val}
-                            </span>
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs text-stone-500 uppercase tracking-widest">
+                    <span>Progreso</span>
+                    <span>83%</span>
+                  </div>
+                  <div className="h-2 bg-stone-900 w-full overflow-hidden rounded-full">
+                    <div className="h-full bg-gradient-to-r from-orange-500 to-secondary w-[83%] rounded-full" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <div className="bg-stone-900/50 p-4 rounded">
+                    <div className="text-xs text-stone-500 uppercase tracking-widest mb-1">Puntos ganados este mes</div>
+                    <div className="text-secondary font-black text-2xl tabular-nums">+340</div>
+                  </div>
+                  <div className="bg-stone-900/50 p-4 rounded">
+                    <div className="text-xs text-stone-500 uppercase tracking-widest mb-1">Visitas este mes</div>
+                    <div className="text-on-surface font-black text-2xl tabular-nums">3</div>
+                  </div>
+                </div>
               </div>
-            </div>
+            </section>
 
-            {/* CTA registro */}
-            <div className="relative overflow-hidden bg-gradient-to-r from-[#732817]/40 to-[#181413] border border-[#732817]/40 p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              <div className="pointer-events-none absolute right-0 top-0 w-48 h-full opacity-10"
-                style={{ background: 'radial-gradient(circle at right, #D96725, transparent)' }}
-              />
-              <div className="relative z-10">
-                <p className="text-[#F2C777] font-black text-sm uppercase tracking-widest mb-2">¿Aún no tienes cuenta?</p>
-                <h3 className="font-epilogue font-black text-white text-2xl uppercase tracking-tight">
-                  Regístrate y gana <span className="text-[#F2C777]">50 pts</span> de bienvenida
-                </h3>
+            {/* Recent Orders */}
+            <section className="space-y-6">
+              <h2 className="text-stone-500 font-epilogue uppercase text-[10px] tracking-widest px-1">Últimos Pedidos</h2>
+              <div className="space-y-3">
+                {/* Order 1 */}
+                <div className="glass-card p-5 flex items-center justify-between group hover:bg-stone-900 transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-orange-500/10 flex items-center justify-center rounded">
+                      <span className="material-symbols-outlined text-orange-400 text-xl">ramen_dining</span>
+                    </div>
+                    <div>
+                      <div className="font-epilogue font-bold text-sm">Roll California + 2 piezas extras</div>
+                      <div className="text-xs text-stone-500 uppercase tracking-wider">Oct 12 • $2,450 MXN</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-1 bg-green-900/30 text-green-400">Completado</span>
+                    <button className="text-stone-500 hover:text-primary transition-colors">
+                      <span className="material-symbols-outlined text-sm">description</span>
+                    </button>
+                  </div>
+                </div>
+                {/* Order 2 */}
+                <div className="glass-card p-5 flex items-center justify-between group hover:bg-stone-900 transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-orange-500/10 flex items-center justify-center rounded">
+                      <span className="material-symbols-outlined text-orange-400 text-xl">ramen_dining</span>
+                    </div>
+                    <div>
+                      <div className="font-epilogue font-bold text-sm">Wings Teriyaki + Boneless BBQ</div>
+                      <div className="text-xs text-stone-500 uppercase tracking-wider">Oct 5 • $1,210 MXN</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-1 bg-blue-900/30 text-blue-400">En Camino</span>
+                    <button className="text-stone-500 hover:text-primary transition-colors">
+                      <span className="material-symbols-outlined text-sm">description</span>
+                    </button>
+                  </div>
+                </div>
               </div>
-              <a
-                href="/registro"
-                className="relative z-10 flex-shrink-0 bg-[#D96725] hover:bg-[#F2C777] hover:text-[#0D0D0D] text-white font-black uppercase tracking-widest px-8 py-4 transition-all duration-300 active:scale-95 flex items-center gap-3"
-              >
-                Crear cuenta gratis
-                <span className="material-symbols-outlined">arrow_forward</span>
-              </a>
-            </div>
+
+              {/* Order Status Tracker */}
+              <div className="bg-surface-container-low p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="font-epilogue font-bold uppercase tracking-widest text-sm">Rastreo de Pedido Activo</h3>
+                  <span className="text-[10px] text-secondary uppercase tracking-widest font-bold">En Preparación</span>
+                </div>
+                <div className="relative flex justify-between">
+                  <div className="absolute top-2 left-0 right-0 h-[2px] bg-stone-800">
+                    <div className="h-full bg-secondary w-1/3" />
+                  </div>
+                  {[
+                    { label: 'Confirmado', active: true },
+                    { label: 'Preparando', active: true },
+                    { label: 'En Camino', active: false },
+                    { label: 'Entregado', active: false },
+                  ].map((step) => (
+                    <div key={step.label} className="relative z-10 flex flex-col items-center">
+                      <div className={`w-4 h-4 rounded-full border-4 border-surface-container-low ${step.active ? 'bg-secondary' : 'bg-stone-800'}`} />
+                      <span className="text-[10px] font-epilogue mt-3 text-stone-500 uppercase tracking-tighter">{step.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* Datos Fiscales y Facturas Recientes */}
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <h2 className="text-stone-500 font-epilogue uppercase text-[10px] tracking-widest px-1">Datos Fiscales</h2>
+                <div className="bg-surface-container-low p-6 flex flex-col gap-3">
+                  <div className="flex justify-between items-center border-b border-stone-800 pb-3">
+                    <span className="text-stone-400 text-sm">RFC</span>
+                    <span className="font-mono text-secondary font-bold">SOFJ880421H34</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-stone-800 pb-3">
+                    <span className="text-stone-400 text-sm">Razón Social</span>
+                    <span className="text-on-surface text-sm font-bold">Sofía Jiménez Pérez</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-1">
+                    <span className="text-stone-400 text-sm">Uso CFDI</span>
+                    <span className="text-on-surface text-sm">Gastos en general</span>
+                  </div>
+                  <button className="mt-4 text-primary text-xs font-bold uppercase tracking-widest flex items-center gap-2 hover:gap-3 transition-all">
+                    Editar Perfil Fiscal <span className="material-symbols-outlined text-sm">chevron_right</span>
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-6">
+                <h2 className="text-stone-500 font-epilogue uppercase text-[10px] tracking-widest px-1">Facturas Recientes</h2>
+                <div className="space-y-3">
+                  <div className="glass-card p-4 flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                      <div className="p-2 bg-stone-900">
+                        <span className="material-symbols-outlined text-stone-500">picture_as_pdf</span>
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold">Consumo 12/Oct</div>
+                        <div className="text-[10px] text-stone-500 uppercase">$2,450.00 MXN</div>
+                      </div>
+                    </div>
+                    <button className="text-orange-400">
+                      <span className="material-symbols-outlined">download</span>
+                    </button>
+                  </div>
+                  <div className="glass-card p-4 flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                      <div className="p-2 bg-stone-900">
+                        <span className="material-symbols-outlined text-stone-500">picture_as_pdf</span>
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold">Consumo 05/Oct</div>
+                        <div className="text-[10px] text-stone-500 uppercase">$1,210.00 MXN</div>
+                      </div>
+                    </div>
+                    <button className="text-orange-400">
+                      <span className="material-symbols-outlined">download</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
           </div>
-        )}
-      </div>
-    </main>
+
+          {/* Sidebar Content (Column 9-12) */}
+          <aside className="md:col-span-4 space-y-12">
+            {/* Reservation Card */}
+            <section className="space-y-6">
+              <h2 className="text-stone-500 font-epilogue uppercase text-[10px] tracking-widest px-1">Próxima Reserva</h2>
+              <div className="relative overflow-hidden group">
+                <div className="h-48 w-full overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    alt="Atmospheric dimly lit high-end restaurant dining room with dark wood furniture and warm amber lighting"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuJxJQ8Yov3h-rdfOh-roeN8Dr0XdASO8zeHu0GW4xfjKjjskW7777abibu0ipYE_K8YdM1H2vw8OC-gQ8IAbr-3MFjlXgmUKc0_jSMBHLMfjUj_cUcizUEUevg9XGWs-Jys5nJzBSrTqKISNwz8BR-yrbGzJ41pg-mYoHWl9r3Zl5W0RBuIBUho_pptkY3fX1UPiTegonwOl8osxZI7Xju7afX4rpA1_flW2-GbC4PNNRHwpCw_brDqYQbgXQTioe-BjVlbWal7AG"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/60 to-transparent p-6 flex flex-col justify-end">
+                  <div className="text-orange-400 font-epilogue font-black text-2xl mb-1">Viernes, 20 Oct</div>
+                  <div className="text-stone-300 text-sm font-bold">20:30 hrs • 4 Personas</div>
+                  <div className="flex gap-2 mt-4">
+                    <button className="px-4 py-2 bg-primary-container text-on-primary-container text-[10px] font-bold uppercase tracking-widest hover:brightness-110 transition-all">Modificar</button>
+                    <button className="px-4 py-2 border border-stone-700 text-stone-300 text-[10px] font-bold uppercase tracking-widest hover:bg-stone-900 transition-all">Cancelar</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Loyalty Snapshot */}
+            <section className="bg-surface-container-high p-8">
+              <h2 className="text-stone-500 font-epilogue uppercase text-[10px] tracking-widest mb-6">Loyalty Program</h2>
+              <div className="space-y-6">
+                <div className="flex justify-between items-end">
+                  <span className="font-epilogue text-3xl font-black text-secondary">POP VIP</span>
+                  <span className="text-[10px] text-stone-500 uppercase tracking-widest pb-1">250 pts para Elite</span>
+                </div>
+                <div className="h-1 bg-stone-900 w-full overflow-hidden">
+                  <div className="h-full bg-secondary w-3/4" />
+                </div>
+                <p className="text-xs text-stone-400 italic">Disfrutas de +25% puntos, roll gratis cada 5 visitas y acceso anticipado a promociones.</p>
+                <button className="w-full py-3 border border-secondary/20 text-secondary text-[10px] font-bold uppercase tracking-widest hover:bg-secondary/5 transition-all">
+                  Ver todos mis beneficios
+                </button>
+              </div>
+            </section>
+
+            {/* Config Section */}
+            <section className="space-y-4">
+              <h2 className="text-stone-500 font-epilogue uppercase text-[10px] tracking-widest px-1">Configuración</h2>
+              <div className="space-y-1">
+                <a className="flex items-center gap-4 p-4 hover:bg-stone-900 transition-colors group" href="#">
+                  <span className="material-symbols-outlined text-stone-500 group-hover:text-primary transition-colors">manage_accounts</span>
+                  <span className="text-sm font-bold">Perfil de Usuario</span>
+                </a>
+                <a className="flex items-center gap-4 p-4 hover:bg-stone-900 transition-colors group" href="#">
+                  <span className="material-symbols-outlined text-stone-500 group-hover:text-primary transition-colors">credit_card</span>
+                  <span className="text-sm font-bold">Métodos de Pago</span>
+                </a>
+                <a className="flex items-center gap-4 p-4 hover:bg-stone-900 transition-colors group" href="#">
+                  <span className="material-symbols-outlined text-stone-500 group-hover:text-primary transition-colors">shield_person</span>
+                  <span className="text-sm font-bold">Privacidad y Seguridad</span>
+                </a>
+                <a className="flex items-center gap-4 p-4 hover:bg-stone-900 transition-colors group text-error/80" href="#">
+                  <span className="material-symbols-outlined">logout</span>
+                  <span className="text-sm font-bold">Cerrar Sesión</span>
+                </a>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </main>
+
+      {/* Bottom NavBar – Solo móvil */}
+      <nav className="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-2 bg-stone-950 z-50 shadow-[0_-10px_40px_rgba(217,103,37,0.08)]">
+        <a className="flex flex-col items-center justify-center text-stone-500 font-epilogue text-[10px] hover:text-orange-200" href="/">
+          <span className="material-symbols-outlined mb-1">home</span>
+          Inicio
+        </a>
+        <a className="flex flex-col items-center justify-center text-stone-500 font-epilogue text-[10px] hover:text-orange-200" href="/menu">
+          <span className="material-symbols-outlined mb-1">restaurant</span>
+          Menú
+        </a>
+        <a className="flex flex-col items-center justify-center text-stone-500 font-epilogue text-[10px] hover:text-orange-200" href="/facturacion">
+          <span className="material-symbols-outlined mb-1">shopping_bag</span>
+          Factura
+        </a>
+        <a className="flex flex-col items-center justify-center text-orange-400 bg-stone-900 rounded-xl px-4 py-1 font-epilogue text-[10px]" href="/dashboard/puntos">
+          <span className="material-symbols-outlined mb-1" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
+          Perfil
+        </a>
+      </nav>
+    </div>
   );
 }

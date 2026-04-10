@@ -1,283 +1,388 @@
-export default function RankingPage() {
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'POP BAR STARS | Dashboard Mesero',
+  description: 'Panel de rendimiento para meseros de POP Perote. Consulta tus puntos, ranking y metas del mes.',
+};
+
+export default function RankingMeseroDashboardPage() {
   return (
-    <main className="pt-20 pb-24 md:pb-12 md:pl-64 min-h-screen px-6 md:px-12 bg-surface">
-{/* Staff Header Section */}
-<section className="grid grid-cols-1 lg:grid-cols-12 gap-8 py-8 items-center border-b border-surface-container-high mb-8">
-<div className="lg:col-span-5 flex items-center gap-6">
-<div className="relative">
-<div className="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-secondary via-primary to-transparent">
-<img className="w-full h-full rounded-full object-cover" alt="professional headshot of a friendly waiter in dark modern restaurant uniform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkENiruVzKXJcyA9U_yr4Vg6acgmPfqCD_DFn7Rpg2fgMywIOglHHbq__Gsrd0J1hSNsWCqcFMJjPHU-g866_H8TSIH9SKZ50wFHWvYvlP8BFyd0kSIDkiaAtkfF0-zHlS8eI6QqrD1BrMBsyAnMbGDI3emBcYGohvOMcFjWUXttKB1YP9pH-rqbOlwMJGxHFI38WX2CBu-k1jetw5yQRDXhapEyYnaSIA9rRfHs4vYYdtBL5T9keBiI3HKSuRzM2L1jZQDZfH86uL"/>
-</div>
-<div className="absolute -bottom-1 -right-1 bg-secondary text-surface text-xs font-black p-1 rounded-full shadow-lg">
-<span className="material-symbols-outlined text-[16px]" data-icon="verified" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-</div>
-</div>
-<div>
-<h2 className="text-3xl font-headline font-black text-on-surface tracking-tight">¡Hola, Ricardo! 🌟</h2>
-<p className="text-on-surface/60 font-medium mt-1">Sigue así, estás cerca de la cima.</p>
-</div>
-</div>
-<div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-4">
-<div className="glass-card p-4 rounded-lg flex flex-col justify-center">
-<span className="text-xs uppercase tracking-widest text-secondary font-bold mb-1">Current Points</span>
-<span className="text-4xl font-headline font-black monospaced-stat text-on-surface">850 pts</span>
-</div>
-<div className="glass-card p-4 rounded-lg flex flex-col justify-center">
-<span className="text-xs uppercase tracking-widest text-secondary font-bold mb-1">Ranking Position</span>
-<div className="flex items-end gap-2">
-<span className="text-4xl font-headline font-black monospaced-stat text-on-surface">#2 de 8</span>
-<span className="material-symbols-outlined text-green-400 mb-1" data-icon="trending_up">trending_up</span>
-</div>
-</div>
-<div className="glass-card p-4 rounded-lg flex flex-col justify-center hidden sm:flex">
-<span className="text-xs uppercase tracking-widest text-secondary font-bold mb-1">Next Reward</span>
-<span className="text-sm font-headline font-bold text-on-surface truncate">Voucher Cena Premium</span>
-<div className="w-full bg-surface-container-high h-1 mt-2 rounded-full overflow-hidden">
-<div className="bg-primary w-3/4 h-full"></div>
-</div>
-</div>
-</div>
-</section>
-{/* Staggered Layout for Goals and Badges */}
-<div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-{/* Monthly Goals */}
-<div className="lg:col-span-1 space-y-6">
-<div className="flex items-center justify-between">
-<h3 className="text-xl font-headline font-black uppercase tracking-tight">Metas Mensuales</h3>
-<span className="material-symbols-outlined text-secondary/40" data-icon="calendar_month">calendar_month</span>
-</div>
-<div className="space-y-8">
-<div>
-<div className="flex justify-between items-center mb-2">
-<span className="text-sm font-bold uppercase tracking-widest text-on-surface/80">Bebidas Meta (12/15)</span>
-<span className="text-sm monospaced-stat text-secondary font-bold">80%</span>
-</div>
-<div className="h-2 bg-surface-container-high rounded-full overflow-hidden">
-<div className="h-full bg-gradient-to-r from-primary-container to-secondary w-[80%]"></div>
-</div>
-</div>
-<div>
-<div className="flex justify-between items-center mb-2">
-<span className="text-sm font-bold uppercase tracking-widest text-on-surface/80">Calificación Clientes (4.8/5.0)</span>
-<span className="text-sm monospaced-stat text-secondary font-bold">96%</span>
-</div>
-<div className="h-2 bg-surface-container-high rounded-full overflow-hidden">
-<div className="h-full bg-gradient-to-r from-primary-container to-secondary w-[96%]"></div>
-</div>
-</div>
-<div className="p-6 bg-primary-container/10 border border-primary-container/20 rounded-lg">
-<p className="text-sm text-primary leading-relaxed">
-<span className="font-bold">¡Tip de Estrella!</span> Ofrece la nueva <i>Margarita de Hibisco</i> como aperitivo para completar tu meta de bebidas esta semana.
-                        </p>
-</div>
-</div>
-</div>
-{/* Badges & Achievements */}
-<div className="lg:col-span-2 space-y-6">
-<div className="flex items-center justify-between">
-<h3 className="text-xl font-headline font-black uppercase tracking-tight">Insignias &amp; Logros</h3>
-<span className="text-sm font-bold text-secondary uppercase tracking-widest">Ver Todo</span>
-</div>
-<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-{/* Achievement: Reina Margarita */}
-<div className="glass-card p-4 rounded-xl flex flex-col items-center text-center group cursor-pointer hover:bg-secondary/10 transition-colors">
-<div className="w-16 h-16 bg-secondary/20 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-<span className="material-symbols-outlined text-secondary text-3xl" data-icon="crown" style={{ fontVariationSettings: "'FILL' 1" }}>crown</span>
-</div>
-<span className="text-[10px] uppercase font-black tracking-tighter leading-tight">Reina Margarita</span>
-</div>
-{/* Achievement: Racha de 5 días */}
-<div className="glass-card p-4 rounded-xl flex flex-col items-center text-center group cursor-pointer hover:bg-secondary/10 transition-colors">
-<div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-<span className="material-symbols-outlined text-primary text-3xl" data-icon="local_fire_department" style={{ fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
-</div>
-<span className="text-[10px] uppercase font-black tracking-tighter leading-tight">Racha 5 Días</span>
-</div>
-{/* Achievement: 5 Estrellas */}
-<div className="glass-card p-4 rounded-xl flex flex-col items-center text-center group cursor-pointer hover:bg-secondary/10 transition-colors">
-<div className="w-16 h-16 bg-secondary/20 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-<span className="material-symbols-outlined text-secondary text-3xl" data-icon="star" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-</div>
-<span className="text-[10px] uppercase font-black tracking-tighter leading-tight">5 Estrellas</span>
-</div>
-{/* Locked Achievement 1 */}
-<div className="bg-surface-container-low/50 border border-white/5 p-4 rounded-xl flex flex-col items-center text-center opacity-40 grayscale">
-<div className="w-16 h-16 bg-on-surface/10 rounded-full flex items-center justify-center mb-3 relative">
-<span className="material-symbols-outlined text-on-surface/40 text-3xl" data-icon="cocktail">liquor</span>
-<span className="material-symbols-outlined absolute top-0 right-0 text-xs text-on-surface" data-icon="lock">lock</span>
-</div>
-<span className="text-[10px] uppercase font-black tracking-tighter leading-tight">Mixólogo POP</span>
-</div>
-{/* Locked Achievement 2 */}
-<div className="bg-surface-container-low/50 border border-white/5 p-4 rounded-xl flex flex-col items-center text-center opacity-40 grayscale">
-<div className="w-16 h-16 bg-on-surface/10 rounded-full flex items-center justify-center mb-3 relative">
-<span className="material-symbols-outlined text-on-surface/40 text-3xl" data-icon="diamond" style={{ fontVariationSettings: "'FILL' 1" }}>diamond</span>
-<span className="material-symbols-outlined absolute top-0 right-0 text-xs text-on-surface" data-icon="lock">lock</span>
-</div>
-<span className="text-[10px] uppercase font-black tracking-tighter leading-tight">Barra de Oro</span>
-</div>
-</div>
-</div>
-</div>
-{/* Full Ranking Podium */}
-<section className="mb-12">
-<h3 className="text-2xl font-headline font-black uppercase tracking-tight mb-8 text-center">Podio del Mes</h3>
-<div className="flex flex-col md:flex-row items-end justify-center gap-4 md:gap-0 max-w-4xl mx-auto">
-{/* 2nd Place */}
-<div className="w-full md:w-1/3 flex flex-col items-center">
-<div className="relative mb-4">
-<img className="w-20 h-20 rounded-full border-4 border-slate-400" alt="close up profile of a waiter in a charcoal restaurant uniform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmXgmaKvBT10WRkAiRu5P1pVaxn9uMe4scNtzWLDyobTc0zo6U9CSX91vkIqugR2-hbShEzU5QTOBktm-SulSZoIS3YKaWvIg3MPKqRdE9kjTQyOI4HTxjjYQ_KPrEV4IZ-znzpDZxNEsrVJAKqvMMvZHuO3xx3VfROIiIQDBIr6lFQ0dBMa91hSPmnk1YJEuLMjH3-1e281g589hy8FO_vgi2JNxCzi7h0bFSYmFlbGGL51-b7EuyNtSPvb8Nlu1uCfz83J29gWWq"/>
-<div className="absolute -top-2 -right-2 bg-slate-400 text-surface text-xs font-black w-6 h-6 flex items-center justify-center rounded-full">2</div>
-</div>
-<div className="text-center mb-2">
-<div className="font-headline font-bold text-on-surface">Ricardo G.</div>
-<div className="text-xs monospaced-stat text-secondary">850 pts</div>
-</div>
-<div className="w-full bg-slate-800 h-32 rounded-t-xl flex items-center justify-center">
-<span className="material-symbols-outlined text-slate-500/30 text-6xl" data-icon="military_tech">military_tech</span>
-</div>
-</div>
-{/* 1st Place */}
-<div className="w-full md:w-1/3 flex flex-col items-center z-10">
-<div className="relative mb-4 scale-110">
-<div className="absolute -top-12 left-1/2 -translate-x-1/2">
-<span className="material-symbols-outlined text-secondary text-5xl" data-icon="crown" style={{ fontVariationSettings: "'FILL' 1" }}>crown</span>
-</div>
-<img className="w-24 h-24 rounded-full border-4 border-secondary" alt="professional male staff portrait with confident smile in editorial style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB5h0XECwNOMX4MFj7aikwYlrIMnvM4A1vIuNZf6F-541bEu3WEK7drIz2dG-GhF8zxVT5zBrjpc5t2EJuyvqZvWyZY_L_bAea2kyl3ou_Ag9blEj5TkhGSjBjawoqHulwjFz1OllXoOKHKeCUEMj4Wx6Es-LQtOJzrRKOElrxHmnw18e7lYQBNIFBboslwOdCsjAtk7LMk3bxrCtZeeQUlZU9ciOM34juZl19bOZxVwux1cvs_Q39Y7kNel5Gy7iQX5WufBQckVk6"/>
-<div className="absolute -top-2 -right-2 bg-secondary text-surface text-xs font-black w-8 h-8 flex items-center justify-center rounded-full shadow-lg shadow-secondary/20">1</div>
-</div>
-<div className="text-center mb-4">
-<div className="font-headline font-black text-secondary text-xl">Sofía V.</div>
-<div className="text-sm monospaced-stat text-on-surface font-bold">1,020 pts</div>
-</div>
-<div className="w-full bg-gradient-to-b from-secondary to-secondary-container h-48 rounded-t-xl flex items-center justify-center shadow-[0_-10px_40px_rgba(235,192,113,0.15)]">
-<span className="material-symbols-outlined text-on-secondary/40 text-8xl" data-icon="workspace_premium" style={{ fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
-</div>
-</div>
-{/* 3rd Place */}
-<div className="w-full md:w-1/3 flex flex-col items-center">
-<div className="relative mb-4">
-<img className="w-20 h-20 rounded-full border-4 border-amber-800" alt="side profile of a male server in a clean white shirt under dark warm restaurant lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8pKytxzlHd2qY17DzjH_CeA4Ao2NnsPHCm3XHtyycrWpCdw1kpj3wiybZ03R2ps3eGYymypsL2s98Zs2O1bHV8Y-eKuVjNJ_aAgMiEmJ4WEAVZgQ0BgWVrsbJgCHETzvBwzXg7myF5xAJI1zAmxzgH8pex9Ut7qdXp1TZzi9wI0u-TBlOtQNHiI7YmuH99W7OLFZYPnAIim9mdKrLithiBLj7tWpDDCJ9VwUwOoUGk_1Af6SFxl7xfknvewTF0VYPsGFjdHkEhdm3"/>
-<div className="absolute -top-2 -right-2 bg-amber-800 text-on-surface text-xs font-black w-6 h-6 flex items-center justify-center rounded-full">3</div>
-</div>
-<div className="text-center mb-2">
-<div className="font-headline font-bold text-on-surface">Marcos L.</div>
-<div className="text-xs monospaced-stat text-secondary">790 pts</div>
-</div>
-<div className="w-full bg-amber-950/40 h-24 rounded-t-xl flex items-center justify-center">
-<span className="material-symbols-outlined text-amber-900/30 text-6xl" data-icon="award_star">award_star</span>
-</div>
-</div>
-</div>
-</section>
-{/* Stats & Ranking Table Combined */}
-<div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-{/* Rest of Ranking (Table) */}
-<div className="xl:col-span-8 bg-surface-container-low rounded-xl overflow-hidden">
-<div className="p-6 border-b border-surface-container-high flex justify-between items-center">
-<h3 className="font-headline font-black uppercase tracking-tight">Clasificación General</h3>
-<span className="text-xs text-on-surface/40 uppercase tracking-widest">Actualizado hace 2 min</span>
-</div>
-<div className="overflow-x-auto">
-<table className="w-full text-left">
-<thead className="bg-surface-container text-[10px] uppercase tracking-widest font-black text-secondary">
-<tr>
-<th className="px-6 py-4">#</th>
-<th className="px-6 py-4">Staff</th>
-<th className="px-6 py-4">Puntos</th>
-<th className="px-6 py-4 text-center">Insignia Top</th>
-</tr>
-</thead>
-<tbody className="divide-y divide-surface-container-high">
-{/* Row 4 */}
-<tr className="hover:bg-surface-container-high/50 transition-colors">
-<td className="px-6 py-4 monospaced-stat font-bold text-on-surface/60">04</td>
-<td className="px-6 py-4">
-<div className="flex items-center gap-3">
-<div className="w-8 h-8 rounded-full bg-surface-variant flex-shrink-0"></div>
-<span className="font-headline font-semibold text-sm">Elena Torres</span>
-</div>
-</td>
-<td className="px-6 py-4 monospaced-stat text-secondary font-bold">710</td>
-<td className="px-6 py-4 text-center">
-<span className="material-symbols-outlined text-primary text-xl" data-icon="flash_on">flash_on</span>
-</td>
-</tr>
-{/* Row 5 */}
-<tr className="hover:bg-surface-container-high/50 transition-colors">
-<td className="px-6 py-4 monospaced-stat font-bold text-on-surface/60">05</td>
-<td className="px-6 py-4">
-<div className="flex items-center gap-3">
-<div className="w-8 h-8 rounded-full bg-surface-variant flex-shrink-0"></div>
-<span className="font-headline font-semibold text-sm">Pablo Méndez</span>
-</div>
-</td>
-<td className="px-6 py-4 monospaced-stat text-secondary font-bold">650</td>
-<td className="px-6 py-4 text-center">
-<span className="material-symbols-outlined text-on-surface/30 text-xl" data-icon="thumb_up">thumb_up</span>
-</td>
-</tr>
-{/* Row 6 */}
-<tr className="hover:bg-surface-container-high/50 transition-colors">
-<td className="px-6 py-4 monospaced-stat font-bold text-on-surface/60">06</td>
-<td className="px-6 py-4">
-<div className="flex items-center gap-3">
-<div className="w-8 h-8 rounded-full bg-surface-variant flex-shrink-0"></div>
-<span className="font-headline font-semibold text-sm">Diana Cruz</span>
-</div>
-</td>
-<td className="px-6 py-4 monospaced-stat text-secondary font-bold">590</td>
-<td className="px-6 py-4 text-center">
-<span className="material-symbols-outlined text-on-surface/30 text-xl" data-icon="timer">timer</span>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-{/* History & Stats */}
-<div className="xl:col-span-4 space-y-8">
-{/* Point Graph Placeholder */}
-<div className="glass-card p-6 rounded-xl">
-<h4 className="text-xs uppercase font-black tracking-widest text-secondary mb-6">Puntos por Semana</h4>
-<div className="h-40 flex items-end gap-2 px-2">
-<div className="flex-1 bg-surface-container-high h-[40%] rounded-sm hover:bg-primary transition-colors"></div>
-<div className="flex-1 bg-surface-container-high h-[65%] rounded-sm hover:bg-primary transition-colors"></div>
-<div className="flex-1 bg-primary h-[85%] rounded-sm"></div>
-<div className="flex-1 bg-surface-container-high h-[55%] rounded-sm hover:bg-primary transition-colors"></div>
-<div className="flex-1 bg-secondary h-full rounded-sm"></div>
-</div>
-<div className="flex justify-between mt-4 text-[10px] uppercase font-bold text-on-surface/40 monospaced-stat">
-<span>Sem 1</span>
-<span>Sem 2</span>
-<span>Sem 3</span>
-<span>Sem 4</span>
-<span>Actual</span>
-</div>
-</div>
-{/* Recent Achievement Timeline */}
-<div className="space-y-4">
-<h4 className="text-xs uppercase font-black tracking-widest text-secondary">Logros Recientes</h4>
-<div className="space-y-4 relative before:absolute before:left-3 before:top-4 before:bottom-4 before:w-[1px] before:bg-surface-container-high">
-<div className="relative pl-8">
-<div className="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-secondary ring-4 ring-surface"></div>
-<div className="text-sm font-headline font-bold">Insignia "5 Estrellas"</div>
-<div className="text-[10px] text-on-surface/40 uppercase tracking-widest">Hace 1 día • +50 pts</div>
-</div>
-<div className="relative pl-8">
-<div className="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-surface-container-high ring-4 ring-surface"></div>
-<div className="text-sm font-headline font-bold">Meta "Bebidas" (Fase 2)</div>
-<div className="text-[10px] text-on-surface/40 uppercase tracking-widest">Hace 3 días • +100 pts</div>
-</div>
-<div className="relative pl-8">
-<div className="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-surface-container-high ring-4 ring-surface"></div>
-<div className="text-sm font-headline font-bold">Perfect Attendance</div>
-<div className="text-[10px] text-on-surface/40 uppercase tracking-widest">Hace 1 semana • +20 pts</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</main>
+    <div className="dark min-h-screen bg-[#0D0D0D] text-on-surface font-body">
+      {/* Sidebar Navigation (Desktop) */}
+      <aside className="fixed left-0 top-0 h-full w-64 bg-stone-950 border-r border-stone-800/50 p-6 flex-col hidden md:flex z-40">
+        {/* Logo */}
+        <div className="mb-10">
+          <div className="text-xl font-black text-orange-500 font-epilogue uppercase tracking-widest">POP</div>
+          <div className="text-[10px] text-stone-500 uppercase tracking-widest font-epilogue">Bar Stars System</div>
+        </div>
+
+        {/* Nav Links */}
+        <nav className="space-y-1 flex-1">
+          <a className="flex items-center gap-3 px-4 py-3 text-orange-400 bg-stone-900/50 font-bold transition-all duration-300 rounded-lg group" href="#">
+            <span className="material-symbols-outlined text-orange-400" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
+            <span className="font-epilogue tracking-tight">Dashboard</span>
+          </a>
+          <a className="flex items-center gap-3 px-4 py-3 text-stone-400 hover:bg-stone-900 hover:text-white transition-all duration-300 rounded-lg group" href="#">
+            <span className="material-symbols-outlined">calendar_month</span>
+            <span className="font-epilogue tracking-tight">Reservaciones</span>
+          </a>
+          <a className="flex items-center gap-3 px-4 py-3 text-stone-400 hover:bg-stone-900 hover:text-white transition-all duration-300 rounded-lg group" href="#">
+            <span className="material-symbols-outlined">restaurant_menu</span>
+            <span className="font-epilogue tracking-tight">Menú</span>
+          </a>
+          <a className="flex items-center gap-3 px-4 py-3 text-stone-400 hover:bg-stone-900 hover:text-white transition-all duration-300 rounded-lg group" href="#">
+            <span className="material-symbols-outlined">group</span>
+            <span className="font-epilogue tracking-tight">Staff</span>
+          </a>
+          <a className="flex items-center gap-3 px-4 py-3 text-stone-400 hover:bg-stone-900 hover:text-white transition-all duration-300 rounded-lg group" href="#">
+            <span className="material-symbols-outlined">monitoring</span>
+            <span className="font-epilogue tracking-tight">Analíticas</span>
+          </a>
+        </nav>
+
+        {/* Profile Footer */}
+        <div className="mt-auto pt-6 border-t border-stone-800/50 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden border border-orange-500/30">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              alt="Ricardo S. – Mesero POP Perote"
+              className="w-full h-full object-cover"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7Kofx4LF_-ijlo739yBenoYaYbXzvXZrKihDJhdxiKnNZsxaa6OUlkZJMkFRMaFIZ2uZcEaOZipLxcZbYt_GQQhRgtanKtpjgqzmCj1J2XfRZd0kq_5i87qZZyZ_9wyKi4moTL3opdrtI1HnWO2w6Ajtz1ef7nbiSrMrmld4zTiv7NBZEQtHsJ5bYc13kQrw_OLrTYe9uKH3HXEz3q0SklYPWYfcEL87iMJzT0XGNFEEGQSPaJjSYlGiUPZUoiaizQwb9nHV-CTVB"
+            />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-on-surface">Ricardo S.</p>
+            <p className="text-[10px] text-orange-400 uppercase tracking-widest">Master Mesero</p>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content Canvas */}
+      <main className="md:ml-64 p-4 md:p-8 pb-32">
+        {/* Header Section */}
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+          <div>
+            <h1 className="text-4xl font-extrabold text-on-surface tracking-tighter mb-2 italic">¡Hola, Ricardo! 🌟</h1>
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest rounded-full border border-primary/20">
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                Turno: Activo
+              </span>
+              <span className="text-on-surface-variant text-sm font-light">ID: #MZ-8829-POP</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <button className="px-6 py-3 bg-surface-container-high text-on-surface text-sm font-bold tracking-tight hover:bg-surface-bright transition-all border border-outline-variant/30">
+              CHECK-OUT
+            </button>
+            <button className="px-8 py-3 bg-primary-container text-on-primary-container text-sm font-black tracking-tight hover:shadow-[0_0_20px_rgba(228,111,45,0.3)] transition-all">
+              RESERVACIÓN NUEVA
+            </button>
+          </div>
+        </header>
+
+        {/* Bento Grid Metrics */}
+        <section className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
+          <div className="md:col-span-1 glass-card p-6 flex flex-col justify-between">
+            <div className="flex justify-between items-start">
+              <span className="material-symbols-outlined text-secondary opacity-50">table_restaurant</span>
+              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Hoy</span>
+            </div>
+            <div className="mt-8">
+              <p className="text-4xl font-black tabular-nums">14</p>
+              <p className="text-sm text-on-surface-variant font-medium">Mesas atendidas</p>
+            </div>
+          </div>
+          <div className="md:col-span-1 glass-card p-6 flex flex-col justify-between">
+            <div className="flex justify-between items-start">
+              <span className="material-symbols-outlined text-secondary opacity-50">wine_bar</span>
+              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Ventas</span>
+            </div>
+            <div className="mt-8">
+              <p className="text-4xl font-black tabular-nums">42</p>
+              <p className="text-sm text-on-surface-variant font-medium">Bebidas vendidas</p>
+            </div>
+          </div>
+          <div className="md:col-span-2 bg-gradient-to-br from-primary-container to-tertiary-container p-6 flex flex-col justify-between relative overflow-hidden group">
+            <div className="absolute -right-4 -bottom-4 opacity-10 rotate-12 transition-transform group-hover:scale-110 duration-500">
+              <span className="material-symbols-outlined text-9xl">stars</span>
+            </div>
+            <div className="flex justify-between items-start">
+              <span className="material-symbols-outlined text-on-primary-container">star</span>
+              <span className="text-[10px] font-black text-on-primary-container uppercase tracking-widest">Bar Stars Loyalty</span>
+            </div>
+            <div className="mt-8">
+              <p className="text-5xl font-black text-on-primary-container tabular-nums">2,840</p>
+              <p className="text-sm text-on-primary-container/80 font-bold">Puntos Totales Ganados</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Orders Kanban + Sidebar */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Order Kanban */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold tracking-tight flex items-center gap-3">
+                <span className="w-1 h-6 bg-primary" />
+                Pedidos en Tiempo Real
+              </h2>
+              <div className="flex gap-2">
+                <span className="px-2 py-1 bg-surface-container-high rounded text-[10px] font-bold text-on-surface-variant">LISTA</span>
+                <span className="px-2 py-1 bg-primary text-on-primary rounded text-[10px] font-bold">KANBAN</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Pending */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between px-2">
+                  <span className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">Pendiente (2)</span>
+                </div>
+                <div className="glass-card p-4 border-l-2 border-l-stone-600">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="font-bold text-sm">Mesa 04</span>
+                    <span className="text-[10px] font-mono text-stone-500">#441</span>
+                  </div>
+                  <p className="text-xs text-on-surface-variant mb-4">2x Old Fashioned, 1x Tartare</p>
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-xs text-stone-500">schedule</span>
+                    <span className="text-[10px] text-stone-500">Hace 4 min</span>
+                  </div>
+                </div>
+                <div className="glass-card p-4 border-l-2 border-l-stone-600">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="font-bold text-sm">Mesa 12</span>
+                    <span className="text-[10px] font-mono text-stone-500">#445</span>
+                  </div>
+                  <p className="text-xs text-on-surface-variant mb-4">1x Ribeye, 1x Vino Tinto</p>
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-xs text-stone-500">schedule</span>
+                    <span className="text-[10px] text-stone-500">Hace 1 min</span>
+                  </div>
+                </div>
+              </div>
+              {/* Prepping */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between px-2">
+                  <span className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">Preparando (1)</span>
+                </div>
+                <div className="glass-card p-4 border-l-2 border-l-orange-500 bg-orange-500/5">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="font-bold text-sm">Mesa 08</span>
+                    <span className="text-[10px] font-mono text-stone-500">#439</span>
+                  </div>
+                  <p className="text-xs text-on-surface-variant mb-4">3x Margarita Hibisco, 2x Wings</p>
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-xs text-orange-500">local_fire_department</span>
+                    <span className="text-[10px] text-orange-500">+30 pts esperados</span>
+                  </div>
+                </div>
+              </div>
+              {/* Ready */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between px-2">
+                  <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest">Listo (1)</span>
+                </div>
+                <div className="glass-card p-4 border-l-2 border-l-green-500 bg-green-500/5">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="font-bold text-sm">Mesa 03</span>
+                    <span className="text-[10px] font-mono text-stone-500">#436</span>
+                  </div>
+                  <p className="text-xs text-on-surface-variant mb-4">4x Sushi Rolls, 2x Cocktails</p>
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-xs text-green-400">check_circle</span>
+                    <span className="text-[10px] text-green-400">Listo para entregar</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar: Ranking + Badges */}
+          <aside className="space-y-8">
+            {/* Live Ranking */}
+            <div className="glass-card p-6">
+              <h3 className="text-sm font-bold mb-6 tracking-widest uppercase flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>leaderboard</span>
+                Ranking en Vivo
+              </h3>
+              <div className="space-y-2">
+                {/* 1st Place */}
+                <div className="flex items-center justify-between p-3 bg-secondary/10 border border-secondary/30">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold text-secondary">1</span>
+                    <div className="w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center text-[8px] font-bold text-secondary">SV</div>
+                    <span className="text-xs font-bold text-secondary">Sofía V.</span>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold text-secondary">3,120</span>
+                </div>
+                {/* 2nd Place – Current user */}
+                <div className="flex items-center justify-between p-3 bg-primary/10 border border-primary/30">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold text-primary">2</span>
+                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-[8px] font-bold text-primary">RS</div>
+                    <span className="text-xs font-bold text-primary">Ricardo S.</span>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold text-primary">2,840</span>
+                </div>
+                {/* 3rd Place */}
+                <div className="flex items-center justify-between p-3 bg-stone-900/50">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold text-stone-500">3</span>
+                    <div className="w-6 h-6 rounded-full bg-stone-700/50 flex items-center justify-center text-[8px] font-bold text-stone-400">ML</div>
+                    <span className="text-xs font-bold text-on-surface/70">Marcos L.</span>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold text-stone-400">2,310</span>
+                </div>
+                {/* 4th Place */}
+                <div className="flex items-center justify-between p-3 bg-stone-900/30">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold text-stone-500">4</span>
+                    <div className="w-6 h-6 rounded-full bg-stone-700/50 flex items-center justify-center text-[8px] font-bold text-stone-400">ET</div>
+                    <span className="text-xs font-bold text-on-surface/50">Elena T.</span>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold text-stone-500">1,890</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Monthly Badges */}
+            <div className="glass-card p-6">
+              <h3 className="text-sm font-bold mb-6 tracking-widest uppercase">Badges del Mes</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col items-center gap-2 group">
+                  <div className="w-16 h-16 rounded-full bg-secondary/10 flex items-center justify-center border-2 border-secondary/20 group-hover:scale-110 transition-transform cursor-pointer">
+                    <span className="material-symbols-outlined text-secondary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>local_bar</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-center leading-tight">Queen Margarita</span>
+                </div>
+                <div className="flex flex-col items-center gap-2 group">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20 group-hover:scale-110 transition-transform cursor-pointer">
+                    <span className="material-symbols-outlined text-primary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-center leading-tight">5 Stars Mesero</span>
+                </div>
+                <div className="flex flex-col items-center gap-2 opacity-30 grayscale">
+                  <div className="w-16 h-16 rounded-full bg-stone-800 flex items-center justify-center border-2 border-dashed border-stone-700">
+                    <span className="material-symbols-outlined text-stone-500 text-3xl">timer</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-center leading-tight">Punctuality Pro</span>
+                </div>
+                <div className="flex flex-col items-center gap-2 opacity-30 grayscale">
+                  <div className="w-16 h-16 rounded-full bg-stone-800 flex items-center justify-center border-2 border-dashed border-stone-700">
+                    <span className="material-symbols-outlined text-stone-500 text-3xl">receipt_long</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-center leading-tight">Sales Shark</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        {/* History & Feed */}
+        <section className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Shift History Table */}
+          <div className="lg:col-span-2 glass-card overflow-hidden">
+            <div className="p-6 flex justify-between items-center border-b border-outline-variant/10">
+              <h3 className="text-sm font-bold tracking-widest uppercase">Historial de Turno</h3>
+              <button className="flex items-center gap-2 text-[10px] font-bold text-primary hover:underline">
+                <span className="material-symbols-outlined text-xs">download</span> EXPORTAR REPORTE
+              </button>
+            </div>
+            <table className="w-full text-left">
+              <thead className="bg-surface-container-low">
+                <tr>
+                  <th className="px-6 py-4 text-[10px] font-bold text-stone-500 uppercase tracking-widest">Hora</th>
+                  <th className="px-6 py-4 text-[10px] font-bold text-stone-500 uppercase tracking-widest">Mesa</th>
+                  <th className="px-6 py-4 text-[10px] font-bold text-stone-500 uppercase tracking-widest">Productos</th>
+                  <th className="px-6 py-4 text-[10px] font-bold text-stone-500 uppercase tracking-widest">Total</th>
+                  <th className="px-6 py-4 text-[10px] font-bold text-stone-500 uppercase tracking-widest">Puntos</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-outline-variant/10">
+                <tr className="hover:bg-surface-container-high transition-colors">
+                  <td className="px-6 py-4 text-xs tabular-nums">20:15</td>
+                  <td className="px-6 py-4 text-xs font-bold">T-04</td>
+                  <td className="px-6 py-4 text-xs text-on-surface-variant">3 Drinks, 1 Entrada</td>
+                  <td className="px-6 py-4 text-xs font-bold tabular-nums">$1,240.00</td>
+                  <td className="px-6 py-4 text-xs text-primary font-bold">+120</td>
+                </tr>
+                <tr className="hover:bg-surface-container-high transition-colors">
+                  <td className="px-6 py-4 text-xs tabular-nums">19:42</td>
+                  <td className="px-6 py-4 text-xs font-bold">T-09</td>
+                  <td className="px-6 py-4 text-xs text-on-surface-variant">5 Platos, 5 Drinks</td>
+                  <td className="px-6 py-4 text-xs font-bold tabular-nums">$4,850.00</td>
+                  <td className="px-6 py-4 text-xs text-primary font-bold">+480</td>
+                </tr>
+                <tr className="hover:bg-surface-container-high transition-colors">
+                  <td className="px-6 py-4 text-xs tabular-nums">19:10</td>
+                  <td className="px-6 py-4 text-xs font-bold">T-11</td>
+                  <td className="px-6 py-4 text-xs text-on-surface-variant">2 Drinks</td>
+                  <td className="px-6 py-4 text-xs font-bold tabular-nums">$420.00</td>
+                  <td className="px-6 py-4 text-xs text-primary font-bold">+40</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* System Notifications */}
+          <div className="glass-card p-6">
+            <h3 className="text-sm font-bold mb-6 tracking-widest uppercase">Notificaciones del Sistema</h3>
+            <div className="space-y-6">
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-tertiary/20 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-tertiary text-sm">campaign</span>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-on-surface">Alerta: Restock Bar</p>
+                  <p className="text-[10px] text-stone-500 mt-1">Mezcal &quot;Don Julio&quot; stock bajo. Informar a los clientes antes de tomar la orden.</p>
+                  <span className="text-[8px] text-stone-600 mt-2 block">HACE 10 MIN</span>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-primary text-sm">celebration</span>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-on-surface">¡Flash Bonus!</p>
+                  <p className="text-[10px] text-stone-500 mt-1">Puntos dobles por cada cóctel &quot;Summer Sunset&quot; vendido en la próxima hora.</p>
+                  <span className="text-[8px] text-stone-600 mt-2 block">HACE 25 MIN</span>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-stone-800 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-stone-500 text-sm">schedule</span>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-on-surface">Estado Cocina</p>
+                  <p className="text-[10px] text-stone-500 mt-1">Sección grill con alta capacidad. Demora en cortes +15 min.</p>
+                  <span className="text-[8px] text-stone-600 mt-2 block">HACE 45 MIN</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Bottom NavBar – Solo móvil */}
+      <nav className="fixed bottom-0 left-0 w-full flex md:hidden justify-around items-center px-4 pb-6 pt-2 bg-stone-950 shadow-[0_-10px_40px_rgba(217,103,37,0.08)] z-50">
+        <a className="flex flex-col items-center justify-center text-orange-400 bg-stone-900 rounded-xl px-4 py-1" href="#">
+          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>home</span>
+          <span className="font-epilogue text-[10px]">Inicio</span>
+        </a>
+        <a className="flex flex-col items-center justify-center text-stone-500 hover:text-orange-200 transition-colors" href="#">
+          <span className="material-symbols-outlined">restaurant</span>
+          <span className="font-epilogue text-[10px]">Pedidos</span>
+        </a>
+        <a className="flex flex-col items-center justify-center text-stone-500 hover:text-orange-200 transition-colors" href="#">
+          <span className="material-symbols-outlined">leaderboard</span>
+          <span className="font-epilogue text-[10px]">Ranking</span>
+        </a>
+        <a className="flex flex-col items-center justify-center text-stone-500 hover:text-orange-200 transition-colors" href="#">
+          <span className="material-symbols-outlined">person</span>
+          <span className="font-epilogue text-[10px]">Perfil</span>
+        </a>
+      </nav>
+    </div>
   );
 }
