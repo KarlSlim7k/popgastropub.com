@@ -29,6 +29,7 @@ Route::get('/ubicacion', [UbicacionController::class, 'show']);
 
 Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:auth-register');
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:auth-login');
+Route::get('/auth/social/providers', [SocialAuthController::class, 'providers']);
 Route::get('/auth/social/{provider}/redirect', [SocialAuthController::class, 'redirectToProvider'])
     ->whereIn('provider', ['google', 'facebook', 'x'])
     ->middleware('throttle:auth-social');

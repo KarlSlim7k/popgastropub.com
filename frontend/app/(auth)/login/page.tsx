@@ -40,6 +40,10 @@ interface RegisterFormData {
   termsAccepted: boolean;
 }
 
+interface SocialProvidersResponse {
+  providers?: Partial<Record<SocialProvider, { enabled?: boolean }>>;
+}
+
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://popgastropub.com/api').replace(/\/api\/?$/, '');
 
 function getErrorMessage(error: unknown): string {
@@ -55,6 +59,26 @@ function providerLabel(provider: SocialProvider | string): string {
   if (provider === 'facebook') return 'Facebook';
   if (provider === 'x') return 'X';
   return 'red social';
+}
+
+function socialErrorMessage(code: string, provider: SocialProvider | string): string {
+  if (code === 'provider_not_configured') {
+    return `El acceso con ${providerLabel(provider)} no esta disponible en este momento.`;
+  }
+
+  if (code === 'provider_callback_failed') {
+    return `No se pudo validar el acceso con ${providerLabel(provider)}. Intenta nuevamente.`;
+  }
+
+  if (code === 'provider_redirect_failed') {
+    return `No se pudo iniciar el acceso con ${providerLabel(provider)}. Intenta nuevamente.`;
+  }
+
+  if (code === 'email_not_available') {
+    return `Tu cuenta de ${providerLabel(provider)} no compartio correo electronico. Usa otro metodo de acceso.`;
+  }
+
+  return 'No fue posible completar el acceso social. Verifica permisos y vuelve a intentar.';
 }
 
 function socialButtonIcon(provider: SocialProvider) {
@@ -94,6 +118,11 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState<AuthTab | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
   const [statusSuccess, setStatusSuccess] = useState<string | null>(null);
+  const [socialAvailability, setSocialAvailability] = useState<Record<SocialProvider, boolean>>({
+    google: true,
+    facebook: true,
+    x: true,
+  });
 
   const [loginForm, setLoginForm] = useState<LoginFormData>({
     identifier: '',
@@ -129,6 +158,26 @@ export default function Login() {
   }, []);
 
   useEffect(() => {
+    fetchAPI<SocialProvidersResponse>('/auth/social/providers')
+      .then((response) => {
+        const providers = response.providers;
+
+        if (!providers) {
+          return;
+        }
+
+        setSocialAvailability((current) => ({
+          google: providers.google?.enabled ?? current.google,
+          facebook: providers.facebook?.enabled ?? current.facebook,
+          x: providers.x?.enabled ?? current.x,
+        }));
+      })
+      .catch(() => {
+        // Keep optimistic defaults when status endpoint is unavailable.
+      });
+  }, []);
+
+  useEffect(() => {
     if (typeof window === 'undefined') {
       return;
     }
@@ -147,7 +196,8 @@ export default function Login() {
     window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
 
     if (callbackError) {
-      setStatusError('No fue posible completar el acceso social. Verifica permisos y vuelve a intentar.');
+      setStatusSuccess(null);
+      setStatusError(socialErrorMessage(callbackError, provider));
       return;
     }
 
@@ -238,6 +288,12 @@ export default function Login() {
   }
 
   function startSocialAuth(provider: SocialProvider) {
+    if (!socialAvailability[provider]) {
+      setStatusSuccess(null);
+      setStatusError(`El acceso con ${providerLabel(provider)} no esta disponible en este momento.`);
+      return;
+    }
+
     setStatusError(null);
     setStatusSuccess(`Redirigiendo a ${providerLabel(provider)}...`);
     window.location.href = `${API_BASE_URL}/api/auth/social/${provider}/redirect`;
@@ -258,14 +314,21 @@ export default function Login() {
           <button
             key={provider}
             type="button"
-            className="w-12 h-12 flex rounded-md items-center justify-center border border-outline-variant/30 hover:border-secondary hover:bg-secondary/5 transition-all duration-300 group"
+            className={`w-12 h-12 flex rounded-md items-center justify-center border transition-all duration-300 group ${socialAvailability[provider] ? 'border-outline-variant/30 hover:border-secondary hover:bg-secondary/5' : 'border-outline-variant/15 opacity-45 cursor-not-allowed'}`}
             aria-label={providerLabel(provider)}
+            disabled={!socialAvailability[provider]}
             onClick={() => startSocialAuth(provider)}
           >
-            <span className="text-on-surface/60 group-hover:text-secondary">{socialButtonIcon(provider)}</span>
+            <span className={`text-on-surface/60 ${socialAvailability[provider] ? 'group-hover:text-secondary' : ''}`}>{socialButtonIcon(provider)}</span>
           </button>
         ))}
       </div>
+
+      {!socialAvailability.google && !socialAvailability.facebook && !socialAvailability.x && (
+        <p className="text-center text-[11px] text-on-surface/50 mt-2">
+          El acceso con redes sociales no esta disponible temporalmente.
+        </p>
+      )}
     </div>
   );
 
