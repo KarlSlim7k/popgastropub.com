@@ -43,15 +43,30 @@ services:
     restart: unless-stopped
     expose:
       - "9000"
+    command: >
+      sh -c "mkdir -p /var/www/html/storage/framework/cache/data /var/www/html/storage/framework/sessions /var/www/html/storage/framework/views /var/www/html/storage/logs /var/www/html/bootstrap/cache && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && chmod -R ug+rwX /var/www/html/storage /var/www/html/bootstrap/cache && php-fpm"
     environment:
       - APP_ENV=production
-      - APP_DEBUG=false
+      - APP_DEBUG=${APP_DEBUG:-false}
       - DB_CONNECTION=mysql
       - DB_HOST=mariadb
       - DB_PORT=3306
       - DB_DATABASE=pop_perote
       - DB_USERNAME=pop_user
       - DB_PASSWORD=${DB_PASSWORD}
+      - CACHE_STORE=${CACHE_STORE:-file}
+      - SESSION_DRIVER=${SESSION_DRIVER:-file}
+      - APP_URL=${APP_URL:-https://api.popgastropub.com}
+      - FRONTEND_URL=${FRONTEND_URL:-https://popgastropub.com}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI:-https://api.popgastropub.com/api/auth/social/google/callback}
+      - FACEBOOK_CLIENT_ID=${FACEBOOK_CLIENT_ID:-}
+      - FACEBOOK_CLIENT_SECRET=${FACEBOOK_CLIENT_SECRET:-}
+      - FACEBOOK_REDIRECT_URI=${FACEBOOK_REDIRECT_URI:-https://api.popgastropub.com/api/auth/social/facebook/callback}
+      - X_CLIENT_ID=${X_CLIENT_ID:-}
+      - X_CLIENT_SECRET=${X_CLIENT_SECRET:-}
+      - X_REDIRECT_URI=${X_REDIRECT_URI:-https://api.popgastropub.com/api/auth/social/x/callback}
     volumes:
       - ./backend/storage:/var/www/html/storage
       - ./backend/bootstrap/cache:/var/www/html/bootstrap/cache
