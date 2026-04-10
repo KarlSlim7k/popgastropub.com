@@ -186,7 +186,7 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <main className="pt-20 p-6 lg:p-10 min-h-screen bg-pop-black">
+    <main className="pt-24 lg:pt-20 p-4 lg:p-10 min-h-screen bg-pop-black">
       {/* Header Section */}
       <header className="mb-8 lg:mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
@@ -210,7 +210,7 @@ export default function AdminDashboardPage() {
       </header>
 
       {/* KPI Grid */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8" aria-label="Métricas principales">
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8 mb-10" aria-label="Métricas principales">
         {kpiData.map((kpi, index) => (
           <article
             key={index}
@@ -337,7 +337,7 @@ export default function AdminDashboardPage() {
       </section>
 
       {/* Secondary Grid */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-8">
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
         {/* Top 5 Meseros del Mes */}
         <article className="lg:col-span-2 bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-8 border border-white/5">
           <div className="flex justify-between items-center mb-10">
