@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/lib/auth-provider";
 
 const navItems = [
   { label: "Mi Dashboard", href: "/staff/dashboard", icon: "dashboard" },
@@ -18,6 +20,37 @@ interface StaffSidebarProps {
 
 export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {
   const pathname = usePathname();
+  const { session, logout } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const userName = session?.user?.name || "Ricardo S.";
+  const userInitials = userName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+  const userEmail = session?.user?.email || "";
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
+      }
+    }
+    if (showUserMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showUserMenu]);
+
+  const handleLogout = async () => {
+    setShowUserMenu(false);
+    onClose();
+    await logout();
+  };
 
   return (
     <>
@@ -76,18 +109,80 @@ export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {
           })}
         </div>
 
-        <div className="p-6 bg-[#131111] border-t border-[#1A1A1A]">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pop-orange to-pop-gold p-[2px]">
+        {/* User Section with Dropdown */}
+        <div className="relative bg-[#131111] border-t border-[#1A1A1A]" ref={menuRef}>
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="w-full p-6 flex items-center gap-4 hover:bg-white/5 transition-colors text-left"
+          >
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pop-orange to-pop-gold p-[2px] flex-shrink-0">
               <div className="w-full h-full rounded-full bg-pop-black flex items-center justify-center text-pop-gold font-bold text-xs uppercase">
-                RS
+                {userInitials}
               </div>
             </div>
-            <div>
-              <p className="text-xs font-bold text-white uppercase tracking-wider">Ricardo S.</p>
-              <p className="text-[10px] text-pop-orange font-bold uppercase">Master Mesero</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-white uppercase tracking-wider truncate">{userName}</p>
+              <p className="text-[10px] text-pop-orange font-bold uppercase">Staff</p>
             </div>
-          </div>
+            <span
+              className={`material-symbols-outlined text-gray-500 text-lg transition-transform duration-200 ${
+                showUserMenu ? "rotate-180" : ""
+              }`}
+            >
+              expand_more
+            </span>
+          </button>
+
+          {/* Dropdown Menu */}
+          {showUserMenu && (
+            <div className="absolute bottom-full left-0 right-0 bg-[#1C1B1B] border-t border-[#1A1A1A] border-b border-[#1A1A1A] shadow-[0_-10px_40px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-bottom-2 duration-200">
+              <div className="p-3 space-y-1">
+                {/* User Info Header */}
+                <div className="px-3 py-2 mb-1 bg-black/30 rounded-lg">
+                  <p className="text-xs font-bold text-white">{userName}</p>
+                  <p className="text-[10px] text-gray-500 truncate">{userEmail || "Staff POP Perote"}</p>
+                </div>
+
+                {/* Perfil */}
+                <Link
+                  href="/staff/perfil"
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    onClose();
+                  }}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"
+                >
+                  <span className="material-symbols-outlined text-lg text-gray-500">person_outline</span>
+                  Perfil
+                </Link>
+
+                {/* Configuración */}
+                <Link
+                  href="/staff/configuracion"
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    onClose();
+                  }}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"
+                >
+                  <span className="material-symbols-outlined text-lg text-gray-500">settings</span>
+                  Configuración
+                </Link>
+
+                {/* Divider */}
+                <div className="border-t border-[#1A1A1A] my-1" />
+
+                {/* Cerrar Sesión */}
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-error hover:bg-error/10 transition-all duration-200"
+                >
+                  <span className="material-symbols-outlined text-lg">logout</span>
+                  Cerrar Sesión
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
     </>
