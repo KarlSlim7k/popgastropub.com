@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import CustomCursor from '../components/ui/CustomCursor'
+import { AuthProvider } from '@/lib/auth-provider'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -27,8 +28,10 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <CustomCursor />
-        {children}
+        <AuthProvider>
+          <CustomCursor />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   )

@@ -58,3 +58,14 @@ export function clearAuthSession(): void {
 
   window.sessionStorage.removeItem(AUTH_SESSION_KEY);
 }
+
+export function getRoleDashboard(role?: string): string {
+  switch (role) {
+    case 'admin':
+      return '/admin/dashboard';
+    case 'mesero':
+      return '/ranking';
+    default:
+      return '/puntos';
+  }
+}

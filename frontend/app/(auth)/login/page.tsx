@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { fetchAPI, fetchWithAuth } from '@/lib/api';
-import { saveAuthSession } from '@/lib/auth-session';
+import { getRoleDashboard, saveAuthSession } from '@/lib/auth-session';
 
 type AuthTab = 'login' | 'register';
 type SocialProvider = 'google' | 'facebook' | 'x';
@@ -212,7 +212,7 @@ export default function Login() {
       .then((user) => {
         saveAuthSession({ token, user, provider });
         setStatusSuccess(`Acceso con ${providerLabel(provider)} completado. Redirigiendo...`);
-        router.push('/puntos');
+        router.push(getRoleDashboard(user.role));
       })
       .catch(() => {
         setStatusSuccess(null);
@@ -237,7 +237,7 @@ export default function Login() {
 
       saveAuthSession({ token: response.token, user: response.user, provider: 'password' });
       setStatusSuccess('Inicio de sesión exitoso. Redirigiendo...');
-      router.push('/puntos');
+      router.push(getRoleDashboard(response.user.role));
     } catch (error) {
       setStatusError(getErrorMessage(error));
     } finally {
@@ -279,7 +279,7 @@ export default function Login() {
 
       saveAuthSession({ token: response.token, user: response.user, provider: 'password' });
       setStatusSuccess('Cuenta creada correctamente. Ya tienes tus puntos de bienvenida.');
-      router.push('/puntos');
+      router.push(getRoleDashboard(response.user.role));
     } catch (error) {
       setStatusError(getErrorMessage(error));
     } finally {
