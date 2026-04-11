@@ -1,327 +1,219 @@
-import type { Metadata } from 'next';
+"use client";
 
-export const metadata: Metadata = {
-  title: 'POP Perote | Dashboard Cliente',
-  description: 'Tu espacio gastronómico exclusivo en POP Perote. Consulta tus puntos, pedidos y reservas.',
-};
+import { useAuth } from "@/lib/auth-provider";
+import { useState } from "react";
 
-export default function DashboardClientePage() {
+export default function PuntosPage() {
+  const { session, logout } = useAuth();
+  const userName = session?.user?.name || "Sofía Jiménez";
+  const userPoints = 1250;
+  const nextTierPoints = 1500;
+  const progress = (userPoints / nextTierPoints) * 100;
+
+  const [activeTab, setActiveTab] = useState<"beneficios" | "historial">("beneficios");
+
+  const recentActivity = [
+    { date: "12 OCT", description: "Consumo: Dragon Roll + Bebida", pts: "+185", type: "earn" },
+    { date: "08 OCT", description: "Bonificación: Visita de Martes", pts: "+50", type: "earn" },
+    { date: "01 OCT", description: "Canje: Bebida Gratis", pts: "-250", type: "redeem" },
+  ];
+
+  const benefits = [
+    { icon: "celebration", title: "Bebida cumpleañera", status: "Disponible" },
+    { icon: "stars", title: "+25% puntos por compra", status: "Activo" },
+    { icon: "confirmation_number", title: "Acceso VIP a eventos", status: "Activo" },
+  ];
+
   return (
-    <div className="dark">
-      {/* TopNavBar */}
-      <nav className="bg-stone-950/80 backdrop-blur-md fixed top-0 w-full z-50 flex justify-between items-center px-8 py-4 shadow-2xl shadow-orange-900/10">
-        <div className="text-xl font-black text-orange-500 font-epilogue uppercase tracking-widest">Pop Perote</div>
-        <div className="hidden md:flex items-center space-x-12">
-          <a className="font-epilogue uppercase text-sm tracking-widest text-stone-400 hover:text-orange-300 transition-colors" href="#">Explorar</a>
-          <a className="font-epilogue uppercase text-sm tracking-widest text-orange-400 border-b-2 border-orange-500 pb-1" href="#">Mi Mesa</a>
-          <a className="font-epilogue uppercase text-sm tracking-widest text-stone-400 hover:text-orange-300 transition-colors" href="#">Carta</a>
-          <a className="font-epilogue uppercase text-sm tracking-widest text-stone-400 hover:text-orange-300 transition-colors" href="#">Historial</a>
-        </div>
-        <div className="flex items-center space-x-6">
-          <button className="text-stone-400 hover:text-orange-300 transition-colors">
-            <span className="material-symbols-outlined">notifications</span>
-          </button>
-          <button className="text-stone-400 hover:text-orange-300 transition-colors">
-            <span className="material-symbols-outlined">account_circle</span>
-          </button>
-        </div>
-      </nav>
-
-      <main className="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto">
-        {/* Hero Header */}
-        <header className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
-          <div className="space-y-2">
-            <div className="flex items-center gap-4">
-              <h1 className="text-5xl md:text-7xl font-black font-epilogue tracking-tighter text-on-surface">¡Hola, Sofía! 👋</h1>
-              <span className="px-3 py-1 bg-secondary-container text-on-secondary-container font-epilogue text-[10px] font-bold uppercase tracking-widest rounded-lg">VIP Member</span>
-            </div>
-            <p className="text-stone-500 font-body text-lg max-w-md">Es un placer tenerte de vuelta en tu espacio gastronómico exclusivo.</p>
+    <main className="pt-24 lg:pt-32 p-4 lg:p-12 max-w-7xl mx-auto space-y-12">
+      {/* Hero Welcome */}
+      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
+        <div>
+          <h1 className="text-4xl lg:text-7xl font-black tracking-tighter text-white font-epilogue uppercase leading-none">
+            ¡Hola, {userName.split(" ")[0]}! 👋
+          </h1>
+          <div className="flex items-center gap-3 mt-4">
+             <span className="bg-pop-gold text-pop-black text-[10px] font-black uppercase px-3 py-1 rounded-full tracking-widest">POP VIP</span>
+             <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">Miembro desde Abril 2024</p>
           </div>
-          <div className="flex flex-col items-start md:items-end">
-            <span className="text-orange-400 font-epilogue text-4xl font-black tabular-nums">1,250</span>
-            <span className="text-stone-500 font-epilogue uppercase text-xs tracking-[0.2em]">Puntos Acumulados</span>
-          </div>
-        </header>
+        </div>
+        <div className="text-left lg:text-right">
+           <p className="text-5xl lg:text-6xl font-black text-pop-gold font-epilogue tracking-tighter leading-none">{userPoints.toLocaleString()}</p>
+           <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.3em] mt-2">Puntos Disponibles</p>
+        </div>
+      </header>
 
-        {/* Bento Grid Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-          {/* Main Content Area (Column 1-8) */}
-          <div className="md:col-span-8 space-y-12">
-            {/* Quick Actions Grid */}
-            <section>
-              <h2 className="text-stone-500 font-epilogue uppercase text-[10px] tracking-widest mb-6 px-1">Acciones Rápidas</h2>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <button className="glass-card p-6 flex flex-col items-start gap-4 hover:bg-stone-900 transition-all duration-300 group">
-                  <span className="material-symbols-outlined text-orange-400 text-3xl group-hover:scale-110 transition-transform">receipt_long</span>
-                  <span className="font-epilogue font-bold text-sm">Mis Pedidos</span>
-                </button>
-                <button className="glass-card p-6 flex flex-col items-start gap-4 hover:bg-stone-900 transition-all duration-300 group">
-                  <span className="material-symbols-outlined text-orange-400 text-3xl group-hover:scale-110 transition-transform">description</span>
-                  <span className="font-epilogue font-bold text-sm">Factura (CFDI)</span>
-                </button>
-                <button className="glass-card p-6 flex flex-col items-start gap-4 hover:bg-stone-900 transition-all duration-300 group border-primary-container/20">
-                  <span className="material-symbols-outlined text-secondary text-3xl group-hover:scale-110 transition-transform">stars</span>
-                  <span className="font-epilogue font-bold text-sm">POP Points</span>
-                </button>
-                <button className="glass-card p-6 flex flex-col items-start gap-4 hover:bg-stone-900 transition-all duration-300 group">
-                  <span className="material-symbols-outlined text-orange-400 text-3xl group-hover:scale-110 transition-transform">table_restaurant</span>
-                  <span className="font-epilogue font-bold text-sm">Reservar</span>
-                </button>
-              </div>
-            </section>
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+        
+        {/* Left Column: Card & Progress */}
+        <section className="lg:col-span-8 space-y-10">
+           
+           {/* Loyalty Card (Digital Check-in) */}
+           <article className="relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#1C1B1B] to-[#0D0D0D] p-[1.5px] rounded-3xl">
+                <div className="w-full h-full bg-[#0D0D0D] rounded-3xl overflow-hidden relative p-8 lg:p-10">
+                   {/* Card Texture/Pattern */}
+                   <div className="absolute top-0 right-0 w-64 h-64 bg-pop-gold/5 blur-[80px] -mr-32 -mt-32" />
+                   
+                   <div className="flex flex-col lg:flex-row justify-between gap-10 relative z-10">
+                      <div className="flex-1 space-y-8">
+                         <div>
+                            <span className="text-xs font-black text-pop-gold uppercase tracking-[0.4em]">Digital Membership</span>
+                            <h2 className="text-3xl font-black text-white uppercase mt-1">Obsidian Elite Card</h2>
+                         </div>
+                         <div className="space-y-1">
+                            <p className="text-xs text-gray-500 font-bold uppercase mt-1">ID Socio</p>
+                            <p className="text-xl font-mono text-white tracking-widest leading-none">#### #### #### 8291</p>
+                         </div>
+                         <div className="flex gap-10">
+                            <div>
+                               <p className="text-[10px] text-gray-500 font-bold uppercase">Nivel</p>
+                               <p className="text-sm font-black text-pop-gold uppercase">VIP Member</p>
+                            </div>
+                            <div>
+                               <p className="text-[10px] text-gray-500 font-bold uppercase">Expira</p>
+                               <p className="text-sm font-black text-white">12 / 2026</p>
+                            </div>
+                         </div>
+                      </div>
 
-            {/* Points Tier Section */}
-            <section className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-stone-500 font-epilogue uppercase text-[10px] tracking-widest px-1">Estado POP Points</h2>
-                <a href="/puntos" className="text-primary text-xs font-bold uppercase tracking-widest hover:underline">Ver todo</a>
-              </div>
-              <div className="bg-surface-container-low p-8 space-y-6">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="text-secondary font-epilogue font-black text-3xl">POP VIP</div>
-                    <div className="text-stone-400 text-sm mt-1">Nivel actual</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-on-surface font-bold text-xl tabular-nums">1,250</div>
-                    <div className="text-stone-500 text-xs uppercase tracking-widest">de 1,500 para Elite</div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs text-stone-500 uppercase tracking-widest">
-                    <span>Progreso</span>
-                    <span>83%</span>
-                  </div>
-                  <div className="h-2 bg-stone-900 w-full overflow-hidden rounded-full">
-                    <div className="h-full bg-gradient-to-r from-orange-500 to-secondary w-[83%] rounded-full" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4 pt-2">
-                  <div className="bg-stone-900/50 p-4 rounded">
-                    <div className="text-xs text-stone-500 uppercase tracking-widest mb-1">Puntos ganados este mes</div>
-                    <div className="text-secondary font-black text-2xl tabular-nums">+340</div>
-                  </div>
-                  <div className="bg-stone-900/50 p-4 rounded">
-                    <div className="text-xs text-stone-500 uppercase tracking-widest mb-1">Visitas este mes</div>
-                    <div className="text-on-surface font-black text-2xl tabular-nums">3</div>
-                  </div>
+                      {/* QR Code Section */}
+                      <div className="bg-white p-6 rounded-2xl flex flex-col items-center gap-3 w-fit mx-auto lg:mx-0 shadow-[0_0_30px_rgba(255,255,255,0.05)]">
+                         <div className="w-32 h-32 bg-black flex items-center justify-center">
+                            {/* Placeholder for QR - In real app use qrcode.react */}
+                            <span className="material-symbols-outlined text-white text-6xl">qr_code_2</span>
+                         </div>
+                         <p className="text-[8px] font-black uppercase text-black tracking-[0.2em] leading-none">Check-in at Bar</p>
+                      </div>
+                   </div>
                 </div>
               </div>
-            </section>
+           </article>
 
-            {/* Recent Orders */}
-            <section className="space-y-6">
-              <h2 className="text-stone-500 font-epilogue uppercase text-[10px] tracking-widest px-1">Últimos Pedidos</h2>
+           {/* Progress Tracker */}
+           <article className="bg-[#1C1B1B] p-8 lg:p-10 rounded-3xl border border-white/5 space-y-6">
+              <div className="flex justify-between items-end">
+                 <div>
+                    <h3 className="text-xs font-black text-gray-500 uppercase tracking-widest">Próximo Nivel</h3>
+                    <p className="text-2xl font-black text-white mt-1 uppercase">Hacia POP Elite 🏆</p>
+                 </div>
+                 <p className="text-sm font-black text-pop-gold">Faltan {nextTierPoints - userPoints} pts</p>
+              </div>
+              
               <div className="space-y-3">
-                {/* Order 1 */}
-                <div className="glass-card p-5 flex items-center justify-between group hover:bg-stone-900 transition-all">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-orange-500/10 flex items-center justify-center rounded">
-                      <span className="material-symbols-outlined text-orange-400 text-xl">ramen_dining</span>
-                    </div>
-                    <div>
-                      <div className="font-epilogue font-bold text-sm">Roll California + 2 piezas extras</div>
-                      <div className="text-xs text-stone-500 uppercase tracking-wider">Oct 12 • $2,450 MXN</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-1 bg-green-900/30 text-green-400">Completado</span>
-                    <button className="text-stone-500 hover:text-primary transition-colors">
-                      <span className="material-symbols-outlined text-sm">description</span>
-                    </button>
-                  </div>
-                </div>
-                {/* Order 2 */}
-                <div className="glass-card p-5 flex items-center justify-between group hover:bg-stone-900 transition-all">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-orange-500/10 flex items-center justify-center rounded">
-                      <span className="material-symbols-outlined text-orange-400 text-xl">ramen_dining</span>
-                    </div>
-                    <div>
-                      <div className="font-epilogue font-bold text-sm">Wings Teriyaki + Boneless BBQ</div>
-                      <div className="text-xs text-stone-500 uppercase tracking-wider">Oct 5 • $1,210 MXN</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-1 bg-blue-900/30 text-blue-400">En Camino</span>
-                    <button className="text-stone-500 hover:text-primary transition-colors">
-                      <span className="material-symbols-outlined text-sm">description</span>
-                    </button>
-                  </div>
-                </div>
+                 <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
+                    <span>VIP</span>
+                    <span className="text-pop-gold text-sm">{Math.round(progress)}%</span>
+                    <span>ELITE</span>
+                 </div>
+                 <div className="h-2 bg-pop-black rounded-full overflow-hidden border border-white/5 p-[1.5px]">
+                    <div className="h-full bg-gradient-to-r from-pop-orange to-pop-gold rounded-full shadow-[0_0_15px_rgba(242,199,119,0.3)] transition-all duration-1000" style={{ width: `${progress}%` }} />
+                 </div>
               </div>
+           </article>
 
-              {/* Order Status Tracker */}
-              <div className="bg-surface-container-low p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="font-epilogue font-bold uppercase tracking-widest text-sm">Rastreo de Pedido Activo</h3>
-                  <span className="text-[10px] text-secondary uppercase tracking-widest font-bold">En Preparación</span>
-                </div>
-                <div className="relative flex justify-between">
-                  <div className="absolute top-2 left-0 right-0 h-[2px] bg-stone-800">
-                    <div className="h-full bg-secondary w-1/3" />
-                  </div>
-                  {[
-                    { label: 'Confirmado', active: true },
-                    { label: 'Preparando', active: true },
-                    { label: 'En Camino', active: false },
-                    { label: 'Entregado', active: false },
-                  ].map((step) => (
-                    <div key={step.label} className="relative z-10 flex flex-col items-center">
-                      <div className={`w-4 h-4 rounded-full border-4 border-surface-container-low ${step.active ? 'bg-secondary' : 'bg-stone-800'}`} />
-                      <span className="text-[10px] font-epilogue mt-3 text-stone-500 uppercase tracking-tighter">{step.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
+           {/* Tabs: Beneficios vs Historial */}
+           <article>
+              <nav className="flex gap-8 border-b border-white/5 mb-8">
+                 {(["beneficios", "historial"] as const).map(tab => (
+                   <button 
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`pb-4 text-[10px] font-black uppercase tracking-widest transition-all relative ${activeTab === tab ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                   >
+                     {tab}
+                     {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-pop-gold" />}
+                   </button>
+                 ))}
+              </nav>
 
-            {/* Datos Fiscales y Facturas Recientes */}
-            <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-6">
-                <h2 className="text-stone-500 font-epilogue uppercase text-[10px] tracking-widest px-1">Datos Fiscales</h2>
-                <div className="bg-surface-container-low p-6 flex flex-col gap-3">
-                  <div className="flex justify-between items-center border-b border-stone-800 pb-3">
-                    <span className="text-stone-400 text-sm">RFC</span>
-                    <span className="font-mono text-secondary font-bold">SOFJ880421H34</span>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-stone-800 pb-3">
-                    <span className="text-stone-400 text-sm">Razón Social</span>
-                    <span className="text-on-surface text-sm font-bold">Sofía Jiménez Pérez</span>
-                  </div>
-                  <div className="flex justify-between items-center pt-1">
-                    <span className="text-stone-400 text-sm">Uso CFDI</span>
-                    <span className="text-on-surface text-sm">Gastos en general</span>
-                  </div>
-                  <button className="mt-4 text-primary text-xs font-bold uppercase tracking-widest flex items-center gap-2 hover:gap-3 transition-all">
-                    Editar Perfil Fiscal <span className="material-symbols-outlined text-sm">chevron_right</span>
-                  </button>
-                </div>
+              <div className="space-y-4">
+                 {activeTab === 'beneficios' ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                       {benefits.map((b, i) => (
+                         <div key={i} className="bg-[#1C1B1B] p-6 rounded-2xl border border-white/5 group hover:border-pop-gold/20 transition-all">
+                            <span className="material-symbols-outlined text-pop-gold text-3xl mb-4 group-hover:scale-110 transition-transform">{b.icon}</span>
+                            <p className="text-xs font-black text-white uppercase leading-tight mb-2">{b.title}</p>
+                            <span className="text-[9px] font-black text-pop-orange uppercase tracking-widest">{b.status}</span>
+                         </div>
+                       ))}
+                    </div>
+                 ) : (
+                    <div className="space-y-3">
+                       {recentActivity.map((a, i) => (
+                         <div key={i} className="bg-[#1C1B1B] p-5 rounded-2xl border border-white/5 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                               <span className="text-[10px] font-black text-gray-500 w-12">{a.date}</span>
+                               <p className="text-xs font-bold text-white uppercase">{a.description}</p>
+                            </div>
+                            <span className={`text-xs font-black ${a.type === 'earn' ? 'text-green-500' : 'text-pop-orange'}`}>
+                               {a.pts}
+                            </span>
+                         </div>
+                       ))}
+                    </div>
+                 )}
               </div>
-              <div className="space-y-6">
-                <h2 className="text-stone-500 font-epilogue uppercase text-[10px] tracking-widest px-1">Facturas Recientes</h2>
-                <div className="space-y-3">
-                  <div className="glass-card p-4 flex justify-between items-center">
+           </article>
+        </section>
+
+        {/* Right Column: Context/Shortcuts */}
+        <aside className="lg:col-span-4 space-y-10">
+           {/* Current Promo Banner */}
+           <article className="relative h-64 rounded-3xl overflow-hidden group">
+              <img 
+                src="https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=600&fit=crop" 
+                alt="Sushi" 
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent p-6 flex flex-col justify-end">
+                 <span className="text-[9px] font-black text-pop-gold uppercase tracking-widest mb-1">Membresía VIP</span>
+                 <h3 className="text-2xl font-black text-white uppercase leading-none">Promo 2x1 en Rolls Acevichados</h3>
+                 <p className="text-[10px] text-gray-400 mt-2 font-bold uppercase tracking-widest">Disponible cada Martes</p>
+              </div>
+           </article>
+
+           {/* Quick Action List */}
+           <section className="space-y-4">
+              <h3 className="text-xs font-black text-gray-500 uppercase tracking-widest px-1">Atajos</h3>
+              <div className="space-y-2">
+                 {[
+                   { label: "Historial de Pedidos", icon: "history", href: "/pedidos" },
+                   { label: "Mis Reservas", icon: "event_seat", href: "/reservas" },
+                   { label: "Gana 200 pts", icon: "group_add", href: "/referidos" },
+                   { label: "Mis Facturas (CFDI)", icon: "receipt_long", href: "/mis-facturas" },
+                 ].map((link, i) => (
+                   <a key={i} href={link.href} className="flex items-center justify-between bg-[#1C1B1B] p-5 rounded-2xl border border-white/5 hover:bg-white/[0.02] transition-all group">
+                      <div className="flex items-center gap-4">
+                         <span className="material-symbols-outlined text-pop-gold text-xl">{link.icon}</span>
+                         <span className="text-xs font-black text-white uppercase tracking-tight">{link.label}</span>
+                      </div>
+                      <span className="material-symbols-outlined text-gray-600 group-hover:translate-x-1 transition-transform">chevron_right</span>
+                   </a>
+                 ))}
+                 
+                 <button 
+                  onClick={() => logout()}
+                  className="flex items-center justify-between w-full bg-[#1C1B1B] p-5 rounded-2xl border border-white/5 hover:bg-red-500/5 hover:border-red-500/20 transition-all group group-logout mt-4"
+                 >
                     <div className="flex items-center gap-4">
-                      <div className="p-2 bg-stone-900">
-                        <span className="material-symbols-outlined text-stone-500">picture_as_pdf</span>
-                      </div>
-                      <div>
-                        <div className="text-sm font-bold">Consumo 12/Oct</div>
-                        <div className="text-[10px] text-stone-500 uppercase">$2,450.00 MXN</div>
-                      </div>
+                       <span className="material-symbols-outlined text-red-500/50 group-hover:text-red-500 text-xl transition-colors">logout</span>
+                       <span className="text-xs font-black text-white uppercase tracking-tight">Cerrar Sesión Segura</span>
                     </div>
-                    <button className="text-orange-400">
-                      <span className="material-symbols-outlined">download</span>
-                    </button>
-                  </div>
-                  <div className="glass-card p-4 flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                      <div className="p-2 bg-stone-900">
-                        <span className="material-symbols-outlined text-stone-500">picture_as_pdf</span>
-                      </div>
-                      <div>
-                        <div className="text-sm font-bold">Consumo 05/Oct</div>
-                        <div className="text-[10px] text-stone-500 uppercase">$1,210.00 MXN</div>
-                      </div>
-                    </div>
-                    <button className="text-orange-400">
-                      <span className="material-symbols-outlined">download</span>
-                    </button>
-                  </div>
-                </div>
+                    <span className="material-symbols-outlined text-gray-600 group-hover:translate-x-1 transition-transform">chevron_right</span>
+                 </button>
               </div>
-            </section>
-          </div>
+           </section>
 
-          {/* Sidebar Content (Column 9-12) */}
-          <aside className="md:col-span-4 space-y-12">
-            {/* Reservation Card */}
-            <section className="space-y-6">
-              <h2 className="text-stone-500 font-epilogue uppercase text-[10px] tracking-widest px-1">Próxima Reserva</h2>
-              <div className="relative overflow-hidden group">
-                <div className="h-48 w-full overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    alt="Atmospheric dimly lit high-end restaurant dining room with dark wood furniture and warm amber lighting"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuJxJQ8Yov3h-rdfOh-roeN8Dr0XdASO8zeHu0GW4xfjKjjskW7777abibu0ipYE_K8YdM1H2vw8OC-gQ8IAbr-3MFjlXgmUKc0_jSMBHLMfjUj_cUcizUEUevg9XGWs-Jys5nJzBSrTqKISNwz8BR-yrbGzJ41pg-mYoHWl9r3Zl5W0RBuIBUho_pptkY3fX1UPiTegonwOl8osxZI7Xju7afX4rpA1_flW2-GbC4PNNRHwpCw_brDqYQbgXQTioe-BjVlbWal7AG"
-                  />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/60 to-transparent p-6 flex flex-col justify-end">
-                  <div className="text-orange-400 font-epilogue font-black text-2xl mb-1">Viernes, 20 Oct</div>
-                  <div className="text-stone-300 text-sm font-bold">20:30 hrs • 4 Personas</div>
-                  <div className="flex gap-2 mt-4">
-                    <button className="px-4 py-2 bg-primary-container text-on-primary-container text-[10px] font-bold uppercase tracking-widest hover:brightness-110 transition-all">Modificar</button>
-                    <button className="px-4 py-2 border border-stone-700 text-stone-300 text-[10px] font-bold uppercase tracking-widest hover:bg-stone-900 transition-all">Cancelar</button>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Loyalty Snapshot */}
-            <section className="bg-surface-container-high p-8">
-              <h2 className="text-stone-500 font-epilogue uppercase text-[10px] tracking-widest mb-6">Loyalty Program</h2>
-              <div className="space-y-6">
-                <div className="flex justify-between items-end">
-                  <span className="font-epilogue text-3xl font-black text-secondary">POP VIP</span>
-                  <span className="text-[10px] text-stone-500 uppercase tracking-widest pb-1">250 pts para Elite</span>
-                </div>
-                <div className="h-1 bg-stone-900 w-full overflow-hidden">
-                  <div className="h-full bg-secondary w-3/4" />
-                </div>
-                <p className="text-xs text-stone-400 italic">Disfrutas de +25% puntos, roll gratis cada 5 visitas y acceso anticipado a promociones.</p>
-                <button className="w-full py-3 border border-secondary/20 text-secondary text-[10px] font-bold uppercase tracking-widest hover:bg-secondary/5 transition-all">
-                  Ver todos mis beneficios
-                </button>
-              </div>
-            </section>
-
-            {/* Config Section */}
-            <section className="space-y-4">
-              <h2 className="text-stone-500 font-epilogue uppercase text-[10px] tracking-widest px-1">Configuración</h2>
-              <div className="space-y-1">
-                <a className="flex items-center gap-4 p-4 hover:bg-stone-900 transition-colors group" href="#">
-                  <span className="material-symbols-outlined text-stone-500 group-hover:text-primary transition-colors">manage_accounts</span>
-                  <span className="text-sm font-bold">Perfil de Usuario</span>
-                </a>
-                <a className="flex items-center gap-4 p-4 hover:bg-stone-900 transition-colors group" href="#">
-                  <span className="material-symbols-outlined text-stone-500 group-hover:text-primary transition-colors">credit_card</span>
-                  <span className="text-sm font-bold">Métodos de Pago</span>
-                </a>
-                <a className="flex items-center gap-4 p-4 hover:bg-stone-900 transition-colors group" href="#">
-                  <span className="material-symbols-outlined text-stone-500 group-hover:text-primary transition-colors">shield_person</span>
-                  <span className="text-sm font-bold">Privacidad y Seguridad</span>
-                </a>
-                <a className="flex items-center gap-4 p-4 hover:bg-stone-900 transition-colors group text-error/80" href="#">
-                  <span className="material-symbols-outlined">logout</span>
-                  <span className="text-sm font-bold">Cerrar Sesión</span>
-                </a>
-              </div>
-            </section>
-          </aside>
-        </div>
-      </main>
-
-      {/* Bottom NavBar – Solo móvil */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-2 bg-stone-950 z-50 shadow-[0_-10px_40px_rgba(217,103,37,0.08)]">
-        <a className="flex flex-col items-center justify-center text-stone-500 font-epilogue text-[10px] hover:text-orange-200" href="/">
-          <span className="material-symbols-outlined mb-1">home</span>
-          Inicio
-        </a>
-        <a className="flex flex-col items-center justify-center text-stone-500 font-epilogue text-[10px] hover:text-orange-200" href="/menu">
-          <span className="material-symbols-outlined mb-1">restaurant</span>
-          Menú
-        </a>
-        <a className="flex flex-col items-center justify-center text-stone-500 font-epilogue text-[10px] hover:text-orange-200" href="/facturacion">
-          <span className="material-symbols-outlined mb-1">shopping_bag</span>
-          Factura
-        </a>
-        <a className="flex flex-col items-center justify-center text-orange-400 bg-stone-900 rounded-xl px-4 py-1 font-epilogue text-[10px]" href="/puntos">
-          <span className="material-symbols-outlined mb-1" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
-          Perfil
-        </a>
-      </nav>
-    </div>
+           {/* Support Card */}
+           <article className="bg-[#1C1B1B] p-8 rounded-3xl border-2 border-white/5 border-dashed text-center">
+              <span className="material-symbols-outlined text-gray-600 text-4xl mb-4">support_agent</span>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-widest leading-relaxed">¿Necesitas ayuda con tus puntos?</p>
+              <button className="text-pop-gold text-[10px] font-black uppercase mt-4 underline underline-offset-4 decoration-pop-gold/30">Contactar Soporte VIP</button>
+           </article>
+        </aside>
+      </div>
+    </main>
   );
 }
