@@ -50,6 +50,21 @@ class User extends Authenticatable
         return 'fan';
     }
 
+    public function reservas()
+    {
+        return $this->hasMany(Reserva::class);
+    }
+
+    public function pedidos()
+    {
+        return $this->hasMany(Pedido::class);
+    }
+
+    public function redemptions()
+    {
+        return $this->hasMany(RewardRedemption::class);
+    }
+
     public function facturas()
     {
         return $this->hasMany(Factura::class);
