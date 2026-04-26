@@ -310,15 +310,6 @@ export default function MenuExperience() {
                         {item.name}
                       </h3>
 
-                      {/* Estrellas — solo desktop */}
-                      <div className="hidden md:flex text-[#F2C777] mt-2">
-                        {Array.from({ length: 5 }).map((_, index) => (
-                          <span className="material-symbols-outlined text-[18px]" key={`${item.id}-${index}`}>
-                            {index < item.rating ? 'star' : 'star_half'}
-                          </span>
-                        ))}
-                      </div>
-
                       {/* Precio + Botón */}
                       <div className="mt-auto pt-2 md:mt-6 md:pt-0">
                         {/* Precio */}

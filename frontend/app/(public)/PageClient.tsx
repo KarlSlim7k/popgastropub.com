@@ -16,14 +16,52 @@ const HERO_SLIDES = [
 
 const WHATSAPP_PHONE = '522828253243';
 
+function getOpenStatus(): { isOpen: boolean; label: string; colorClass: string; dotClass: string } {
+  const now = new Date();
+  const day = now.getDay();
+  const hour = now.getHours();
+  const minute = now.getMinutes();
+  const time = hour + minute / 60;
+
+  let openTime: number;
+  let closeTime: number;
+
+  if (day === 2) {
+    return { isOpen: false, label: 'CERRADO', colorClass: 'text-red-500', dotClass: 'bg-red-500' };
+  } else if (day === 1 || day === 3 || day === 4) {
+    openTime = 14;
+    closeTime = 21.5;
+  } else if (day === 5 || day === 6) {
+    openTime = 14;
+    closeTime = 22;
+  } else {
+    // Sunday
+    openTime = 14;
+    closeTime = 21;
+  }
+
+  const isOpen = time >= openTime && time < closeTime;
+  return {
+    isOpen,
+    label: isOpen ? 'ABIERTO AHORA' : 'CERRADO',
+    colorClass: isOpen ? 'text-[#4CAF50]' : 'text-red-500',
+    dotClass: isOpen ? 'bg-[#4CAF50]' : 'bg-red-500',
+  };
+}
+
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [openStatus, setOpenStatus] = useState<{ isOpen: boolean; label: string; colorClass: string; dotClass: string } | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
     }, 5000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    setOpenStatus(getOpenStatus());
   }, []);
 
   const goToSlide = useCallback((index: number) => {
@@ -57,7 +95,7 @@ export default function Home() {
             <button
               key={index}
               aria-label={`Ir a imagen ${index + 1}`}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentSlide ? 'bg-[#EBC071] scale-110' : 'bg-white/30 hover:bg-white/60'}`}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentSlide ? 'bg-[#F2C777] scale-110' : 'bg-white/30 hover:bg-white/60'}`}
               onClick={() => goToSlide(index)}
               type="button"
             />
@@ -66,10 +104,10 @@ export default function Home() {
 
         <div className="relative z-10 text-center px-4 max-w-5xl">
           <div className="mb-6 opacity-0 animate-[fade-in_1s_ease-out_forwards]">
-            <span className="text-[#EBC071] font-black text-6xl md:text-9xl font-headline tracking-tighter block scale-110">POP</span>
+            <span className="text-[#F2C777] font-black text-6xl md:text-9xl font-headline tracking-tighter block scale-110">POP</span>
           </div>
           <h1 className="text-on-surface font-headline font-black text-4xl md:text-7xl mb-4 tracking-tight leading-none uppercase">
-            Pop Perote está <span className="text-[#EBC071]">riquísimo</span>
+            Pop Perote está <span className="text-[#F2C777]">riquísimo</span>
           </h1>
           <p className="text-on-surface font-body text-lg md:text-2xl font-light tracking-[0.3em] uppercase mb-10">
             Sushi · Alitas · Boneless · Crepas · Snacks
@@ -83,15 +121,15 @@ export default function Home() {
             >
               🔥 HAZ TU PEDIDO AHORA
             </a>
-            <a className="border-2 border-[#EBC071] text-[#EBC071] hover:bg-[#EBC071] hover:text-black transition-all duration-300 font-black py-4 px-10 text-lg rounded-sm" href="/menu">
+            <a className="border-2 border-[#F2C777] text-[#F2C777] hover:bg-[#F2C777] hover:text-black transition-all duration-300 font-black py-4 px-10 text-lg rounded-sm" href="/menu">
               📍 VER MENÚ
             </a>
           </div>
         </div>
 
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-          <span className="text-[10px] tracking-widest font-bold text-[#EBC071]/60 uppercase">Discover</span>
-          <div className="w-[1px] h-12 bg-gradient-to-b from-[#EBC071] to-transparent animate-pulse"></div>
+          <span className="text-[10px] tracking-widest font-bold text-[#F2C777]/60 uppercase">Discover</span>
+          <div className="w-[1px] h-12 bg-gradient-to-b from-[#F2C777] to-transparent animate-pulse"></div>
         </div>
       </header>
 
@@ -100,7 +138,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="bg-gradient-to-r from-[#732817] to-surface-container-low p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 group">
             <div className="space-y-4 text-center md:text-left">
-              <span className="bg-[#EBC071] text-surface font-black text-[10px] px-3 py-1 inline-block animate-pulse tracking-widest">🔥 PROMO ACTIVA</span>
+              <span className="bg-[#F2C777] text-surface font-black text-[10px] px-3 py-1 inline-block animate-pulse tracking-widest">🔥 PROMO ACTIVA</span>
               <h2 className="text-secondary font-headline text-3xl md:text-5xl font-black">Sushiércoles - 2x1 en Rollos Seleccionados</h2>
               <p className="text-on-surface/70 font-body max-w-xl">Aprovecha todos los miércoles nuestra promoción estrella. El mejor sushi de Perote al doble de sabor.</p>
             </div>
@@ -115,7 +153,7 @@ export default function Home() {
       <section className="py-24 bg-surface">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="text-center mb-16">
-            <h3 className="text-[#EBC071] font-headline text-5xl font-black tracking-tighter uppercase mb-4">Nuestro Menú</h3>
+            <h3 className="text-[#F2C777] font-headline text-5xl font-black tracking-tighter uppercase mb-4">Nuestro Menú</h3>
             <div className="w-24 h-1 bg-[#D96725] mx-auto"></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -129,7 +167,7 @@ export default function Home() {
                 <h4 className="text-4xl font-headline font-black text-on-surface mb-2 tracking-tighter">🍣 SUSHI</h4>
                 <div className="md:h-0 md:opacity-0 md:group-hover:h-auto md:group-hover:opacity-100 transition-all duration-500 overflow-hidden h-auto opacity-100">
                   <p className="text-on-surface/70 text-sm mb-4">Desde los clásicos hasta nuestras creaciones de autor más atrevidas.</p>
-                  <span className="text-[#EBC071] font-black text-sm flex items-center gap-2">EXPLORAR <span className="material-symbols-outlined text-sm">add</span></span>
+                  <span className="text-[#F2C777] font-black text-sm flex items-center gap-2">EXPLORAR <span className="material-symbols-outlined text-sm">add</span></span>
                 </div>
               </div>
             </a>
@@ -140,7 +178,7 @@ export default function Home() {
                 <h4 className="text-4xl font-headline font-black text-on-surface mb-2 tracking-tighter">🍗 ALITAS</h4>
                 <div className="md:h-0 md:opacity-0 md:group-hover:h-auto md:group-hover:opacity-100 transition-all duration-500 overflow-hidden h-auto opacity-100">
                   <p className="text-on-surface/70 text-sm mb-4">El toque crujiente perfecto con nuestras salsas secretas.</p>
-                  <span className="text-[#EBC071] font-black text-sm flex items-center gap-2">EXPLORAR <span className="material-symbols-outlined text-sm">add</span></span>
+                  <span className="text-[#F2C777] font-black text-sm flex items-center gap-2">EXPLORAR <span className="material-symbols-outlined text-sm">add</span></span>
                 </div>
               </div>
             </a>
@@ -151,7 +189,7 @@ export default function Home() {
                 <h4 className="text-4xl font-headline font-black text-on-surface mb-2 tracking-tighter">🔥 BONELESS</h4>
                 <div className="md:h-0 md:opacity-0 md:group-hover:h-auto md:group-hover:opacity-100 transition-all duration-500 overflow-hidden h-auto opacity-100">
                   <p className="text-on-surface/70 text-sm mb-4">Pechuga de pollo seleccionada, empanizada al momento.</p>
-                  <span className="text-[#EBC071] font-black text-sm flex items-center gap-2">EXPLORAR <span className="material-symbols-outlined text-sm">add</span></span>
+                  <span className="text-[#F2C777] font-black text-sm flex items-center gap-2">EXPLORAR <span className="material-symbols-outlined text-sm">add</span></span>
                 </div>
               </div>
             </a>
@@ -162,7 +200,7 @@ export default function Home() {
                 <h4 className="text-4xl font-headline font-black text-on-surface mb-2 tracking-tighter">🥞 CREPAS</h4>
                 <div className="md:h-0 md:opacity-0 md:group-hover:h-auto md:group-hover:opacity-100 transition-all duration-500 overflow-hidden h-auto opacity-100">
                   <p className="text-on-surface/70 text-sm mb-4">Dulces o saladas, preparadas con nuestra receta tradicional.</p>
-                  <span className="text-[#EBC071] font-black text-sm flex items-center gap-2">EXPLORAR <span className="material-symbols-outlined text-sm">add</span></span>
+                  <span className="text-[#F2C777] font-black text-sm flex items-center gap-2">EXPLORAR <span className="material-symbols-outlined text-sm">add</span></span>
                 </div>
               </div>
             </a>
@@ -173,7 +211,7 @@ export default function Home() {
                 <h4 className="text-4xl font-headline font-black text-on-surface mb-2 tracking-tighter">🍹 BEBIDAS</h4>
                 <div className="md:h-0 md:opacity-0 md:group-hover:h-auto md:group-hover:opacity-100 transition-all duration-500 overflow-hidden h-auto opacity-100">
                   <p className="text-on-surface/70 text-sm mb-4">Coctelería, refrescos y nuestras mezclas especiales.</p>
-                  <span className="text-[#EBC071] font-black text-sm flex items-center gap-2">EXPLORAR <span className="material-symbols-outlined text-sm">add</span></span>
+                  <span className="text-[#F2C777] font-black text-sm flex items-center gap-2">EXPLORAR <span className="material-symbols-outlined text-sm">add</span></span>
                 </div>
               </div>
             </a>
@@ -184,7 +222,7 @@ export default function Home() {
                 <h4 className="text-4xl font-headline font-black text-on-surface mb-2 tracking-tighter">🍿 SNACKS</h4>
                 <div className="md:h-0 md:opacity-0 md:group-hover:h-auto md:group-hover:opacity-100 transition-all duration-500 overflow-hidden h-auto opacity-100">
                   <p className="text-on-surface/70 text-sm mb-4">Para picar y compartir con amigos.</p>
-                  <span className="text-[#EBC071] font-black text-sm flex items-center gap-2">EXPLORAR <span className="material-symbols-outlined text-sm">add</span></span>
+                  <span className="text-[#F2C777] font-black text-sm flex items-center gap-2">EXPLORAR <span className="material-symbols-outlined text-sm">add</span></span>
                 </div>
               </div>
             </a>
@@ -194,32 +232,32 @@ export default function Home() {
 
       {/*  1.4 POP Points Teaser  */}
       <section className="py-24 tonal-shift relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuD2hmeimk38LN89FIqqBtxoAgiBvqUhE9sgEQE_CaEurxuIp6NipabWfwvGA1BOMiBrzQlU1WvnkAGzPkV7JBBYwT1_Y2lbhswGFiBr_V5L9AXxdKaRHFTQLCZSVSox8qltaQ3tDjQGQ1EO-kJ6wPb33fq14JhZzWtJFkFKTfIMa4oapD2mB5JRNj9S8eMPARWNmHRK5hFAxs50u_qmlH-zpm8TMCEFCnD1OQEiF3WLlxMFKKDbBI5RYLCtH5_nF_BH4QLC5_3iKLqc')" }}></div>
+        <div className="absolute inset-0 opacity-0 pointer-events-none"></div>
         <div className="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
           <div className="text-center mb-16">
-            <h3 className="text-[#EBC071] font-headline text-4xl md:text-6xl font-black tracking-tighter uppercase leading-none">Acumula Puntos.<br />Canjea Premios.</h3>
+            <h3 className="text-[#F2C777] font-headline text-4xl md:text-6xl font-black tracking-tighter uppercase leading-none">Acumula Puntos.<br />Canjea Premios.</h3>
             <p className="text-on-surface/60 mt-6 max-w-2xl mx-auto font-body">Únete a nuestra comunidad y haz que cada bocado cuente. Sube de nivel y desbloquea beneficios exclusivos.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
             <a className="glass p-6 text-center transform hover:-translate-y-2 transition-transform duration-500" href="/puntos">
               <span className="material-symbols-outlined text-[#FFB693] text-5xl mb-4" style={{ fontVariationSettings: "'FILL' 1" }}>military_tech</span>
               <h5 className="text-on-surface font-headline font-bold text-xl mb-1 uppercase">Fan</h5>
-              <p className="text-[10px] text-[#EBC071] tracking-widest font-black uppercase">Nivel 01</p>
+              <p className="text-[10px] text-[#F2C777] tracking-widest font-black uppercase">Nivel 01</p>
             </a>
             <a className="glass p-6 text-center transform hover:-translate-y-2 transition-transform duration-500" href="/puntos">
               <span className="material-symbols-outlined text-[#FFB693] text-5xl mb-4" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
               <h5 className="text-on-surface font-headline font-bold text-xl mb-1 uppercase">Lover</h5>
-              <p className="text-[10px] text-[#EBC071] tracking-widest font-black uppercase">Nivel 02</p>
+              <p className="text-[10px] text-[#F2C777] tracking-widest font-black uppercase">Nivel 02</p>
             </a>
-            <a className="glass p-6 text-center border-2 border-[#EBC071]/40 transform hover:-translate-y-2 transition-transform duration-500" href="/puntos">
-              <span className="material-symbols-outlined text-[#EBC071] text-5xl mb-4" style={{ fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
+            <a className="glass p-6 text-center border-2 border-[#F2C777]/40 transform hover:-translate-y-2 transition-transform duration-500" href="/puntos">
+              <span className="material-symbols-outlined text-[#F2C777] text-5xl mb-4" style={{ fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
               <h5 className="text-on-surface font-headline font-bold text-xl mb-1 uppercase">VIP</h5>
-              <p className="text-[10px] text-[#EBC071] tracking-widest font-black uppercase">Nivel 03</p>
+              <p className="text-[10px] text-[#F2C777] tracking-widest font-black uppercase">Nivel 03</p>
             </a>
             <a className="glass p-6 text-center transform hover:-translate-y-2 transition-transform duration-500" href="/puntos">
               <span className="material-symbols-outlined text-[#D96725] text-5xl mb-4" style={{ fontVariationSettings: "'FILL' 1" }}>diamond</span>
               <h5 className="text-on-surface font-headline font-bold text-xl mb-1 uppercase">Elite</h5>
-              <p className="text-[10px] text-[#EBC071] tracking-widest font-black uppercase">Nivel 04</p>
+              <p className="text-[10px] text-[#F2C777] tracking-widest font-black uppercase">Nivel 04</p>
             </a>
           </div>
           <div className="mt-16 text-center">
@@ -235,14 +273,19 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
             <div>
-              <h3 className="text-[#EBC071] font-headline text-4xl font-black uppercase tracking-tighter mb-2">Lo que dicen nuestros clientes</h3>
+              <h3 className="text-[#F2C777] font-headline text-4xl font-black uppercase tracking-tighter mb-2">Lo que dicen nuestros clientes</h3>
               <p className="text-on-surface/50 font-body">Basado en más de 1,200 reseñas reales.</p>
             </div>
-            <div className="flex items-center gap-4 bg-surface-container-high px-6 py-3 rounded-sm border border-outline-variant/10">
+            <a
+              href="https://www.google.com/maps/place/POP+Perote,+Justo+Sierra+No.+11,+Col.+Amado+Nervo,+Perote,+Ver."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-4 bg-surface-container-high px-6 py-3 rounded-sm border border-outline-variant/10 cursor-pointer hover:bg-surface-container-highest transition-colors"
+            >
               <Image alt="Google Logo" width={24} height={24} src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_M7ZLydxa1eruvCDljLoqVBQ0t7xlUq0In9gp1Z_Z9TKr_ITzUvWXXWC5nTtVCOz-kLmaQL-qxWKM79gjHtzGf5vb-1OWwbrZAXvcdsp8OWeiBcECg7At6NAQPrx20Vf_kR7QCVvZur6P-b08Xpiiyehy2JhqYo9-0FELyjpYB2xx4qlVgbcT53jYIKwcQsvT96ki0AULJUdzUpRnb3AIyji4YO21g9Y5ZI0DTWv-IeLyAIgnUsvYTqb5-OM8YbtHA8J_l91x0sKx" />
               <div className="text-left">
-                <p className="text-[10px] font-black tracking-widest text-[#EBC071]">EXCELENTE</p>
-                <div className="flex text-[#EBC071] text-xs">
+                <p className="text-[10px] font-black tracking-widest text-[#F2C777]">EXCELENTE</p>
+                <div className="flex text-[#F2C777] text-xs">
                   <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                   <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                   <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
@@ -250,7 +293,7 @@ export default function Home() {
                   <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                 </div>
               </div>
-            </div>
+            </a>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="surface-container p-8 relative">
@@ -259,7 +302,7 @@ export default function Home() {
                 <Image width={48} height={48} className="rounded-full object-cover grayscale" alt="Sofía Martínez" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBc6nI0OS5XX5sTvv7yr7Tn9PXzA_8moLQ4gD52so-5uHLIKCTtSccKBJvSwRzZaHC-OFvkxzwYUuz9KsVR7S_iti0SF6OouH7iIQr-Oz4ETpnCUaEJZ9lKjdaqURYwMZFTwS4dNKF3UeG0VRX625CJ0VlHx35JIgy0YpeXhUxzp_BAN3ZlUWsxll2R7AOwTbgARbxoYjiiueBtBSh7YZfIhobwLQdEdVMLnM4qbRU4ghJWM0EReUG8jTADcxgULx4LQ1ifv55AVZzE" />
                 <div>
                   <p className="text-on-surface font-bold">Sofía Martínez</p>
-                  <div className="flex text-[#EBC071] text-[10px]">
+                  <div className="flex text-[#F2C777] text-[10px]">
                     <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                     <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                     <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
@@ -276,7 +319,7 @@ export default function Home() {
                 <Image width={48} height={48} className="rounded-full object-cover grayscale" alt="Ricardo Luna" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSxJFpqeMXI_-crak6XYBsj-MbSwDX7_smH9Xz84BoJoVkawHvy_ErmmitpKkDINIXcyLQWaP8GqxRi8RPlhMT_Xde25mcXzgszFFid6dQkOoFWKTMclqMGhHPM_yYcGqXxEXCXr1G16abnBerLA5HASDDTPT9grJPTAYEMF9D2lfp-plYCZN9c1zrUqzuEHyeKCQsaBz4D9V8ThYnEu5dxnwjQrh1usydvJwvpu5AqCRMg_HiuwDaxGUtYAqPg3BlCj4FQFeR3Jtq" />
                 <div>
                   <p className="text-on-surface font-bold">Ricardo Luna</p>
-                  <div className="flex text-[#EBC071] text-[10px]">
+                  <div className="flex text-[#F2C777] text-[10px]">
                     <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                     <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                     <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
@@ -293,7 +336,7 @@ export default function Home() {
                 <Image width={48} height={48} className="rounded-full object-cover grayscale" alt="Elena Ruiz" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATp7oVnPQXk-3eSC077-9XvaLRguhkjRnZ9g3lAmiJf_8ZNATdl4WMGV3eerRNZgUPHapOJmGRK-ULXqIMfTXsyz50Bpm7eL8cQ-htdnZH6IjBzBlZsoGEbOfnuYWN6PquwAy2cz36MHmTo-d5zW9Dl8SWH2NGFQfQV427vrPKRdRX_6RPxPvEOsOa8zCnPi_PbePAuzg1xE9ZvKJ8i2p_isS4IOlm6pqeBlaJckC1fbLDnSYoSkq5PBe5gziOpUQWolFLXEyFvdga" />
                 <div>
                   <p className="text-on-surface font-bold">Elena Ruiz</p>
-                  <div className="flex text-[#EBC071] text-[10px]">
+                  <div className="flex text-[#F2C777] text-[10px]">
                     <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                     <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                     <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
@@ -305,6 +348,11 @@ export default function Home() {
               <p className="text-on-surface/70 italic font-body text-sm leading-relaxed">&ldquo;¡Las crepas dulces son mi debilidad! Pop Perote nunca decepciona, la atención al detalle es impecable.&rdquo;</p>
             </div>
           </div>
+          <div className="text-center">
+            <a href="https://www.google.com/maps/place/POP+Perote" target="_blank" rel="noopener noreferrer" className="mt-12 inline-flex items-center gap-2 text-[#F2C777] font-black text-sm uppercase tracking-widest hover:underline">
+              Deja tu reseña en Google <span className="material-symbols-outlined">open_in_new</span>
+            </a>
+          </div>
         </div>
       </section>
 
@@ -315,21 +363,23 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0D0D0D]/30 hidden md:block"></div>
         </div>
         <div className="w-full md:w-1/2 p-12 md:p-24 flex flex-col justify-center">
-          <div className="inline-flex items-center gap-2 mb-6 text-[#4CAF50]">
-            <div className="w-2 h-2 rounded-full bg-[#4CAF50] animate-ping"></div>
-            <span className="text-[10px] font-black tracking-widest uppercase">ABIERTO AHORA</span>
-          </div>
-          <h3 className="text-[#EBC071] font-headline text-4xl md:text-5xl font-black uppercase mb-8">Encuéntranos</h3>
+          {openStatus && (
+            <div className={`inline-flex items-center gap-2 mb-6 ${openStatus.colorClass}`}>
+              <div className={`w-2 h-2 rounded-full ${openStatus.dotClass} ${openStatus.isOpen ? 'animate-ping' : ''}`}></div>
+              <span className="text-[10px] font-black tracking-widest uppercase">{openStatus.label}</span>
+            </div>
+          )}
+          <h3 className="text-[#F2C777] font-headline text-4xl md:text-5xl font-black uppercase mb-8">Encuéntranos</h3>
           <div className="space-y-8 mb-12">
             <div className="flex items-start gap-4">
-              <span className="material-symbols-outlined text-[#EBC071]">location_on</span>
+              <span className="material-symbols-outlined text-[#F2C777]">location_on</span>
               <div>
                 <p className="text-on-surface font-bold text-lg mb-1">Justo Sierra No. 11</p>
                 <p className="text-on-surface/50">Col. Amado Nervo, Perote, Veracruz</p>
               </div>
             </div>
             <div className="flex items-start gap-4">
-              <span className="material-symbols-outlined text-[#EBC071]">schedule</span>
+              <span className="material-symbols-outlined text-[#F2C777]">schedule</span>
               <div>
                 <p className="text-on-surface font-bold text-lg mb-1">Horarios</p>
                 <p className="text-on-surface/50">Lun, Mié-Jue: 14:00 - 21:30</p>
@@ -344,7 +394,7 @@ export default function Home() {
               📍 CÓMO LLEGAR
             </a>
             <a
-              className="border border-[#EBC071]/30 text-[#EBC071] font-black px-8 py-4 text-sm flex items-center justify-center gap-3 hover:bg-[#EBC071]/10 transition-colors"
+              className="border border-[#F2C777]/30 text-[#F2C777] font-black px-8 py-4 text-sm flex items-center justify-center gap-3 hover:bg-[#F2C777]/10 transition-colors"
               href={`https://wa.me/${WHATSAPP_PHONE}`}
               rel="noreferrer"
               target="_blank"
