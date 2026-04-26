@@ -8,6 +8,20 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/nosotros',
+        destination: '/sobre-nosotros',
+        permanent: true,
+      },
+      {
+        source: '/promos',
+        destination: '/promociones',
+        permanent: true,
+      },
+    ];
+  },
 }
 
 export default nextConfig

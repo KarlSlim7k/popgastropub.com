@@ -329,8 +329,11 @@ export default function Home() {
             <div className="flex items-start gap-4">
               <span className="material-symbols-outlined text-[#EBC071]">schedule</span>
               <div>
-                <p className="text-on-surface font-bold text-lg mb-1">Lunes a Domingo</p>
-                <p className="text-on-surface/50">13:00 PM - 22:30 PM</p>
+                <p className="text-on-surface font-bold text-lg mb-1">Horarios</p>
+                <p className="text-on-surface/50">Lun, Mié-Jue: 14:00 - 21:30</p>
+                <p className="text-on-surface/50">Vie-Sáb: 14:00 - 22:00</p>
+                <p className="text-on-surface/50">Dom: 14:00 - 21:00</p>
+                <p className="text-on-surface/50">Mar: Cerrado</p>
               </div>
             </div>
           </div>

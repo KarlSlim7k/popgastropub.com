@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import NewsletterForm from '@/components/NewsletterForm';
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -19,9 +20,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         </div>
         <div className="flex items-center space-x-4">
           <a href="/login" className="hidden md:block border border-[#EBC071]/20 px-4 py-2 text-[#EBC071] font-bold text-sm transition-all duration-300 active:scale-95">LOGIN</a>
-          <button className="bg-[#D96725] px-6 py-2 text-on-surface font-black text-sm transition-all duration-500 cubic-bezier(0.23, 1, 0.32, 1) active:scale-95 flex items-center gap-2">
+          <a href="https://wa.me/522828253243" target="_blank" rel="noopener noreferrer" className="bg-[#D96725] px-6 py-2 text-on-surface font-black text-sm transition-all duration-500 cubic-bezier(0.23, 1, 0.32, 1) active:scale-95 flex items-center gap-2">
                           WHATSAPP <span className="material-symbols-outlined text-lg">chat</span>
-          </button>
+          </a>
         </div>
       </nav>
 
@@ -35,13 +36,13 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <span className="text-[#EBC071] font-headline font-black text-4xl mb-6 block tracking-tighter">POP</span>
             <p className="text-on-surface/80 font-body text-sm leading-relaxed mb-8">Gastronomic Editorial &amp; Luxury Snacks. Redefiniendo el sabor en el corazón de Perote.</p>
             <div className="flex gap-4">
-              <a className="w-10 h-10 border border-[#EBC071]/20 flex items-center justify-center hover:bg-[#EBC071] hover:text-black transition-all duration-300" href="#">
+              <a className="w-10 h-10 border border-[#EBC071]/20 flex items-center justify-center hover:bg-[#EBC071] hover:text-black transition-all duration-300" href="https://www.facebook.com/pop.perote" target="_blank" rel="noopener noreferrer">
                 <span className="material-symbols-outlined text-sm">social_leaderboard</span>
               </a>
-              <a className="w-10 h-10 border border-[#EBC071]/20 flex items-center justify-center hover:bg-[#EBC071] hover:text-black transition-all duration-300" href="#">
+              <a className="w-10 h-10 border border-[#EBC071]/20 flex items-center justify-center hover:bg-[#EBC071] hover:text-black transition-all duration-300" href="https://www.instagram.com/pop_perote" target="_blank" rel="noopener noreferrer">
                 <span className="material-symbols-outlined text-sm">group</span>
               </a>
-              <a className="w-10 h-10 border border-[#EBC071]/20 flex items-center justify-center hover:bg-[#EBC071] hover:text-black transition-all duration-300" href="#">
+              <a className="w-10 h-10 border border-[#EBC071]/20 flex items-center justify-center hover:bg-[#EBC071] hover:text-black transition-all duration-300" href="https://www.tiktok.com/@pop_perote" target="_blank" rel="noopener noreferrer">
                 <span className="material-symbols-outlined text-sm">play_circle</span>
               </a>
             </div>
@@ -67,12 +68,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <div>
             <h5 className="text-[#EBC071] font-headline font-bold uppercase tracking-widest text-sm mb-6">Newsletter</h5>
             <p className="text-on-surface/70 text-xs mb-4">Suscríbete para recibir ofertas secretas.</p>
-            <div className="relative">
-              <input className="w-full bg-black/20 border-b border-[#EBC071]/40 py-3 px-0 focus:border-[#EBC071] focus:ring-0 transition-colors text-sm" placeholder="E-mail address" type="email"/>
-              <button className="absolute right-0 top-1/2 -translate-y-1/2 text-[#EBC071] hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined">east</span>
-              </button>
-            </div>
+            <NewsletterForm />
           </div>
         </div>
         <div className="max-w-7xl mx-auto border-t border-[#EBC071]/10 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
