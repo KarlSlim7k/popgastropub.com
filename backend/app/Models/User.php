@@ -36,6 +36,10 @@ class User extends Authenticatable
         'points' => 'integer',
     ];
 
+    protected $appends = [
+        'tier',
+    ];
+
     public function getTierAttribute(): string
     {
         $points = $this->points ?? 0;
@@ -49,6 +53,11 @@ class User extends Authenticatable
     public function facturas()
     {
         return $this->hasMany(Factura::class);
+    }
+
+    public function loyaltyTransactions()
+    {
+        return $this->hasMany(LoyaltyTransaction::class);
     }
 
     public function mesero()

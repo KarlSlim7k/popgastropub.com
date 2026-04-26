@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LoyaltyTransaction;
 use Illuminate\Http\Request;
 
 class LoyaltyController extends Controller
@@ -10,10 +11,7 @@ class LoyaltyController extends Controller
     {
         $user = $request->user();
 
-        return response()->json([
-            'points' => $user->points,
-            'tier' => $user->tier,
-        ]);
+        return response()->json($user);
     }
 
     public function tier(Request $request)
@@ -28,6 +26,7 @@ class LoyaltyController extends Controller
         ];
 
         return response()->json([
+            'user' => $user,
             'current_tier' => $tiers[$user->tier],
             'points' => $user->points,
             'next_tier' => $this->getNextTier($user->tier, $tiers),
@@ -40,11 +39,24 @@ class LoyaltyController extends Controller
         $user->increment('points', 25);
         $user->refresh();
 
+        LoyaltyTransaction::create([
+            'user_id' => $user->id,
+            'points' => 25,
+            'concept' => 'Check-in restaurante',
+        ]);
+
         return response()->json([
             'message' => 'Check-in exitoso. +25 pts',
             'points' => $user->points,
             'tier' => $user->tier,
         ]);
+    }
+
+    public function history(Request $request)
+    {
+        return response()->json(
+            $request->user()->loyaltyTransactions()->orderBy('created_at', 'desc')->get()
+        );
     }
 
     private function getNextTier(string $currentTier, array $tiers): ?array

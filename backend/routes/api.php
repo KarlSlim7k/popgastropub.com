@@ -53,6 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/loyalty/points', [LoyaltyController::class, 'points']);
     Route::get('/loyalty/tier', [LoyaltyController::class, 'tier']);
     Route::post('/loyalty/checkin', [LoyaltyController::class, 'checkin']);
+    Route::get('/loyalty/history', [LoyaltyController::class, 'history']);
 
     // Invoices
     Route::get('/facturas', [FacturaController::class, 'index']);
