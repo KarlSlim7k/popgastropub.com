@@ -1,8 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
+import { useAuth } from "@/lib/auth-provider";
+import { fetchWithAuth } from "@/lib/api";
 
-// Types
+interface RankingUser {
+  name: string;
+  email: string;
+}
+
+interface Mesero {
+  id: number;
+  nombre: string;
+  puntos: number;
+  activo: boolean;
+  user: RankingUser;
+}
+
 interface StatCardProps {
   label: string;
   value: string;
@@ -31,6 +45,12 @@ const StatCard = ({ label, value, icon }: StatCardProps) => (
 );
 
 export default function WaiterDashboardPage() {
+  const { session } = useAuth();
+  const [meseros, setMeseros] = useState<Mesero[]>([]);
+  const [rankingLoading, setRankingLoading] = useState(true);
+
+  const userName = session?.user?.name || 'Mesero';
+
   const stats = [
     { label: "Mesas Atendidas", value: "14", icon: "table_restaurant" },
     { label: "Bebidas Vendidas", value: "42", icon: "local_bar" },
@@ -43,12 +63,41 @@ export default function WaiterDashboardPage() {
     { id: "3", description: "3x Margarita Pops", status: "preparing", time: "En preparación (8 min)" },
   ];
 
+  useEffect(() => {
+    if (!session?.token) return;
+
+    let cancelled = false;
+
+    async function loadRanking() {
+      try {
+        setRankingLoading(true);
+        const data = await fetchWithAuth<Mesero[]>('/api/ranking', session!.token);
+        if (!cancelled) {
+          const sorted = [...data].sort((a, b) => b.puntos - a.puntos);
+          setMeseros(sorted);
+        }
+      } catch {
+        // Silently fail for dashboard ranking snapshot; data stays empty
+      } finally {
+        if (!cancelled) setRankingLoading(false);
+      }
+    }
+
+    loadRanking();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.token]);
+
+  const topMesero = useMemo(() => meseros[0] || null, [meseros]);
+
   return (
     <main className="pt-24 lg:pt-20 p-6 lg:p-10 min-h-screen bg-pop-black">
       {/* Header */}
       <header className="mb-10">
         <h1 className="text-4xl lg:text-5xl font-black tracking-tighter text-white font-epilogue uppercase">
-          ¡Hola, Ricardo! 🌟
+          ¡Hola, {userName}! 🌟
         </h1>
         <p className="text-gray-400 mt-2 text-base lg:text-lg font-manrope">
           Portal de mesero • Tu rendimiento en tiempo real
@@ -90,11 +139,25 @@ export default function WaiterDashboardPage() {
         <section className="bg-[#1C1B1B] p-8 rounded-xl border border-white/5 flex flex-col">
           <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white mb-6">Ranking Personal</h2>
           <div className="flex-1 flex flex-col justify-center items-center text-center p-6 bg-pop-black/20 rounded-lg border border-white/5 mb-6">
-            <span className="text-5xl font-black text-pop-gold mb-2">#3</span>
-            <p className="text-xs text-gray-500 uppercase tracking-widest mb-4">Posición Actual</p>
-            <p className="text-sm font-bold text-white max-w-[150px]">
-              Faltan <span className="text-pop-orange italic">420 pts</span> para el #1 (Sofía V.)
-            </p>
+            {rankingLoading ? (
+              <div className="w-6 h-6 border-2 border-pop-gold border-t-transparent rounded-full animate-spin" />
+            ) : topMesero ? (
+              <>
+                <span className="text-5xl font-black text-pop-gold mb-2">#1</span>
+                <p className="text-xs text-gray-500 uppercase tracking-widest mb-4">Posición Actual</p>
+                <p className="text-sm font-bold text-white max-w-[220px]">
+                  Top: <span className="text-pop-orange italic">{topMesero.user?.name || topMesero.nombre}</span> con {topMesero.puntos.toLocaleString('es-MX')} pts
+                </p>
+              </>
+            ) : (
+              <>
+                <span className="text-5xl font-black text-pop-gold mb-2">--</span>
+                <p className="text-xs text-gray-500 uppercase tracking-widest mb-4">Sin datos</p>
+                <p className="text-sm font-bold text-white max-w-[150px]">
+                  No hay ranking disponible
+                </p>
+              </>
+            )}
           </div>
           <button className="w-full py-4 bg-pop-gold text-pop-black font-black uppercase text-xs tracking-[0.2em] rounded-lg hover:bg-pop-lightGold transition-all">
             Ver Ranking Completo

@@ -1,17 +1,48 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-provider";
-import { useState } from "react";
+import { fetchWithAuth } from "@/lib/api";
+import { useEffect, useState } from "react";
+
+interface UserProfile {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+  birth_date?: string;
+  tier?: string;
+}
 
 export default function PerfilPage() {
   const { session, logout } = useAuth();
+  const token = session?.token || "";
   const [isEditing, setIsEditing] = useState(false);
-  
-  const userName = session?.user?.name || "Sofía Jiménez Pérez";
-  const userPhone = "282 123 4567";
-  const userEmail = session?.user?.email || "sofia.jp@example.com";
-  const birthDate = "1994-05-21"; // Mocked
-  const currentTier = "POP VIP";
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!token) return;
+
+    async function fetchProfile() {
+      try {
+        setLoading(true);
+        const res = await fetchWithAuth<{ data: UserProfile }>("/auth/me", token);
+        setProfile(res.data ?? null);
+      } catch {
+        // Silently fail, fallback to session data
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProfile();
+  }, [token]);
+
+  const userName = profile?.name || session?.user?.name || "Cliente";
+  const userPhone = profile?.phone || "";
+  const userEmail = profile?.email || session?.user?.email || "";
+  const birthDate = profile?.birth_date || "";
+  const currentTier = profile?.tier || session?.user?.tier || "POP FAN";
 
   const tierBenefits = [
     { benefit: "Acumulación de puntos", value: "+25% extra", icon: "trending_up" },
@@ -41,7 +72,7 @@ export default function PerfilPage() {
           <h1 className="text-3xl lg:text-4xl font-black text-white font-epilogue uppercase">{userName}</h1>
           <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-1">
              <span className="bg-pop-gold/10 text-pop-gold border border-pop-gold/20 text-[10px] font-black uppercase px-3 py-1 rounded-full tracking-widest">{currentTier}</span>
-             <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-1">ID Socio: #POP-8291</span>
+             <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-1">ID Socio: #POP-{String(profile?.id || session?.user?.id || 0).padStart(4, "0")}</span>
           </div>
         </div>
       </header>
@@ -67,7 +98,7 @@ export default function PerfilPage() {
                     <input 
                       type="text" 
                       defaultValue={userName} 
-                      disabled={!isEditing}
+                      disabled={!isEditing || loading}
                       className="w-full bg-transparent border-b border-white/10 py-3 text-white font-bold tracking-tight focus:border-pop-gold transition-colors outline-none disabled:text-gray-500"
                     />
                  </div>
@@ -76,7 +107,7 @@ export default function PerfilPage() {
                     <input 
                       type="tel" 
                       defaultValue={userPhone} 
-                      disabled={!isEditing}
+                      disabled={!isEditing || loading}
                       className="w-full bg-transparent border-b border-white/10 py-3 text-white font-bold tracking-tight focus:border-pop-gold transition-colors outline-none disabled:text-gray-500"
                     />
                  </div>
@@ -85,7 +116,7 @@ export default function PerfilPage() {
                     <input 
                       type="email" 
                       defaultValue={userEmail} 
-                      disabled={!isEditing}
+                      disabled={!isEditing || loading}
                       className="w-full bg-transparent border-b border-white/10 py-3 text-white font-bold tracking-tight focus:border-pop-gold transition-colors outline-none disabled:text-gray-500"
                     />
                  </div>

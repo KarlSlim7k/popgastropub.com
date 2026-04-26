@@ -1,20 +1,137 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
+import { useAuth } from '@/lib/auth-provider';
+import { fetchWithAuth } from '@/lib/api';
 
-const podio = [
-  { rank: 1, name: "Sofía V.", pts: "3,120", category: "Master Mesero", color: "#F2C777", avatar: "SV" },
-  { rank: 2, name: "Ricardo S.", pts: "2,840", category: "Expert Mesero", color: "#F2C894", avatar: "RS" },
-  { rank: 3, name: "Marcos L.", pts: "2,310", category: "Pro Mesero", color: "#D96725", avatar: "ML" },
-];
+interface RankingUser {
+  name: string;
+  email: string;
+}
 
-const otherWaiters = [
-  { rank: 4, name: "Elena T.", pts: "1,890", category: "Pro", avatar: "ET" },
-  { rank: 5, name: "Daniel C.", pts: "1,450", category: "Senior", avatar: "DC" },
-  { rank: 6, name: "Laura M.", pts: "1,200", category: "Junior", avatar: "LM" },
+interface Mesero {
+  id: number;
+  nombre: string;
+  puntos: number;
+  activo: boolean;
+  user: RankingUser;
+}
+
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function formatPoints(pts: number): string {
+  return pts.toLocaleString('es-MX');
+}
+
+function getCategory(pts: number): string {
+  if (pts >= 3000) return 'Master Mesero';
+  if (pts >= 2000) return 'Expert Mesero';
+  if (pts >= 1000) return 'Pro Mesero';
+  return 'Mesero';
+}
+
+const podiumColors = [
+  { border: '#F2C777', bg: '#F2C777', text: 'pop-black', glow: true, scale: true },
+  { border: '#F2C894', bg: '#F2C894', text: 'pop-black', glow: false, scale: false },
+  { border: '#D96725', bg: '#D96725', text: 'white', glow: false, scale: false },
 ];
 
 export default function RankingPage() {
+  const { session } = useAuth();
+  const [meseros, setMeseros] = useState<Mesero[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!session?.token) return;
+
+    let cancelled = false;
+
+    async function loadRanking() {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await fetchWithAuth<Mesero[]>('/api/ranking', session!.token);
+        if (!cancelled) {
+          // Ensure descending order by points
+          const sorted = [...data].sort((a, b) => b.puntos - a.puntos);
+          setMeseros(sorted);
+        }
+      } catch (err: any) {
+        if (!cancelled) {
+          setError(err?.message || 'Error al cargar el ranking');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadRanking();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.token]);
+
+  const topThree = useMemo(() => meseros.slice(0, 3), [meseros]);
+  const rest = useMemo(() => meseros.slice(3), [meseros]);
+
+  // Podium order for visual layout: [2nd, 1st, 3rd]
+  const podiumOrdered = useMemo(() => {
+    if (topThree.length === 0) return [];
+    const t = [...topThree];
+    return [t[1], t[0], t[2]].filter(Boolean) as Mesero[];
+  }, [topThree]);
+
+  if (loading) {
+    return (
+      <main className="pt-24 lg:pt-20 p-6 lg:p-10 min-h-screen bg-pop-black flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-2 border-pop-gold border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs font-black uppercase tracking-[0.3em] text-gray-500">Cargando ranking...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="pt-24 lg:pt-20 p-6 lg:p-10 min-h-screen bg-pop-black flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <p className="text-red-400 font-black uppercase tracking-widest text-sm mb-2">Error</p>
+          <p className="text-gray-300 text-sm mb-6">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-pop-gold text-pop-black font-black uppercase text-xs tracking-[0.2em] rounded-lg hover:bg-pop-lightGold transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  if (meseros.length === 0) {
+    return (
+      <main className="pt-24 lg:pt-20 p-6 lg:p-10 min-h-screen bg-pop-black flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="w-20 h-20 rounded-full bg-white/5 mx-auto mb-6 flex items-center justify-center">
+            <span className="material-symbols-outlined text-4xl text-gray-500">emoji_events</span>
+          </div>
+          <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">Ranking vacío</h2>
+          <p className="text-gray-500 text-sm">Aún no hay meseros registrados en el ranking. ¡Vuelve más tarde!</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="pt-24 lg:pt-20 p-6 lg:p-10 min-h-screen bg-pop-black">
       {/* Header */}
@@ -28,49 +145,51 @@ export default function RankingPage() {
         </p>
       </header>
 
-      {/* Podium - Mobile Stacks, Tablet/Desktop Podium Visual */}
+      {/* Podium */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-16 items-end">
-        {/* 2nd Place */}
-        <article className="order-2 lg:order-1 bg-[#1C1B1B]/80 backdrop-blur-md p-8 rounded-2xl border-t-4 border-[#F2C894] relative group hover:bg-[#252424] transition-all">
-          <div className="absolute -top-6 left-8 w-12 h-12 bg-[#F2C894] rounded-full flex items-center justify-center text-pop-black font-black text-xl shadow-lg">2</div>
-          <div className="text-center">
-            <div className="w-20 h-20 rounded-full bg-white/5 mx-auto mb-4 border-2 border-white/10 flex items-center justify-center text-2xl font-bold text-gray-400 group-hover:scale-110 transition-transform">
-              {podio[1].avatar}
-            </div>
-            <h3 className="text-2xl font-black text-white uppercase tracking-tight">{podio[1].name}</h3>
-            <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-1 mb-6">{podio[1].category}</p>
-            <p className="text-4xl font-mono font-black text-[#F2C894]">{podio[1].pts}</p>
-            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Puntos Totales</p>
-          </div>
-        </article>
+        {podiumOrdered.map((mesero, idx) => {
+          const visualRank = idx === 0 ? 2 : idx === 1 ? 1 : 3;
+          const isFirst = visualRank === 1;
+          const style = podiumColors[visualRank - 1];
+          const displayName = mesero.user?.name || mesero.nombre;
+          const category = getCategory(mesero.puntos);
 
-        {/* 1st Place - Higher and more prominent */}
-        <article className="order-1 lg:order-2 bg-[#1C1B1B] p-10 rounded-2xl border-t-8 border-pop-gold relative lg:-translate-y-8 ring-4 ring-pop-gold/10 scale-105 shadow-2xl shadow-pop-gold/5 group hover:bg-[#252424] transition-all">
-          <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-pop-gold rounded-full flex items-center justify-center text-pop-black font-black text-3xl shadow-[0_0_30px_rgba(242,199,119,0.3)]">1</div>
-          <div className="text-center">
-            <div className="w-24 h-24 rounded-full bg-pop-gold/10 mx-auto mb-6 border-4 border-pop-gold flex items-center justify-center text-4xl font-black text-pop-gold group-hover:scale-110 transition-transform">
-              {podio[0].avatar}
-            </div>
-            <h3 className="text-3xl font-black text-white uppercase tracking-tighter">{podio[0].name}</h3>
-            <p className="text-[10px] text-pop-gold font-black uppercase tracking-[0.3em] mt-2 mb-8 animate-pulse">👑 Top Performer</p>
-            <p className="text-6xl font-mono font-black text-white text-glow">{podio[0].pts}</p>
-            <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mt-2">Puntos Totales</p>
-          </div>
-        </article>
-
-        {/* 3rd Place */}
-        <article className="order-3 bg-[#1C1B1B]/80 backdrop-blur-md p-8 rounded-2xl border-t-4 border-[#D96725] relative group hover:bg-[#252424] transition-all">
-          <div className="absolute -top-6 right-8 w-12 h-12 bg-[#D96725] rounded-full flex items-center justify-center text-white font-black text-xl shadow-lg">3</div>
-          <div className="text-center">
-            <div className="w-20 h-20 rounded-full bg-white/5 mx-auto mb-4 border-2 border-white/10 flex items-center justify-center text-2xl font-bold text-gray-400 group-hover:scale-110 transition-transform">
-              {podio[2].avatar}
-            </div>
-            <h3 className="text-2xl font-black text-white uppercase tracking-tight">{podio[2].name}</h3>
-            <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mt-1 mb-6">{podio[2].category}</p>
-            <p className="text-4xl font-mono font-black text-[#D96725]">{podio[2].pts}</p>
-            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Puntos Totales</p>
-          </div>
-        </article>
+          return (
+            <article
+              key={mesero.id}
+              className={`${
+                isFirst
+                  ? 'order-1 lg:order-2 bg-[#1C1B1B] p-10 rounded-2xl border-t-8 border-pop-gold relative lg:-translate-y-8 ring-4 ring-pop-gold/10 scale-105 shadow-2xl shadow-pop-gold/5 group hover:bg-[#252424] transition-all'
+                  : `order-${visualRank} lg:order-${visualRank === 2 ? 1 : 3} bg-[#1C1B1B]/80 backdrop-blur-md p-8 rounded-2xl border-t-4 relative group hover:bg-[#252424] transition-all`
+              }`}
+              style={!isFirst ? { borderTopColor: style.border } : undefined}
+            >
+              <div
+                className={`absolute ${isFirst ? '-top-10 left-1/2 -translate-x-1/2 w-16 h-16 text-3xl shadow-[0_0_30px_rgba(242,199,119,0.3)]' : '-top-6 w-12 h-12 text-xl shadow-lg'} ${visualRank === 2 ? 'left-8' : visualRank === 3 ? 'right-8' : ''} rounded-full flex items-center justify-center font-black`}
+                style={{ backgroundColor: style.bg, color: style.text === 'pop-black' ? '#0D0D0D' : '#fff' }}
+              >
+                {visualRank}
+              </div>
+              <div className="text-center">
+                <div
+                  className={`${isFirst ? 'w-24 h-24 text-4xl border-4 border-pop-gold bg-pop-gold/10' : 'w-20 h-20 text-2xl border-2 border-white/10 bg-white/5'} rounded-full mx-auto mb-4 flex items-center justify-center font-bold text-gray-400 group-hover:scale-110 transition-transform`}
+                >
+                  {getInitials(displayName)}
+                </div>
+                <h3 className={`${isFirst ? 'text-3xl tracking-tighter' : 'text-2xl tracking-tight'} font-black text-white uppercase`}>
+                  {displayName}
+                </h3>
+                <p className={`${isFirst ? 'text-pop-gold mt-2 mb-8 animate-pulse tracking-[0.3em]' : 'text-gray-500 mt-1 mb-6 tracking-widest'} text-[10px] font-black uppercase`}>
+                  {isFirst ? '👑 Top Performer' : category}
+                </p>
+                <p className={`${isFirst ? 'text-6xl text-white text-glow' : 'text-4xl'} font-mono font-black`} style={{ color: isFirst ? undefined : style.border }}>
+                  {formatPoints(mesero.puntos)}
+                </p>
+                <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-2">Puntos Totales</p>
+              </div>
+            </article>
+          );
+        })}
       </section>
 
       {/* Main Grid: Leaderboard + Stats */}
@@ -84,51 +203,57 @@ export default function RankingPage() {
             <div className="overflow-x-auto min-w-full">
               <table className="w-full text-left">
                 <tbody>
-                  {otherWaiters.map((waiter) => (
-                    <tr key={waiter.rank} className="group hover:bg-white/[0.02] transition-colors border-b border-white/5 last:border-0">
-                      <td className="py-6 px-8">
-                        <span className="text-lg font-mono font-bold text-gray-500 group-hover:text-pop-gold transition-colors">{waiter.rank}</span>
-                      </td>
-                      <td className="py-6 px-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-xs font-bold text-gray-400 border border-white/10">{waiter.avatar}</div>
-                          <div>
-                            <p className="text-base font-bold text-white uppercase tracking-tight">{waiter.name}</p>
-                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{waiter.category}</p>
+                  {rest.map((mesero, index) => {
+                    const rank = index + 4;
+                    const displayName = mesero.user?.name || mesero.nombre;
+                    const category = getCategory(mesero.puntos);
+                    return (
+                      <tr key={mesero.id} className="group hover:bg-white/[0.02] transition-colors border-b border-white/5 last:border-0">
+                        <td className="py-6 px-8">
+                          <span className="text-lg font-mono font-bold text-gray-500 group-hover:text-pop-gold transition-colors">{rank}</span>
+                        </td>
+                        <td className="py-6 px-4">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-xs font-bold text-gray-400 border border-white/10">{getInitials(displayName)}</div>
+                            <div>
+                              <p className="text-base font-bold text-white uppercase tracking-tight">{displayName}</p>
+                              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{category}</p>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="py-6 px-4 text-right pr-12">
-                         <p className="text-xl font-mono font-black text-white group-hover:text-pop-gold transition-colors">{waiter.pts} pt</p>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="py-6 px-4 text-right pr-12">
+                          <p className="text-xl font-mono font-black text-white group-hover:text-pop-gold transition-colors">{formatPoints(mesero.puntos)} pt</p>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
-            <div className="p-6 bg-white/[0.01] text-center">
-              <button className="text-[10px] font-black uppercase tracking-[0.3em] text-pop-gold hover:text-white transition-colors">Cargar equipo completo</button>
-            </div>
+            {rest.length === 0 && (
+              <div className="p-10 text-center">
+                <p className="text-gray-500 text-sm">No hay más meseros en el ranking.</p>
+              </div>
+            )}
           </div>
         </section>
 
         {/* Sidebar Stats & Badges */}
         <aside className="space-y-10">
-          {/* Personal Goal Progress */}
+          {/* Personal Goal Progress (static placeholder, can be connected later) */}
           <article className="bg-pop-gold p-8 rounded-2xl text-pop-black relative overflow-hidden group">
             <div className="relative z-10">
               <h4 className="text-[10px] font-black uppercase tracking-widest mb-2 opacity-60">Tu Progreso</h4>
-              <p className="text-3xl font-black uppercase tracking-tighter mb-6">Faltan 280 pts</p>
-              <p className="text-xs font-bold font-manrope leading-tight mb-8">Estás a muy poco de superar a Sofía V. y reclamar el primer lugar. ¡Sigue así!</p>
+              <p className="text-3xl font-black uppercase tracking-tighter mb-6">Sigue sumando</p>
+              <p className="text-xs font-bold font-manrope leading-tight mb-8">Cada venta cuenta. Mantén el ritmo para escalar posiciones en el Wall of Fame.</p>
               <div className="h-2 bg-pop-black/10 rounded-full overflow-hidden mb-2">
-                <div className="h-full bg-pop-black w-[92%]" />
+                <div className="h-full bg-pop-black w-[65%]" />
               </div>
               <div className="flex justify-between text-[9px] font-black uppercase tracking-widest">
-                <span>92% del Objetivo</span>
-                <span>Tier Master</span>
+                <span>65% del Objetivo</span>
+                <span>Tier Pro</span>
               </div>
             </div>
-            {/* Background Icon decoration */}
             <span className="material-symbols-outlined absolute -right-6 -bottom-6 text-9xl text-pop-black/5 rotate-12 group-hover:scale-110 transition-transform duration-700">trending_up</span>
           </article>
 

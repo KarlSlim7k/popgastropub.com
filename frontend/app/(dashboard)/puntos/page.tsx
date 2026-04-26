@@ -1,28 +1,80 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-provider";
-import { useState } from "react";
+import { fetchWithAuth } from "@/lib/api";
+import { useEffect, useState } from "react";
+
+interface Tier {
+  name: string;
+  min_points: number;
+  max_points: number | null;
+}
+
+interface PointsData {
+  points: number;
+}
+
+interface HistoryItem {
+  id: number;
+  description: string;
+  points: number;
+  type: "earn" | "redeem";
+  created_at: string;
+}
 
 export default function PuntosPage() {
   const { session, logout } = useAuth();
-  const userName = session?.user?.name || "Sofía Jiménez";
-  const userPoints = 1250;
-  const nextTierPoints = 1500;
-  const progress = (userPoints / nextTierPoints) * 100;
+  const userName = session?.user?.name || "Cliente";
+  const token = session?.token || "";
+
+  const [points, setPoints] = useState<number>(0);
+  const [tier, setTier] = useState<Tier | null>(null);
+  const [nextTier, setNextTier] = useState<Tier | null>(null);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<"beneficios" | "historial">("beneficios");
 
-  const recentActivity = [
-    { date: "12 OCT", description: "Consumo: Dragon Roll + Bebida", pts: "+185", type: "earn" },
-    { date: "08 OCT", description: "Bonificación: Visita de Martes", pts: "+50", type: "earn" },
-    { date: "01 OCT", description: "Canje: Bebida Gratis", pts: "-250", type: "redeem" },
-  ];
+  useEffect(() => {
+    if (!token) return;
+
+    async function fetchData() {
+      try {
+        setLoading(true);
+        const [pointsRes, tierRes, historyRes] = await Promise.all([
+          fetchWithAuth<{ data: PointsData }>("/loyalty/points", token),
+          fetchWithAuth<{ data: { current: Tier; next: Tier | null } }>("/loyalty/tier", token),
+          fetchWithAuth<{ data: HistoryItem[] }>("/loyalty/history", token),
+        ]);
+        setPoints(pointsRes.data?.points ?? 0);
+        setTier(tierRes.data?.current ?? null);
+        setNextTier(tierRes.data?.next ?? null);
+        setHistory(historyRes.data ?? []);
+      } catch (err: any) {
+        setError(err?.message || "Error al cargar datos de fidelidad");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [token]);
+
+  const userPoints = points;
+  const nextTierPoints = nextTier?.min_points ?? (tier?.max_points ? tier.max_points + 1 : userPoints + 1);
+  const progress = nextTier ? ((userPoints - (tier?.min_points ?? 0)) / ((nextTier.min_points - (tier?.min_points ?? 0)) || 1)) * 100 : 100;
 
   const benefits = [
     { icon: "celebration", title: "Bebida cumpleañera", status: "Disponible" },
     { icon: "stars", title: "+25% puntos por compra", status: "Activo" },
     { icon: "confirmation_number", title: "Acceso VIP a eventos", status: "Activo" },
   ];
+
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("es-MX", { day: "2-digit", month: "short" }).toUpperCase();
+  };
 
   return (
     <main className="pt-24 lg:pt-32 p-4 lg:p-12 max-w-7xl mx-auto space-y-12">
@@ -33,7 +85,7 @@ export default function PuntosPage() {
             ¡Hola, {userName.split(" ")[0]}! 👋
           </h1>
           <div className="flex items-center gap-3 mt-4">
-             <span className="bg-pop-gold text-pop-black text-[10px] font-black uppercase px-3 py-1 rounded-full tracking-widest">POP VIP</span>
+             <span className="bg-pop-gold text-pop-black text-[10px] font-black uppercase px-3 py-1 rounded-full tracking-widest">{tier?.name?.toUpperCase() || "POP FAN"}</span>
              <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">Miembro desde Abril 2024</p>
           </div>
         </div>
@@ -60,16 +112,16 @@ export default function PuntosPage() {
                       <div className="flex-1 space-y-8">
                          <div>
                             <span className="text-xs font-black text-pop-gold uppercase tracking-[0.4em]">Digital Membership</span>
-                            <h2 className="text-3xl font-black text-white uppercase mt-1">Obsidian Elite Card</h2>
+                            <h2 className="text-3xl font-black text-white uppercase mt-1">{tier?.name || "Obsidian Elite"} Card</h2>
                          </div>
                          <div className="space-y-1">
                             <p className="text-xs text-gray-500 font-bold uppercase mt-1">ID Socio</p>
-                            <p className="text-xl font-mono text-white tracking-widest leading-none">#### #### #### 8291</p>
+                            <p className="text-xl font-mono text-white tracking-widest leading-none">#### #### #### {String(session?.user?.id ?? 0).padStart(4, "0")}</p>
                          </div>
                          <div className="flex gap-10">
                             <div>
                                <p className="text-[10px] text-gray-500 font-bold uppercase">Nivel</p>
-                               <p className="text-sm font-black text-pop-gold uppercase">VIP Member</p>
+                               <p className="text-sm font-black text-pop-gold uppercase">{tier?.name || "VIP Member"}</p>
                             </div>
                             <div>
                                <p className="text-[10px] text-gray-500 font-bold uppercase">Expira</p>
@@ -96,19 +148,19 @@ export default function PuntosPage() {
               <div className="flex justify-between items-end">
                  <div>
                     <h3 className="text-xs font-black text-gray-500 uppercase tracking-widest">Próximo Nivel</h3>
-                    <p className="text-2xl font-black text-white mt-1 uppercase">Hacia POP Elite 🏆</p>
+                    <p className="text-2xl font-black text-white mt-1 uppercase">Hacia {nextTier?.name?.toUpperCase() || "POP ELITE"} 🏆</p>
                  </div>
-                 <p className="text-sm font-black text-pop-gold">Faltan {nextTierPoints - userPoints} pts</p>
+                 <p className="text-sm font-black text-pop-gold">Faltan {Math.max(0, nextTierPoints - userPoints)} pts</p>
               </div>
               
               <div className="space-y-3">
                  <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
-                    <span>VIP</span>
-                    <span className="text-pop-gold text-sm">{Math.round(progress)}%</span>
-                    <span>ELITE</span>
+                    <span>{tier?.name?.toUpperCase() || "VIP"}</span>
+                    <span className="text-pop-gold text-sm">{Math.round(Math.min(100, Math.max(0, progress)))}%</span>
+                    <span>{nextTier?.name?.toUpperCase() || "ELITE"}</span>
                  </div>
                  <div className="h-2 bg-pop-black rounded-full overflow-hidden border border-white/5 p-[1.5px]">
-                    <div className="h-full bg-gradient-to-r from-pop-orange to-pop-gold rounded-full shadow-[0_0_15px_rgba(242,199,119,0.3)] transition-all duration-1000" style={{ width: `${progress}%` }} />
+                    <div className="h-full bg-gradient-to-r from-pop-orange to-pop-gold rounded-full shadow-[0_0_15px_rgba(242,199,119,0.3)] transition-all duration-1000" style={{ width: `${Math.min(100, Math.max(0, progress))}%` }} />
                  </div>
               </div>
            </article>
@@ -141,17 +193,34 @@ export default function PuntosPage() {
                     </div>
                  ) : (
                     <div className="space-y-3">
-                       {recentActivity.map((a, i) => (
-                         <div key={i} className="bg-[#1C1B1B] p-5 rounded-2xl border border-white/5 flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                               <span className="text-[10px] font-black text-gray-500 w-12">{a.date}</span>
-                               <p className="text-xs font-bold text-white uppercase">{a.description}</p>
-                            </div>
-                            <span className={`text-xs font-black ${a.type === 'earn' ? 'text-green-500' : 'text-pop-orange'}`}>
-                               {a.pts}
-                            </span>
+                       {loading ? (
+                         <div className="bg-[#1C1B1B] p-8 rounded-2xl border border-white/5 text-center">
+                            <div className="w-6 h-6 border-2 border-pop-gold border-t-transparent rounded-full animate-spin mx-auto" />
+                            <p className="text-xs text-gray-500 mt-4 font-bold uppercase tracking-widest">Cargando historial...</p>
                          </div>
-                       ))}
+                       ) : error ? (
+                         <div className="bg-[#1C1B1B] p-8 rounded-2xl border border-white/5 text-center">
+                            <span className="material-symbols-outlined text-red-500 text-3xl mb-2">error</span>
+                            <p className="text-xs text-red-400 font-bold uppercase tracking-widest">{error}</p>
+                         </div>
+                       ) : history.length === 0 ? (
+                         <div className="bg-[#1C1B1B] p-8 rounded-2xl border border-white/5 text-center">
+                            <span className="material-symbols-outlined text-gray-600 text-4xl mb-4">history</span>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest leading-relaxed">Aún no tienes actividad en tu cuenta.<br/>¡Haz tu primera compra para empezar a acumular puntos!</p>
+                         </div>
+                       ) : (
+                         history.map((a) => (
+                           <div key={a.id} className="bg-[#1C1B1B] p-5 rounded-2xl border border-white/5 flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                 <span className="text-[10px] font-black text-gray-500 w-12">{formatDate(a.created_at)}</span>
+                                 <p className="text-xs font-bold text-white uppercase">{a.description}</p>
+                              </div>
+                              <span className={`text-xs font-black ${a.type === 'earn' ? 'text-green-500' : 'text-pop-orange'}`}>
+                                 {a.type === 'earn' ? '+' : ''}{a.points}
+                              </span>
+                           </div>
+                         ))
+                       )}
                     </div>
                  )}
               </div>
