@@ -9,6 +9,9 @@ use App\Http\Controllers\FacturaController;
 use App\Http\Controllers\LoyaltyController;
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\UbicacionController;
+use App\Http\Controllers\ReservaController;
+use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\RecompensaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,6 +62,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/facturas', [FacturaController::class, 'index']);
     Route::post('/facturas', [FacturaController::class, 'store']);
     Route::get('/facturas/{id}', [FacturaController::class, 'show']);
+
+    // Reservas
+    Route::get('/reservas', [ReservaController::class, 'index']);
+    Route::post('/reservas', [ReservaController::class, 'store']);
+
+    // Pedidos
+    Route::get('/pedidos', [PedidoController::class, 'index']);
+    Route::post('/pedidos', [PedidoController::class, 'store']);
+
+    // Recompensas
+    Route::get('/recompensas', [RecompensaController::class, 'index']);
+    Route::post('/recompensas/{id}/canjear', [RecompensaController::class, 'redeem']);
 });
 
 /*
@@ -97,4 +112,15 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 
     // Meseros CRUD
     Route::apiResource('meseros', App\Http\Controllers\Admin\MeseroController::class);
+
+    // Reservas
+    Route::apiResource('reservas', App\Http\Controllers\Admin\ReservaController::class)->except(['store']);
+    Route::patch('/reservas/{id}/status', [App\Http\Controllers\Admin\ReservaController::class, 'updateStatus']);
+
+    // Pedidos
+    Route::apiResource('pedidos', App\Http\Controllers\Admin\PedidoController::class)->except(['store']);
+    Route::patch('/pedidos/{id}/status', [App\Http\Controllers\Admin\PedidoController::class, 'updateStatus']);
+
+    // Recompensas
+    Route::apiResource('recompensas', App\Http\Controllers\Admin\RecompensaController::class);
 });
