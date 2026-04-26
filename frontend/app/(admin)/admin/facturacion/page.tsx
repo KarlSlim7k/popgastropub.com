@@ -8,12 +8,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://popgastropub.com/api
 
 interface Factura {
   id: number;
-  folio?: string;
-  client: string;
   rfc: string;
-  amount: number;
-  date: string;
-  status: "recibida" | "en_proceso" | "enviada_contadores" | "completada" | "rechazada";
+  razon_social: string;
+  email?: string;
+  created_at: string;
+  estado: "recibida" | "en_proceso" | "enviada_contadores" | "completada" | "rechazada";
   ticket_path?: string;
 }
 
@@ -65,12 +64,11 @@ export default function AdminFacturacionPage() {
     return map[status] || "bg-gray-500/10 text-gray-400 border-gray-500/20";
   };
 
-  const filteredRequests = selectedStatus === "todos" ? requests : requests.filter((r) => r.status === selectedStatus);
+  const filteredRequests = selectedStatus === "todos" ? requests : requests.filter((r) => r.estado === selectedStatus);
 
-  const totalFiscal = requests.reduce((sum, r) => sum + (r.amount || 0), 0);
-  const pendientes = requests.filter((r) => r.status === "recibida" || r.status === "en_proceso").length;
-  const completadas = requests.filter((r) => r.status === "completada").length;
-  const rechazadas = requests.filter((r) => r.status === "rechazada").length;
+  const pendientes = requests.filter((r) => r.estado === "recibida" || r.estado === "en_proceso").length;
+  const completadas = requests.filter((r) => r.estado === "completada").length;
+  const rechazadas = requests.filter((r) => r.estado === "rechazada").length;
 
   const ticketUrl = (path?: string) => {
     if (!path) return "";
@@ -92,9 +90,9 @@ export default function AdminFacturacionPage() {
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         <article className="bg-[#1C1B1B] p-6 rounded-2xl border border-white/5 border-l-4 border-pop-gold">
-          <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Fiscal del Mes</p>
-          <p className="text-3xl font-black text-white font-epilogue tracking-tighter">${totalFiscal.toLocaleString()}</p>
-          <p className="text-[9px] text-pop-gold font-bold uppercase mt-2">{requests.length} Facturas</p>
+          <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Total Solicitudes</p>
+          <p className="text-3xl font-black text-white font-epilogue tracking-tighter">{requests.length}</p>
+          <p className="text-[9px] text-pop-gold font-bold uppercase mt-2">Este mes</p>
         </article>
         <article className="bg-[#1C1B1B] p-6 rounded-2xl border border-white/5 border-l-4 border-pop-orange">
           <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Pendientes</p>
@@ -134,30 +132,29 @@ export default function AdminFacturacionPage() {
 
         <div className="overflow-x-auto">
           <table className="hidden lg:table w-full text-left">
-            <thead className="bg-white/[0.01] text-[10px] font-black uppercase text-gray-500 tracking-widest border-b border-white/5">
-              <tr>
-                <th className="py-5 px-8">Folio</th>
-                <th className="py-5 px-4">Cliente / RFC</th>
-                <th className="py-5 px-4 text-right">Monto</th>
-                <th className="py-5 px-4">Estado</th>
-                <th className="py-5 px-4">Ticket</th>
-                <th className="py-5 px-8 text-right">Acciones</th>
-              </tr>
-            </thead>
+             <thead className="bg-white/[0.01] text-[10px] font-black uppercase text-gray-500 tracking-widest border-b border-white/5">
+               <tr>
+                 <th className="py-5 px-8">Folio</th>
+                 <th className="py-5 px-4">Cliente / RFC</th>
+                 <th className="py-5 px-4">Estado</th>
+                 <th className="py-5 px-4">Ticket</th>
+                 <th className="py-5 px-8 text-right">Acciones</th>
+               </tr>
+             </thead>
             <tbody className="divide-y divide-white/5">
               {filteredRequests.map((r) => (
                 <tr key={r.id} className="hover:bg-white/[0.01] transition-all group">
-                  <td className="py-6 px-8 text-sm font-black text-pop-gold">{r.folio || `PP-${r.id}`}</td>
+                  <td className="py-6 px-8 text-sm font-black text-pop-gold">F-{String(r.id).padStart(4, '0')}</td>
                   <td className="py-6 px-4">
-                    <p className="text-sm font-bold text-white">{r.client}</p>
+                    <p className="text-sm font-bold text-white">{r.razon_social}</p>
                     <p className="text-[10px] text-gray-500 uppercase font-black tabular-nums">{r.rfc}</p>
+                    {r.email && <p className="text-[10px] text-gray-600 mt-0.5">{r.email}</p>}
                   </td>
-                  <td className="py-6 px-4 text-right font-mono font-bold text-white">${(r.amount || 0).toLocaleString()}</td>
                   <td className="py-6 px-4">
                     <select
-                      value={r.status}
+                      value={r.estado}
                       onChange={(e) => updateStatus(r.id, e.target.value)}
-                      className={`bg-transparent border rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest border-current cursor-pointer outline-none ${statusBadge(r.status)}`}
+                      className={`bg-transparent border rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest border-current cursor-pointer outline-none ${statusBadge(r.estado)}`}
                     >
                       <option value="recibida" className="bg-pop-black text-blue-400">Recibida</option>
                       <option value="en_proceso" className="bg-pop-black text-pop-gold">En Proceso</option>
@@ -201,11 +198,11 @@ export default function AdminFacturacionPage() {
             {filteredRequests.map((r) => (
               <article key={r.id} className="p-6 space-y-4 hover:bg-white/[0.01] transition-all">
                 <div className="flex justify-between items-start">
-                  <span className="text-sm font-black text-pop-gold">{r.folio || `PP-${r.id}`}</span>
+                  <span className="text-sm font-black text-pop-gold">F-{String(r.id).padStart(4, '0')}</span>
                   <select
-                    value={r.status}
+                    value={r.estado}
                     onChange={(e) => updateStatus(r.id, e.target.value)}
-                    className={`bg-transparent border rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest border-current cursor-pointer outline-none ${statusBadge(r.status)}`}
+                    className={`bg-transparent border rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest border-current cursor-pointer outline-none ${statusBadge(r.estado)}`}
                   >
                     <option value="recibida" className="bg-pop-black text-blue-400">Recibida</option>
                     <option value="en_proceso" className="bg-pop-black text-pop-gold">En Proceso</option>
@@ -215,13 +212,14 @@ export default function AdminFacturacionPage() {
                   </select>
                 </div>
                 <div>
-                  <p className="text-base font-black text-white leading-tight">{r.client}</p>
+                  <p className="text-base font-black text-white leading-tight">{r.razon_social}</p>
                   <p className="text-[10px] text-gray-500 uppercase font-black tabular-nums mt-1">{r.rfc}</p>
+                  {r.email && <p className="text-[10px] text-gray-600 mt-0.5">{r.email}</p>}
                 </div>
                 <div className="flex justify-between items-end pt-2">
                   <div>
-                    <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-1">Monto Total</p>
-                    <p className="text-xl font-black text-white font-mono">${(r.amount || 0).toLocaleString()}</p>
+                    <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-1">Solicitud</p>
+                    <p className="text-xl font-black text-white font-mono">{new Date(r.created_at).toLocaleDateString('es-MX')}</p>
                   </div>
                   <div className="flex gap-2">
                     {r.ticket_path ? (

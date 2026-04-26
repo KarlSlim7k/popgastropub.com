@@ -6,11 +6,12 @@ import { useEffect, useState } from "react";
 
 interface Factura {
   id: number;
-  folio: string;
-  fecha: string;
-  total: number;
-  descripcion: string;
+  rfc: string;
+  razon_social: string;
   estado: string;
+  created_at: string;
+  ticket_path?: string;
+  email?: string;
 }
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
@@ -23,7 +24,6 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 
 export default function MisFacturasPage() {
   const { session } = useAuth();
-  const userName = session?.user?.name || "Cliente";
   const token = session?.token || "";
 
   const [facturas, setFacturas] = useState<Factura[]>([]);
@@ -36,8 +36,8 @@ export default function MisFacturasPage() {
     async function fetchFacturas() {
       try {
         setLoading(true);
-        const res = await fetchWithAuth<{ data: Factura[] }>("/facturas", token);
-        setFacturas(res.data ?? []);
+        const data = await fetchWithAuth<Factura[]>("/facturas", token);
+        setFacturas(data ?? []);
       } catch (err: any) {
         setError(err?.message || "Error al cargar facturas");
       } finally {
@@ -47,10 +47,6 @@ export default function MisFacturasPage() {
 
     fetchFacturas();
   }, [token]);
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(value);
-  };
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -66,12 +62,12 @@ export default function MisFacturasPage() {
             Mis Facturas
           </h1>
           <p className="text-pop-orange mt-2 text-xs font-bold uppercase tracking-[0.3em]">
-            Gestión Fiscal CFDI 4.0 · POP Perote
+            Solicitudes de Facturación · POP Perote
           </p>
         </div>
-        <button className="w-full lg:w-auto px-8 py-4 bg-pop-gold text-pop-black font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-pop-lightGold shadow-lg transition-all">
+        <a href="/facturacion" className="w-full lg:w-auto px-8 py-4 bg-pop-gold text-pop-black font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-pop-lightGold shadow-lg transition-all text-center">
           Solicitar Nueva Factura
-        </button>
+        </a>
       </header>
 
       {/* Main Content */}
@@ -79,7 +75,7 @@ export default function MisFacturasPage() {
         
         {/* List of Invoices */}
         <div className="space-y-6">
-           <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest px-1">Historial de Folios</h2>
+           <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest px-1">Historial de Solicitudes</h2>
            
            {loading ? (
              <div className="bg-[#1C1B1B] p-8 rounded-2xl border border-white/5 text-center">
@@ -102,25 +98,31 @@ export default function MisFacturasPage() {
                   <article key={inv.id} className="bg-[#1C1B1B] p-6 rounded-2xl border border-white/5 hover:border-pop-gold/10 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6">
                      <div className="flex items-start gap-5">
                         <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-500">
-                           <span className="material-symbols-outlined text-2xl">picture_as_pdf</span>
+                           <span className="material-symbols-outlined text-2xl">receipt_long</span>
                         </div>
                         <div>
                            <div className="flex items-center gap-3">
-                              <span className="text-sm font-black text-white uppercase">{inv.folio}</span>
+                              <span className="text-sm font-black text-white uppercase">F-{String(inv.id).padStart(4, '0')}</span>
                               <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${STATUS_MAP[inv.estado]?.color || STATUS_MAP.recibida.color}`}>
                                  {STATUS_MAP[inv.estado]?.label || inv.estado}
                               </span>
                            </div>
-                           <p className="text-xs text-gray-400 mt-1 font-bold">{inv.descripcion}</p>
-                           <p className="text-[10px] text-gray-600 mt-1 uppercase font-black">{formatDate(inv.fecha)}</p>
+                           <p className="text-xs text-gray-400 mt-1 font-bold">{inv.razon_social}</p>
+                           <p className="text-[10px] text-gray-600 mt-1 uppercase font-black">RFC: {inv.rfc} · {formatDate(inv.created_at)}</p>
                         </div>
                      </div>
 
                      <div className="flex items-center justify-between md:justify-end gap-8 pt-4 md:pt-0 border-t md:border-none border-white/5">
-                        <div className="text-left md:text-right">
-                           <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest leading-none mb-1">Total</p>
-                           <p className="text-lg font-black text-white font-mono">{formatCurrency(inv.total)}</p>
-                        </div>
+                        {inv.ticket_path && (
+                          <a
+                            href={inv.ticket_path.startsWith('http') ? inv.ticket_path : `${process.env.NEXT_PUBLIC_API_URL || 'https://popgastropub.com/api'}/${inv.ticket_path}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-pop-gold text-xs font-black uppercase tracking-widest hover:text-white transition-colors flex items-center gap-1"
+                          >
+                            <span className="material-symbols-outlined text-sm">image</span> Ver Ticket
+                          </a>
+                        )}
                      </div>
                   </article>
                 ))}
