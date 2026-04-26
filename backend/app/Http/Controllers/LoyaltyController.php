@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LoyaltyTransaction;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class LoyaltyController extends Controller
@@ -11,7 +12,10 @@ class LoyaltyController extends Controller
     {
         $user = $request->user();
 
-        return response()->json($user);
+        return response()->json([
+            'user' => $user,
+            'recent_transactions' => $user->loyaltyTransactions()->latest()->limit(5)->get()
+        ]);
     }
 
     public function tier(Request $request)
@@ -25,11 +29,19 @@ class LoyaltyController extends Controller
             'elite' => ['min' => 3000, 'max' => null, 'name' => 'POP Elite'],
         ];
 
+        $nextTier = $this->getNextTier($user->tier, $tiers);
+
         return response()->json([
             'user' => $user,
             'current_tier' => $tiers[$user->tier],
             'points' => $user->points,
-            'next_tier' => $this->getNextTier($user->tier, $tiers),
+            'next_tier' => $nextTier,
+            'progress' => [
+                'current' => $user->points,
+                'min' => $tiers[$user->tier]['min'],
+                'max' => $tiers[$user->tier]['max'],
+                'next_min' => $nextTier ? $nextTier['min'] : null,
+            ]
         ]);
     }
 
@@ -57,6 +69,47 @@ class LoyaltyController extends Controller
         return response()->json(
             $request->user()->loyaltyTransactions()->orderBy('created_at', 'desc')->get()
         );
+    }
+
+    public function earnPoints(User $user, int $points, string $concepto): LoyaltyTransaction
+    {
+        $user->increment('points', $points);
+        $user->refresh();
+
+        return LoyaltyTransaction::create([
+            'user_id' => $user->id,
+            'points' => $points,
+            'concept' => $concepto,
+        ]);
+    }
+
+    public function redeemPoints(Request $request)
+    {
+        $request->validate([
+            'points' => 'required|integer|min:1',
+            'concepto' => 'required|string',
+        ]);
+
+        $user = $request->user();
+
+        if ($user->points < $request->points) {
+            return response()->json(['message' => 'Puntos insuficientes'], 422);
+        }
+
+        $user->decrement('points', $request->points);
+        $user->refresh();
+
+        LoyaltyTransaction::create([
+            'user_id' => $user->id,
+            'points' => -$request->points,
+            'concept' => $request->concepto,
+        ]);
+
+        return response()->json([
+            'message' => 'Canje exitoso',
+            'points_used' => $request->points,
+            'balance' => $user->points,
+        ]);
     }
 
     private function getNextTier(string $currentTier, array $tiers): ?array

@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Mesero;
 use App\Models\Producto;
 use App\Models\Promocion;
+use App\Models\Recompensa;
 
 class DatabaseSeeder extends Seeder
 {
@@ -81,5 +82,17 @@ class DatabaseSeeder extends Seeder
             'dia_fin' => 'jueves',
             'activa' => true,
         ]);
+
+        $recompensas = [
+            ['nombre' => 'Refresco o Agua del Día', 'descripcion' => 'Bebida de tu elección', 'puntos_requeridos' => 150, 'disponible' => true],
+            ['nombre' => 'Orden de Papas Gajo', 'descripcion' => 'Papas gajo sazonadas', 'puntos_requeridos' => 350, 'disponible' => true],
+            ['nombre' => 'Roll California (10 pzas)', 'descripcion' => 'Sushi clásico', 'puntos_requeridos' => 500, 'disponible' => true],
+            ['nombre' => '10 Alitas (Cualquier Salsa)', 'descripcion' => 'Alitas POP', 'puntos_requeridos' => 750, 'disponible' => true],
+            ['nombre' => 'Jarra de Clericot (1.5L)', 'descripcion' => 'Clericot de la casa', 'puntos_requeridos' => 1200, 'disponible' => true],
+            ['nombre' => 'Cena Completa (2 Personas)', 'descripcion' => 'Experiencia gastronómica', 'puntos_requeridos' => 2500, 'disponible' => true],
+        ];
+        foreach ($recompensas as $r) {
+            Recompensa::create($r);
+        }
     }
 }
