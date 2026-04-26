@@ -1,10 +1,10 @@
 'use client';
 
 /* eslint-disable @next/next/no-img-element */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import OrderPanel from '../order/OrderPanel';
-import { menuSections } from '../order/order-data';
 import { useOrderCart } from '../order/use-order-cart';
+import type { MenuItem } from '../order/order-data';
 
 function formatPrice(value: number) {
   return new Intl.NumberFormat('es-MX', {
@@ -35,15 +35,113 @@ function badgeClasses(badge?: string) {
   return 'bg-[#732817] text-[#F2C894]';
 }
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+type ApiProduct = {
+  id: number | string;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  categoria: string;
+  imagen: string | null;
+  disponible: boolean;
+  destacado: boolean;
+};
+
+type MenuSectionDynamic = {
+  id: string;
+  title: string;
+  items: MenuItem[];
+};
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://popgastropub.com/api';
+
 export default function MenuExperience() {
   const cart = useOrderCart();
   const { addItem, itemCount, subtotal } = cart;
   const [isOrderOpen, setIsOrderOpen] = useState(false);
+  const [sections, setSections] = useState<MenuSectionDynamic[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchMenu() {
+      try {
+        const res = await fetch(`${API_URL}/menu`);
+        if (!res.ok) {
+          throw new Error('Error al cargar el menú');
+        }
+        const data = (await res.json()) as ApiProduct[];
+        const available = data.filter((p) => p.disponible !== false);
+
+        const grouped = new Map<string, ApiProduct[]>();
+        for (const product of available) {
+          const cat = product.categoria || 'Otros';
+          if (!grouped.has(cat)) {
+            grouped.set(cat, []);
+          }
+          grouped.get(cat)!.push(product);
+        }
+
+        const mappedSections: MenuSectionDynamic[] = Array.from(grouped.entries()).map(
+          ([category, products]) => ({
+            id: slugify(category),
+            title: category,
+            items: products.map((p) => ({
+              id: String(p.id),
+              name: p.nombre,
+              price: p.precio,
+              category: category,
+              description: p.descripcion,
+              image: p.imagen || '/images/logopop.png',
+              badge: p.destacado ? 'Destacado' : undefined,
+              rating: p.destacado ? 5 : 4,
+            })),
+          })
+        );
+
+        setSections(mappedSections);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error desconocido');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchMenu();
+  }, []);
 
   const totalProducts = useMemo(
-    () => menuSections.reduce((total, section) => total + section.items.length, 0),
-    [],
+    () => sections.reduce((total, section) => total + section.items.length, 0),
+    [sections],
   );
+
+  if (loading) {
+    return (
+      <main className="mx-auto max-w-7xl px-3 pb-24 pt-28 md:px-12 md:pt-32">
+        <div className="flex items-center justify-center py-24">
+          <div className="w-10 h-10 border-4 border-t-[#F2C777] border-[#F2C777]/20 rounded-full animate-spin" />
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="mx-auto max-w-7xl px-3 pb-24 pt-28 md:px-12 md:pt-32">
+        <div className="text-center py-24">
+          <p className="text-white/60 text-lg">{error}</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <>
@@ -90,7 +188,7 @@ export default function MenuExperience() {
 
         <div className="sticky top-[72px] md:top-[88px] z-40 -mx-3 mb-8 md:mb-12 border-b border-[#F2C777]/10 bg-[#0D0D0D]/90 px-3 py-2 md:py-4 backdrop-blur-md md:-mx-12 md:px-12">
           <div className="flex gap-2 md:gap-4 overflow-x-auto pb-1 md:pb-2 scrollbar-none">
-            {menuSections.map((section, index) => (
+            {sections.map((section, index) => (
               <a
                 className={`flex-shrink-0 px-3 py-2 md:px-5 md:py-3 font-epilogue text-base md:text-sm font-black uppercase tracking-[0.1em] md:tracking-[0.2em] transition-colors flex items-center gap-1 md:gap-2 ${
                   index === 0
@@ -100,18 +198,16 @@ export default function MenuExperience() {
                 href={`#${section.id}`}
                 key={section.id}
               >
-                <span>{section.emoji}</span>
-                <span className="hidden md:inline">{section.title}</span>
+                <span className="truncate">{section.title}</span>
               </a>
             ))}
           </div>
         </div>
 
-        {menuSections.map((section) => (
+        {sections.map((section) => (
           <section className="mb-24" id={section.id} key={section.id}>
             <div className="mb-10 flex items-center gap-4">
               <h2 className="font-epilogue text-3xl font-black uppercase tracking-tight text-white flex items-center gap-3">
-                <span className="text-4xl">{section.emoji}</span>
                 {section.title}
               </h2>
               <div className="h-px flex-grow bg-[#F2C777]/18" />
