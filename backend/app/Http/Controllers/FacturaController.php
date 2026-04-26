@@ -23,6 +23,7 @@ class FacturaController extends Controller
             'regimen_fiscal' => 'required|string',
             'codigo_postal' => 'required|string|max:5',
             'uso_cfdi' => 'required|string',
+            'email' => 'nullable|email|max:255',
             'ticket' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
@@ -40,7 +41,8 @@ class FacturaController extends Controller
             'regimen_fiscal' => $request->regimen_fiscal,
             'codigo_postal' => $request->codigo_postal,
             'uso_cfdi' => $request->uso_cfdi,
-            'estado' => 'pendiente',
+            'email' => $request->email,
+            'estado' => 'recibida',
         ]);
 
         return response()->json($factura, 201);

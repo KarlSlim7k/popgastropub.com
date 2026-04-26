@@ -17,10 +17,8 @@ return new class extends Migration
             $table->string('regimen_fiscal');
             $table->string('codigo_postal');
             $table->string('uso_cfdi');
-            $table->string('estado')->default('pendiente');
-            $table->string('uuid')->nullable();
-            $table->string('xml_path')->nullable();
-            $table->string('pdf_path')->nullable();
+            $table->string('estado')->default('recibida');
+            $table->string('email')->nullable();
             $table->timestamps();
         });
     }

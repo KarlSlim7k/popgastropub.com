@@ -17,16 +17,12 @@ class Factura extends Model
         'regimen_fiscal',
         'codigo_postal',
         'uso_cfdi',
+        'email',
         'estado',
-        'uuid',
-        'xml_path',
-        'pdf_path',
     ];
 
     protected $casts = [
         'ticket_path' => 'string',
-        'xml_path' => 'string',
-        'pdf_path' => 'string',
     ];
 
     public function user()

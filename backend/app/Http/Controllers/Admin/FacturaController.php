@@ -18,7 +18,7 @@ class FacturaController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $validated = $request->validate([
-            'estado' => 'required|in:pendiente,procesando,timbrado,enviado,error,cancelado',
+            'estado' => 'required|in:recibida,en_proceso,enviada_contadores,completada,rechazada',
         ]);
 
         $factura = Factura::findOrFail($id);
