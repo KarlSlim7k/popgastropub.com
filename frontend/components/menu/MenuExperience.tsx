@@ -271,7 +271,7 @@ export default function MenuExperience() {
                 <div className="h-px flex-grow bg-[#F2C777]/18" />
               </div>
 
-              <div className="grid grid-cols-3 gap-2 md:gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {section.items.map((item) => (
                   <article
                     className="group overflow-hidden bg-[#181413] transition-transform duration-500 hover:-translate-y-2 flex flex-col"
@@ -287,7 +287,7 @@ export default function MenuExperience() {
                       />
                       {item.badge ? (
                         <div
-                          className={`absolute left-2 top-2 md:left-4 md:top-4 px-1.5 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[10px] font-black uppercase tracking-[0.15em] md:tracking-[0.25em] ${badgeClasses(item.badge)}`}
+                           className={`absolute left-2 top-2 md:left-4 md:top-4 px-1.5 py-0.5 md:px-3 md:py-1 text-[11px] md:text-[10px] font-black uppercase tracking-[0.15em] md:tracking-[0.25em] ${badgeClasses(item.badge)}`}
                         >
                           {item.badge}
                         </div>
@@ -299,14 +299,14 @@ export default function MenuExperience() {
                     </div>
 
                     {/* ── Info + Botón ─────────────────────────── */}
-                    <div className="flex flex-col flex-1 p-2 md:p-6">
+                    <div className="flex flex-col flex-1 p-4 md:p-6">
                       {/* Categoría (oculta en móvil para ahorrar espacio) */}
                       <p className="hidden md:block text-[11px] font-black uppercase tracking-[0.25em] text-[#F2C777]/60">
                         {item.category}
                       </p>
 
                       {/* Nombre */}
-                      <h3 className="mt-0 md:mt-2 font-epilogue text-[10px] leading-tight md:text-2xl font-black uppercase tracking-tight text-white line-clamp-2">
+                      <h3 className="mt-0 md:mt-2 font-epilogue text-sm leading-tight md:text-2xl font-black uppercase tracking-tight text-white line-clamp-2">
                         {item.name}
                       </h3>
 
@@ -322,13 +322,13 @@ export default function MenuExperience() {
                       {/* Precio + Botón */}
                       <div className="mt-auto pt-2 md:mt-6 md:pt-0">
                         {/* Precio */}
-                        <span className="block font-epilogue text-xs md:text-2xl font-black text-[#F2C777] mb-1.5 md:mb-0">
+                        <span className="block font-epilogue text-base md:text-2xl font-black text-[#F2C777] mb-1.5 md:mb-0">
                           {renderPrice(item.price, item.priceLabel)}
                         </span>
 
                         {/* Botón — full width en móvil, auto en desktop */}
                         <button
-                          className="w-full md:w-auto inline-flex items-center justify-center gap-1 md:gap-2 bg-[#D96725] px-2 py-2 md:px-5 md:py-3 text-[9px] md:text-sm font-black uppercase tracking-[0.15em] md:tracking-[0.25em] text-white transition-all hover:bg-[#F2C777] hover:text-[#0D0D0D]"
+                          className="w-full md:w-auto inline-flex items-center justify-center gap-1 md:gap-2 bg-[#D96725] px-2 py-2 md:px-5 md:py-3 text-xs md:text-sm font-black uppercase tracking-[0.15em] md:tracking-[0.25em] text-white transition-all hover:bg-[#F2C777] hover:text-[#0D0D0D]"
                           onClick={() => addItem(item)}
                           type="button"
                         >
@@ -346,7 +346,7 @@ export default function MenuExperience() {
         )}
       </main>
 
-      <div className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] z-[60] md:right-8 md:bottom-8">
+      <div className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+6.5rem)] z-[60] md:right-8 md:bottom-8">
         <button
           className="group flex items-center gap-3 rounded-full bg-[#D96725] px-4 py-3 text-white shadow-[0_0_40px_rgba(217,103,37,0.3)] transition-all hover:bg-[#F2C777] hover:text-[#0D0D0D] md:gap-4 md:p-6"
           onClick={() => setIsOrderOpen(true)}

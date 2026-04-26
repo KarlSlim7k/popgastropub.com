@@ -1,5 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
+import type { Metadata } from 'next';
 import React from 'react';
+
+export const metadata: Metadata = {
+  title: 'Promociones | POP Perote',
+  description: 'Descubre nuestras promociones activas: Sushiércoles 2x1, Cocktail Night y más.',
+};
 
 export default function Promociones() {
   return (

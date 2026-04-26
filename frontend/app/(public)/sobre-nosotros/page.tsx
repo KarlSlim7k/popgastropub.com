@@ -1,5 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
+import type { Metadata } from 'next';
 import React from 'react';
+
+export const metadata: Metadata = {
+  title: 'Sobre Nosotros | POP Perote',
+  description: 'Conoce la historia de POP Perote. Más de una década de sabor en el corazón de Perote, Veracruz.',
+};
 
 export default function SobreNosotros() {
   return (
