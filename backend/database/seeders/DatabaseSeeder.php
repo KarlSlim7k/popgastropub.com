@@ -94,5 +94,9 @@ class DatabaseSeeder extends Seeder
         foreach ($recompensas as $r) {
             Recompensa::create($r);
         }
+
+        $this->call([
+            ProductoSeeder::class,
+        ]);
     }
 }
