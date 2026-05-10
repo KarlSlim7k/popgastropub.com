@@ -251,7 +251,7 @@ export default function ReservasPage() {
                         onClick={async () => {
                           if (!token || !confirm("¿Cancelar esta reserva?")) return;
                           try {
-                            await fetchWithAuth(`/reservas/${r.id}/cancel`, token, { method: "PATCH" });
+                            await fetchWithAuth(`/reservas/${res.id}/cancel`, token, { method: "PATCH" });
                             setToast("Reserva cancelada");
                             fetchReservas();
                           } catch (e: any) { setToast(e.message || "Error al cancelar"); }
