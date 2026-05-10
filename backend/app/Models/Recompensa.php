@@ -15,6 +15,8 @@ class Recompensa extends Model
         'puntos_requeridos',
         'imagen',
         'disponible',
+        'categoria',
+        'tier',
     ];
 
     public function redemptions()
