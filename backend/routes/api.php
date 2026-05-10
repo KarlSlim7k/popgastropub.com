@@ -98,6 +98,21 @@ Route::middleware(['auth:sanctum', 'role:mesero'])->group(function () {
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
     // Dashboard
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index']);
+    Route::get('/dashboard/chart-data', [App\Http\Controllers\Admin\DashboardController::class, 'chartData']);
+    Route::get('/dashboard/sales-mix', [App\Http\Controllers\Admin\DashboardController::class, 'salesMix']);
+    Route::get('/dashboard/top-waiters', [App\Http\Controllers\Admin\DashboardController::class, 'topWaiters']);
+    Route::get('/dashboard/live-menu', [App\Http\Controllers\Admin\DashboardController::class, 'liveMenu']);
+
+    // Puntos POP
+    Route::get('/puntos/stats', [App\Http\Controllers\Admin\PuntosController::class, 'stats']);
+    Route::get('/puntos/tiers', [App\Http\Controllers\Admin\PuntosController::class, 'tiers']);
+    Route::get('/puntos/top-members', [App\Http\Controllers\Admin\PuntosController::class, 'topMembers']);
+    Route::get('/puntos/activity', [App\Http\Controllers\Admin\PuntosController::class, 'activity']);
+    Route::post('/puntos/redeem', [App\Http\Controllers\Admin\PuntosController::class, 'redeem']);
+
+    // Configuración
+    Route::get('/configuracion', [App\Http\Controllers\Admin\ConfiguracionController::class, 'index']);
+    Route::put('/configuracion', [App\Http\Controllers\Admin\ConfiguracionController::class, 'update']);
 
     // Menu CRUD
     Route::apiResource('menu', App\Http\Controllers\Admin\MenuController::class);
