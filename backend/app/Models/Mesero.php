@@ -12,13 +12,27 @@ class Mesero extends Model
     protected $fillable = [
         'user_id',
         'nombre',
+        'iniciales',
         'puntos',
         'activo',
+        'status',
+        'cocktail_points',
+        'premium_points',
+        'pitcher_points',
+        'bottle_points',
+        'combo_points',
+        'upsell_points',
+        'rating_points',
+        'total_sales',
+        'orders_served',
+        'avg_rating',
     ];
 
     protected $casts = [
         'puntos' => 'integer',
         'activo' => 'boolean',
+        'total_sales' => 'decimal:2',
+        'avg_rating' => 'decimal:1',
     ];
 
     public function user()

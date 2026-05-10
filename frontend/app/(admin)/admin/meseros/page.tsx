@@ -50,7 +50,7 @@ export default function AdminMeserosPage() {
     if (!session) return;
     setLoading(true);
     try {
-      const data = await fetchWithAuth<Waiter[]>("/api/admin/meseros", session.token);
+      const data = await fetchWithAuth<Waiter[]>(`/api/admin/meseros?period=${selectedPeriod}`, session.token);
       const sorted = [...data].sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
       sorted.forEach((w, i) => (w.rank = i + 1));
       setWaiters(sorted);
@@ -63,7 +63,7 @@ export default function AdminMeserosPage() {
 
   useEffect(() => {
     fetchWaiters();
-  }, []);
+  }, [selectedPeriod]);
 
   const openCreate = () => {
     setEditingWaiter(null);

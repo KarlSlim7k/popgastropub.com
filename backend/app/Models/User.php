@@ -18,7 +18,11 @@ class User extends Authenticatable
         'role',
         'phone',
         'points',
-        'tier',
+        'status',
+        'rfc',
+        'last_visit',
+        'orders_count',
+        'total_spent',
         'email_verified_at',
         'oauth_provider',
         'oauth_provider_id',
@@ -32,8 +36,11 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'last_visit' => 'datetime',
         'password' => 'hashed',
         'points' => 'integer',
+        'orders_count' => 'integer',
+        'total_spent' => 'decimal:2',
     ];
 
     protected $appends = [

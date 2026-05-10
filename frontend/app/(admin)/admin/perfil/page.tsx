@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-provider";
+import { fetchWithAuth } from "@/lib/api";
+import { getAuthSession } from "@/lib/auth-session";
 
 export default function AdminPerfilPage() {
   const { session } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
 
   const userName = session?.user?.name || "Admin User";
   const userEmail = session?.user?.email || "admin@pop-perote.com";
@@ -13,221 +17,165 @@ export default function AdminPerfilPage() {
   const [formData, setFormData] = useState({
     name: userName,
     email: userEmail,
-    phone: "282-825-32-43",
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
+    phone: "",
+  });
+
+  const [passwordData, setPasswordData] = useState({
+    current_password: "",
+    password: "",
+    password_confirmation: "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+  };
+
+  const saveProfile = async () => {
+    const auth = getAuthSession();
+    if (!auth) return;
+    setSaving(true);
+    setMessage("");
+    try {
+      await fetchWithAuth("/api/auth/profile", auth.token, {
+        method: "PUT",
+        body: JSON.stringify(formData),
+      });
+      setMessage("Perfil actualizado correctamente");
+      setIsEditing(false);
+    } catch (e: any) {
+      setMessage(e.message || "Error al guardar");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const savePassword = async () => {
+    const auth = getAuthSession();
+    if (!auth) return;
+    if (passwordData.password !== passwordData.password_confirmation) {
+      setMessage("Las contraseñas no coinciden");
+      return;
+    }
+    setSaving(true);
+    setMessage("");
+    try {
+      await fetchWithAuth("/api/auth/password", auth.token, {
+        method: "PUT",
+        body: JSON.stringify(passwordData),
+      });
+      setMessage("Contraseña actualizada correctamente");
+      setPasswordData({ current_password: "", password: "", password_confirmation: "" });
+    } catch (e: any) {
+      setMessage(e.message || "Error al cambiar contraseña");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <main className="pt-24 lg:pt-20 p-4 lg:p-10 min-h-screen bg-pop-black">
-      {/* Header */}
       <header className="mb-8 lg:mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <h1 className="text-4xl lg:text-5xl font-black tracking-tighter text-white font-epilogue uppercase flex items-center gap-3">
             <span className="material-symbols-outlined text-pop-gold text-5xl">person</span>
             Mi Perfil
           </h1>
-          <p className="text-gray-400 mt-2 text-base lg:text-lg font-manrope">
-            Gestiona tu información personal y credenciales
-          </p>
+          <p className="text-gray-400 mt-2 text-base lg:text-lg font-manrope">Gestiona tu información personal y credenciales</p>
         </div>
         <button
           onClick={() => setIsEditing(!isEditing)}
-          className={`px-5 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center gap-2 ${
-            isEditing
-              ? "text-gray-400 border border-gray-700 hover:bg-gray-800/50"
-              : "text-pop-black bg-pop-gold hover:bg-pop-light-gold"
-          }`}
+          className={`px-5 py-2.5 text-sm font-semibold rounded-lg transition-all flex items-center gap-2 ${isEditing ? "text-gray-400 border border-gray-700 hover:bg-gray-800/50" : "text-pop-black bg-pop-gold hover:bg-pop-light-gold"}`}
         >
           <span className="material-symbols-outlined text-lg">{isEditing ? "close" : "edit"}</span>
           {isEditing ? "Cancelar" : "Editar Perfil"}
         </button>
       </header>
 
-      {/* Profile Card */}
-      <section className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl border border-white/5 overflow-hidden mb-8">
-        {/* Avatar Section */}
+      {message && (
+        <div className={`mb-6 p-4 rounded-xl text-sm font-bold ${message.includes("Error") || message.includes("no coinciden") ? "bg-red-500/10 text-red-400 border border-red-500/20" : "bg-green-500/10 text-green-400 border border-green-500/20"}`}>
+          {message}
+        </div>
+      )}
+
+      <section className="bg-[#1C1B1B] rounded-xl border border-white/5 overflow-hidden mb-8">
         <div className="p-8 border-b border-white/5 flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pop-orange to-pop-gold p-[3px] flex-shrink-0">
             <div className="w-full h-full rounded-full bg-pop-black flex items-center justify-center text-pop-gold font-black text-3xl font-epilogue">
-              {userName
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()
-                .slice(0, 2)}
+              {userName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
             </div>
           </div>
           <div className="text-center sm:text-left flex-1">
             <h2 className="text-2xl font-black text-white font-epilogue">{userName}</h2>
             <p className="text-sm text-gray-400 mt-1">{userEmail}</p>
             <div className="flex flex-wrap gap-2 mt-3 justify-center sm:justify-start">
-              <span className="bg-pop-gold/10 text-pop-gold text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-                Admin
-              </span>
-              <span className="bg-pop-orange/10 text-pop-orange text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-                Master Access
-              </span>
+              <span className="bg-pop-gold/10 text-pop-gold text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Admin</span>
             </div>
-          </div>
-          <div className="text-center sm:text-right">
-            <p className="text-[10px] text-gray-500 uppercase tracking-widest">Último acceso</p>
-            <p className="text-sm text-gray-300 font-medium mt-1">Hoy, 14:30</p>
           </div>
         </div>
 
-        {/* Personal Info Form */}
         <div className="p-6 lg:p-8">
           <h3 className="text-lg font-black uppercase font-epilogue tracking-tighter text-white mb-6 flex items-center gap-3">
-            <span className="material-symbols-outlined text-pop-gold">badge</span>
-            Información Personal
+            <span className="material-symbols-outlined text-pop-gold">badge</span>Información Personal
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Nombre Completo</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-pop-gold/50 focus:ring-1 focus:ring-pop-gold/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              />
+              <input type="text" name="name" value={formData.name} onChange={handleInputChange} disabled={!isEditing} className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-pop-gold/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed" />
             </div>
             <div>
               <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-pop-gold/50 focus:ring-1 focus:ring-pop-gold/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              />
+              <input type="email" name="email" value={formData.email} onChange={handleInputChange} disabled={!isEditing} className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-pop-gold/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed" />
             </div>
             <div>
               <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Teléfono</label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-pop-gold/50 focus:ring-1 focus:ring-pop-gold/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              />
+              <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} disabled={!isEditing} className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-pop-gold/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed" />
             </div>
             <div>
               <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Rol</label>
-              <input
-                type="text"
-                value="Administrador"
-                disabled
-                className="w-full bg-gray-800/30 border border-white/5 rounded-lg px-4 py-3 text-sm text-gray-500 cursor-not-allowed"
-              />
+              <input type="text" value="Administrador" disabled className="w-full bg-gray-800/30 border border-white/5 rounded-lg px-4 py-3 text-sm text-gray-500 cursor-not-allowed" />
             </div>
           </div>
           {isEditing && (
             <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => setIsEditing(false)}
-                className="px-6 py-2.5 text-sm font-semibold text-gray-400 border border-gray-700 rounded-lg hover:bg-gray-800/50 transition-all"
-              >
-                Descartar
-              </button>
-              <button className="px-6 py-2.5 text-sm font-semibold text-pop-black bg-pop-gold rounded-lg hover:bg-pop-light-gold transition-all">
-                Guardar Cambios
-              </button>
+              <button onClick={() => setIsEditing(false)} className="px-6 py-2.5 text-sm font-semibold text-gray-400 border border-gray-700 rounded-lg hover:bg-gray-800/50 transition-all">Descartar</button>
+              <button onClick={saveProfile} disabled={saving} className="px-6 py-2.5 text-sm font-semibold text-pop-black bg-pop-gold rounded-lg hover:bg-pop-light-gold transition-all disabled:opacity-50">{saving ? "Guardando..." : "Guardar Cambios"}</button>
             </div>
           )}
         </div>
       </section>
 
-      {/* Change Password */}
-      <section className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl border border-white/5 overflow-hidden">
+      <section className="bg-[#1C1B1B] rounded-xl border border-white/5 overflow-hidden">
         <div className="p-6 lg:p-8">
           <h3 className="text-lg font-black uppercase font-epilogue tracking-tighter text-white mb-6 flex items-center gap-3">
-            <span className="material-symbols-outlined text-pop-gold">lock</span>
-            Cambiar Contraseña
+            <span className="material-symbols-outlined text-pop-gold">lock</span>Cambiar Contraseña
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Contraseña Actual</label>
-              <input
-                type="password"
-                name="currentPassword"
-                value={formData.currentPassword}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                placeholder="••••••••"
-                className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-pop-gold/50 focus:ring-1 focus:ring-pop-gold/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              />
+              <input type="password" name="current_password" value={passwordData.current_password} onChange={handlePasswordChange} disabled={!isEditing} placeholder="••••••••" className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-pop-gold/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed" />
             </div>
             <div />
             <div>
               <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Nueva Contraseña</label>
-              <input
-                type="password"
-                name="newPassword"
-                value={formData.newPassword}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                placeholder="Mínimo 8 caracteres"
-                className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-pop-gold/50 focus:ring-1 focus:ring-pop-gold/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              />
+              <input type="password" name="password" value={passwordData.password} onChange={handlePasswordChange} disabled={!isEditing} placeholder="Mínimo 8 caracteres" className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-pop-gold/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed" />
             </div>
             <div>
               <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Confirmar Contraseña</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                placeholder="Repite la contraseña"
-                className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-pop-gold/50 focus:ring-1 focus:ring-pop-gold/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              />
+              <input type="password" name="password_confirmation" value={passwordData.password_confirmation} onChange={handlePasswordChange} disabled={!isEditing} placeholder="Repite la contraseña" className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-pop-gold/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed" />
             </div>
           </div>
           {isEditing && (
             <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => {
-                  setFormData({ ...formData, currentPassword: "", newPassword: "", confirmPassword: "" });
-                }}
-                className="px-6 py-2.5 text-sm font-semibold text-gray-400 border border-gray-700 rounded-lg hover:bg-gray-800/50 transition-all"
-              >
-                Limpiar
-              </button>
-              <button className="px-6 py-2.5 text-sm font-semibold text-pop-black bg-pop-gold rounded-lg hover:bg-pop-light-gold transition-all flex items-center gap-2">
-                <span className="material-symbols-outlined text-lg">lock_reset</span>
-                Actualizar Contraseña
+              <button onClick={() => setPasswordData({ current_password: "", password: "", password_confirmation: "" })} className="px-6 py-2.5 text-sm font-semibold text-gray-400 border border-gray-700 rounded-lg hover:bg-gray-800/50 transition-all">Limpiar</button>
+              <button onClick={savePassword} disabled={saving} className="px-6 py-2.5 text-sm font-semibold text-pop-black bg-pop-gold rounded-lg hover:bg-pop-light-gold transition-all flex items-center gap-2 disabled:opacity-50">
+                <span className="material-symbols-outlined text-lg">lock_reset</span>{saving ? "Actualizando..." : "Actualizar Contraseña"}
               </button>
             </div>
           )}
-        </div>
-      </section>
-
-      {/* Activity Summary */}
-      <section className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-6 border border-white/5 text-center">
-          <span className="material-symbols-outlined text-pop-gold text-3xl mb-3">login</span>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Último Acceso</p>
-          <p className="text-lg font-black text-white font-epilogue mt-1">Hoy, 14:30</p>
-        </div>
-        <div className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-6 border border-white/5 text-center">
-          <span className="material-symbols-outlined text-pop-orange text-3xl mb-3">history</span>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Sesiones Activas</p>
-          <p className="text-lg font-black text-white font-epilogue mt-1">1 dispositivo</p>
-        </div>
-        <div className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-6 border border-white/5 text-center">
-          <span className="material-symbols-outlined text-pop-light-gold text-3xl mb-3">security</span>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Verificación</p>
-          <p className="text-lg font-black text-white font-epilogue mt-1">Email verificado</p>
         </div>
       </section>
     </main>

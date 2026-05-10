@@ -109,6 +109,39 @@ class AuthController extends Controller
         return response()->json($request->user());
     }
 
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+        ]);
+
+        $user->update($validated);
+
+        return response()->json(['message' => 'Perfil actualizado', 'user' => $user->fresh()]);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if (!Hash::check($request->input('current_password'), $user->password)) {
+            return response()->json(['message' => 'La contraseña actual es incorrecta.'], 422);
+        }
+
+        $user->update(['password' => Hash::make($request->input('password'))]);
+
+        return response()->json(['message' => 'Contraseña actualizada correctamente.']);
+    }
+
     private function findUserByIdentifier(string $identifier): ?User
     {
         if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {

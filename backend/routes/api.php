@@ -43,6 +43,8 @@ Route::get('/auth/social/{provider}/callback', [SocialAuthController::class, 'ha
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
+    Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
+    Route::put('/auth/password', [AuthController::class, 'changePassword']);
 });
 
 /*
@@ -110,6 +112,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 
     // Usuarios CRUD
     Route::apiResource('usuarios', App\Http\Controllers\Admin\UsuarioController::class);
+    Route::get('/usuarios-export', [App\Http\Controllers\Admin\UsuarioController::class, 'export']);
 
     // Meseros CRUD
     Route::apiResource('meseros', App\Http\Controllers\Admin\MeseroController::class);
