@@ -30,7 +30,7 @@ export default function RecompensasPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchAPI<{ data?: Recompensa[]; recompensas?: Recompensa[] }>("/api/recompensas");
+      const data = await fetchAPI<{ data?: Recompensa[]; recompensas?: Recompensa[] }>("/recompensas");
       const list = Array.isArray(data) ? data : data.data ?? data.recompensas ?? [];
       setRewards(list);
     } catch (err: any) {
@@ -43,7 +43,7 @@ export default function RecompensasPage() {
   const fetchPoints = useCallback(async () => {
     if (!token) return;
     try {
-      const data = await fetchWithAuth<{ puntos?: number; points?: number; total?: number }>("/api/loyalty/points", token);
+      const data = await fetchWithAuth<{ puntos?: number; points?: number; total?: number }>("/loyalty/points", token);
       const pts = (data as any).puntos ?? (data as any).points ?? (data as any).total ?? 0;
       setUserPoints(Number(pts) || 0);
     } catch {
@@ -73,7 +73,7 @@ export default function RecompensasPage() {
     }
     setRedeemingId(id);
     try {
-      await fetchWithAuth(`/api/recompensas/${id}/canjear`, token, { method: "POST" });
+      await fetchWithAuth(`/recompensas/${id}/canjear`, token, { method: "POST" });
       setToast("Canje exitoso");
       await fetchPoints();
     } catch (err: any) {

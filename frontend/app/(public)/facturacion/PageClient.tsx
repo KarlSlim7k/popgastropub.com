@@ -88,7 +88,7 @@ export default function FacturacionPage() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/facturas`, {
+      const res = await fetch(`${API_URL}/facturas`, {
         method: 'POST',
         headers,
         body: formData,

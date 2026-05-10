@@ -43,14 +43,15 @@ export default function PuntosPage() {
       try {
         setLoading(true);
         const [pointsRes, tierRes, historyRes] = await Promise.all([
-          fetchWithAuth<{ data: PointsData }>("/loyalty/points", token),
-          fetchWithAuth<{ data: { current: Tier; next: Tier | null } }>("/loyalty/tier", token),
-          fetchWithAuth<{ data: HistoryItem[] }>("/loyalty/history", token),
+          fetchWithAuth<any>("/loyalty/points", token),
+          fetchWithAuth<any>("/loyalty/tier", token),
+          fetchWithAuth<any>("/loyalty/history", token),
         ]);
-        setPoints(pointsRes.data?.points ?? 0);
-        setTier(tierRes.data?.current ?? null);
-        setNextTier(tierRes.data?.next ?? null);
-        setHistory(historyRes.data ?? []);
+        setPoints(pointsRes.user?.points ?? pointsRes.points ?? 0);
+        setTier(tierRes.current_tier ? { name: tierRes.current_tier.name, min_points: tierRes.current_tier.min, max_points: tierRes.current_tier.max } : null);
+        setNextTier(tierRes.next_tier ? { name: tierRes.next_tier.name, min_points: tierRes.next_tier.min, max_points: tierRes.next_tier.max } : null);
+        const hist = Array.isArray(historyRes) ? historyRes : historyRes.data ?? [];
+        setHistory(hist.map((h: any) => ({ id: h.id, description: h.concept ?? h.description ?? '', points: h.points, type: h.points >= 0 ? 'earn' : 'redeem', created_at: h.created_at })));
       } catch (err: any) {
         setError(err?.message || "Error al cargar datos de fidelidad");
       } finally {

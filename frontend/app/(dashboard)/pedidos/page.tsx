@@ -28,7 +28,7 @@ export default function PedidosPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchWithAuth<{ data?: Pedido[]; pedidos?: Pedido[] }>("/api/pedidos", token);
+      const data = await fetchWithAuth<{ data?: Pedido[]; pedidos?: Pedido[] }>("/pedidos", token);
       const list = Array.isArray(data) ? data : data.data ?? data.pedidos ?? [];
       setOrders(list);
     } catch (err: any) {

@@ -42,7 +42,7 @@ export default function ReservasPage() {
     setError(null);
     try {
       const data = await fetchWithAuth<{ data?: Reserva[]; reservas?: Reserva[] }>(
-        "/api/reservas",
+        "/reservas",
         token
       );
       const list = Array.isArray(data) ? data : data.data ?? data.reservas ?? [];
@@ -86,7 +86,7 @@ export default function ReservasPage() {
     if (!token) return;
     setSubmitting(true);
     try {
-      await fetchWithAuth("/api/reservas", token, {
+      await fetchWithAuth("/reservas", token, {
         method: "POST",
         body: JSON.stringify({
           nombre: form.nombre,
