@@ -105,6 +105,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 
     // Facturas management
     Route::get('/facturas', [App\Http\Controllers\Admin\FacturaController::class, 'index']);
+    Route::get('/facturas/{id}', [App\Http\Controllers\Admin\FacturaController::class, 'show']);
     Route::patch('/facturas/{id}/status', [App\Http\Controllers\Admin\FacturaController::class, 'updateStatus']);
 
     // Usuarios CRUD

@@ -10,23 +10,36 @@ interface Factura {
   id: number;
   rfc: string;
   razon_social: string;
+  regimen_fiscal?: string;
+  codigo_postal?: string;
+  uso_cfdi?: string;
   email?: string;
   created_at: string;
   estado: "recibida" | "en_proceso" | "enviada_contadores" | "completada" | "rechazada";
   ticket_path?: string;
+  user?: { name: string; email: string };
 }
 
 export default function AdminFacturacionPage() {
   const [selectedStatus, setSelectedStatus] = useState("todos");
   const [requests, setRequests] = useState<Factura[]>([]);
   const [loading, setLoading] = useState(true);
+  const [detailItem, setDetailItem] = useState<Factura | null>(null);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const fetchFacturas = async () => {
     const session = getAuthSession();
     if (!session) return;
     setLoading(true);
     try {
-      const data = await fetchWithAuth<Factura[]>("/api/admin/facturas", session.token);
+      let endpoint = "/api/admin/facturas";
+      const params = new URLSearchParams();
+      if (dateFrom) params.append("from", dateFrom);
+      if (dateTo) params.append("to", dateTo);
+      const qs = params.toString();
+      if (qs) endpoint += `?${qs}`;
+      const data = await fetchWithAuth<Factura[]>(endpoint, session.token);
       setRequests(data);
     } catch {
       // error
@@ -37,7 +50,7 @@ export default function AdminFacturacionPage() {
 
   useEffect(() => {
     fetchFacturas();
-  }, []);
+  }, [dateFrom, dateTo]);
 
   const updateStatus = async (id: number, newStatus: string) => {
     const session = getAuthSession();
@@ -47,7 +60,7 @@ export default function AdminFacturacionPage() {
         method: "PATCH",
         body: JSON.stringify({ status: newStatus }),
       });
-      setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status: newStatus as any } : r)));
+      setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, estado: newStatus as Factura["estado"] } : r)));
     } catch {
       alert("Error al actualizar estado");
     }
@@ -64,6 +77,17 @@ export default function AdminFacturacionPage() {
     return map[status] || "bg-gray-500/10 text-gray-400 border-gray-500/20";
   };
 
+  const statusLabel = (status: string) => {
+    const map: Record<string, string> = {
+      recibida: "Recibida",
+      en_proceso: "En Proceso",
+      enviada_contadores: "Enviada Contadores",
+      completada: "Completada",
+      rechazada: "Rechazada",
+    };
+    return map[status] || status;
+  };
+
   const filteredRequests = selectedStatus === "todos" ? requests : requests.filter((r) => r.estado === selectedStatus);
 
   const pendientes = requests.filter((r) => r.estado === "recibida" || r.estado === "en_proceso").length;
@@ -73,6 +97,18 @@ export default function AdminFacturacionPage() {
   const ticketUrl = (path?: string) => {
     if (!path) return "";
     return path.startsWith("http") ? path : `${API_URL}${path}`;
+  };
+
+  const downloadTicket = (path?: string) => {
+    if (!path) return;
+    const url = ticketUrl(path);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = path.split("/").pop() || "ticket";
+    a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   return (
@@ -111,18 +147,44 @@ export default function AdminFacturacionPage() {
         </article>
       </section>
 
-      <div className="flex flex-wrap gap-2 mb-6">
-        {["todos", "recibida", "en_proceso", "enviada_contadores", "completada", "rechazada"].map((s) => (
-          <button
-            key={s}
-            onClick={() => setSelectedStatus(s)}
-            className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${
-              selectedStatus === s ? "bg-pop-gold text-pop-black" : "bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50"
-            }`}
-          >
-            {s === "todos" ? "Todos" : s.replace("_", " ")}
-          </button>
-        ))}
+      {/* Filters */}
+      <div className="flex flex-col lg:flex-row gap-4 mb-6">
+        <div className="flex flex-wrap gap-2 flex-1">
+          {["todos", "recibida", "en_proceso", "enviada_contadores", "completada", "rechazada"].map((s) => (
+            <button
+              key={s}
+              onClick={() => setSelectedStatus(s)}
+              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${
+                selectedStatus === s ? "bg-pop-gold text-pop-black" : "bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50"
+              }`}
+            >
+              {s === "todos" ? "Todos" : s.replace(/_/g, " ")}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2 items-center">
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className="bg-pop-black border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-pop-gold outline-none"
+          />
+          <span className="text-gray-500 text-xs">—</span>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className="bg-pop-black border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-pop-gold outline-none"
+          />
+          {(dateFrom || dateTo) && (
+            <button
+              onClick={() => { setDateFrom(""); setDateTo(""); }}
+              className="text-[9px] text-pop-orange font-bold uppercase hover:text-white"
+            >
+              Limpiar
+            </button>
+          )}
+        </div>
       </div>
 
       <section className="bg-[#1C1B1B] rounded-3xl border border-white/5 overflow-hidden mb-10">
@@ -132,19 +194,20 @@ export default function AdminFacturacionPage() {
 
         <div className="overflow-x-auto">
           <table className="hidden lg:table w-full text-left">
-             <thead className="bg-white/[0.01] text-[10px] font-black uppercase text-gray-500 tracking-widest border-b border-white/5">
-               <tr>
-                 <th className="py-5 px-8">Folio</th>
-                 <th className="py-5 px-4">Cliente / RFC</th>
-                 <th className="py-5 px-4">Estado</th>
-                 <th className="py-5 px-4">Ticket</th>
-                 <th className="py-5 px-8 text-right">Acciones</th>
-               </tr>
-             </thead>
+            <thead className="bg-white/[0.01] text-[10px] font-black uppercase text-gray-500 tracking-widest border-b border-white/5">
+              <tr>
+                <th className="py-5 px-8">Folio</th>
+                <th className="py-5 px-4">Cliente / RFC</th>
+                <th className="py-5 px-4">Estado</th>
+                <th className="py-5 px-4">Fecha</th>
+                <th className="py-5 px-4">Ticket</th>
+                <th className="py-5 px-8 text-right">Acciones</th>
+              </tr>
+            </thead>
             <tbody className="divide-y divide-white/5">
               {filteredRequests.map((r) => (
                 <tr key={r.id} className="hover:bg-white/[0.01] transition-all group">
-                  <td className="py-6 px-8 text-sm font-black text-pop-gold">F-{String(r.id).padStart(4, '0')}</td>
+                  <td className="py-6 px-8 text-sm font-black text-pop-gold">F-{String(r.id).padStart(4, "0")}</td>
                   <td className="py-6 px-4">
                     <p className="text-sm font-bold text-white">{r.razon_social}</p>
                     <p className="text-[10px] text-gray-500 uppercase font-black tabular-nums">{r.rfc}</p>
@@ -163,22 +226,39 @@ export default function AdminFacturacionPage() {
                       <option value="rechazada" className="bg-pop-black text-red-500">Rechazada</option>
                     </select>
                   </td>
+                  <td className="py-6 px-4 text-xs text-gray-400 tabular-nums">
+                    {new Date(r.created_at).toLocaleDateString("es-MX")}
+                  </td>
                   <td className="py-6 px-4">
                     {r.ticket_path ? (
-                      <a
-                        href={ticketUrl(r.ticket_path)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-pop-gold hover:text-white transition-colors"
-                      >
-                        <span className="material-symbols-outlined text-sm">image</span>
-                      </a>
+                      <div className="flex gap-1">
+                        <a
+                          href={ticketUrl(r.ticket_path)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-2 text-pop-gold hover:text-white transition-colors"
+                          title="Ver ticket"
+                        >
+                          <span className="material-symbols-outlined text-sm">image</span>
+                        </a>
+                        <button
+                          onClick={() => downloadTicket(r.ticket_path)}
+                          className="p-2 text-gray-400 hover:text-white transition-colors"
+                          title="Descargar ticket"
+                        >
+                          <span className="material-symbols-outlined text-sm">download</span>
+                        </button>
+                      </div>
                     ) : (
                       <span className="text-gray-600 material-symbols-outlined text-sm">hide_image</span>
                     )}
                   </td>
                   <td className="py-6 px-8 text-right">
-                    <button className="p-2 bg-white/5 rounded-lg text-gray-400 hover:text-white transition-all">
+                    <button
+                      onClick={() => setDetailItem(r)}
+                      className="p-2 bg-white/5 rounded-lg text-gray-400 hover:text-white transition-all"
+                      title="Ver detalle"
+                    >
                       <span className="material-symbols-outlined text-sm">visibility</span>
                     </button>
                   </td>
@@ -194,11 +274,12 @@ export default function AdminFacturacionPage() {
             </tbody>
           </table>
 
+          {/* Mobile cards */}
           <div className="lg:hidden divide-y divide-white/5">
             {filteredRequests.map((r) => (
               <article key={r.id} className="p-6 space-y-4 hover:bg-white/[0.01] transition-all">
                 <div className="flex justify-between items-start">
-                  <span className="text-sm font-black text-pop-gold">F-{String(r.id).padStart(4, '0')}</span>
+                  <span className="text-sm font-black text-pop-gold">F-{String(r.id).padStart(4, "0")}</span>
                   <select
                     value={r.estado}
                     onChange={(e) => updateStatus(r.id, e.target.value)}
@@ -219,20 +300,21 @@ export default function AdminFacturacionPage() {
                 <div className="flex justify-between items-end pt-2">
                   <div>
                     <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-1">Solicitud</p>
-                    <p className="text-xl font-black text-white font-mono">{new Date(r.created_at).toLocaleDateString('es-MX')}</p>
+                    <p className="text-xl font-black text-white font-mono">{new Date(r.created_at).toLocaleDateString("es-MX")}</p>
                   </div>
                   <div className="flex gap-2">
-                    {r.ticket_path ? (
-                      <a
-                        href={ticketUrl(r.ticket_path)}
-                        target="_blank"
-                        rel="noreferrer"
+                    {r.ticket_path && (
+                      <button
+                        onClick={() => downloadTicket(r.ticket_path)}
                         className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-pop-gold font-black text-[10px] uppercase tracking-widest flex items-center gap-2"
                       >
-                        <span className="material-symbols-outlined text-sm">image</span> Ticket
-                      </a>
-                    ) : null}
-                    <button className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-gray-300 font-black text-[10px] uppercase tracking-widest">
+                        <span className="material-symbols-outlined text-sm">download</span> Ticket
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setDetailItem(r)}
+                      className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-gray-300 font-black text-[10px] uppercase tracking-widest"
+                    >
                       Ver Detalle
                     </button>
                   </div>
@@ -245,6 +327,104 @@ export default function AdminFacturacionPage() {
           </div>
         </div>
       </section>
+
+      {/* Detail Modal */}
+      {detailItem && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+          <div className="absolute inset-0 bg-pop-black/90 backdrop-blur-xl" onClick={() => setDetailItem(null)} />
+          <div className="relative bg-[#1C1B1B] border-t md:border border-white/10 w-full max-w-lg rounded-t-3xl md:rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300">
+            <header className="p-6 border-b border-white/5 flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-black uppercase font-epilogue tracking-tighter text-white">
+                  F-{String(detailItem.id).padStart(4, "0")}
+                </h2>
+                <p className="text-[10px] text-pop-orange font-bold uppercase tracking-widest mt-1">Detalle de Solicitud</p>
+              </div>
+              <button
+                onClick={() => setDetailItem(null)}
+                className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-full text-gray-500"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </header>
+
+            <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto no-scrollbar">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Razón Social</p>
+                  <p className="text-sm font-bold text-white">{detailItem.razon_social}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">RFC</p>
+                  <p className="text-sm font-bold text-white font-mono">{detailItem.rfc}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Régimen Fiscal</p>
+                  <p className="text-sm text-white">{detailItem.regimen_fiscal || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Código Postal</p>
+                  <p className="text-sm text-white font-mono">{detailItem.codigo_postal || "—"}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Uso CFDI</p>
+                  <p className="text-sm text-white">{detailItem.uso_cfdi || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Email</p>
+                  <p className="text-sm text-white">{detailItem.email || "—"}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Estado</p>
+                  <span className={`inline-block border rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest ${statusBadge(detailItem.estado)}`}>
+                    {statusLabel(detailItem.estado)}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Fecha Solicitud</p>
+                  <p className="text-sm text-white font-mono">{new Date(detailItem.created_at).toLocaleString("es-MX")}</p>
+                </div>
+              </div>
+
+              {detailItem.user && (
+                <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4">
+                  <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-2">Usuario Solicitante</p>
+                  <p className="text-sm font-bold text-white">{detailItem.user.name}</p>
+                  <p className="text-[10px] text-gray-400">{detailItem.user.email}</p>
+                </div>
+              )}
+
+              {detailItem.ticket_path && (
+                <div className="flex gap-3">
+                  <a
+                    href={ticketUrl(detailItem.ticket_path)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-pop-gold font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-sm">image</span> Ver Ticket
+                  </a>
+                  <button
+                    onClick={() => downloadTicket(detailItem.ticket_path)}
+                    className="flex-1 py-3 bg-pop-gold/10 border border-pop-gold/20 rounded-xl text-pop-gold font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-sm">download</span> Descargar
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
