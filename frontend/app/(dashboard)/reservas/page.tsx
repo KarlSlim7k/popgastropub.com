@@ -248,7 +248,14 @@ export default function ReservasPage() {
                         Modificar Reserva
                       </button>
                       <button
-                        onClick={() => setToast("Contacta al restaurante para cancelar")}
+                        onClick={async () => {
+                          if (!token || !confirm("¿Cancelar esta reserva?")) return;
+                          try {
+                            await fetchWithAuth(`/reservas/${r.id}/cancel`, token, { method: "PATCH" });
+                            setToast("Reserva cancelada");
+                            fetchReservas();
+                          } catch (e: any) { setToast(e.message || "Error al cancelar"); }
+                        }}
                         className="w-full sm:w-auto px-6 py-3 bg-red-500/5 text-red-500 font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-red-500/10 transition-all border border-red-500/5"
                       >
                         Cancelar

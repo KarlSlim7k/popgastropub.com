@@ -35,9 +35,10 @@ export default function ClientTopNav() {
 
       <div className="hidden lg:flex items-center gap-10">
         <Link href="/puntos" className="text-xs font-black text-white hover:text-pop-gold uppercase tracking-widest transition-colors">Mis Puntos</Link>
-        <Link href="/recompensas" className="text-xs font-black text-white hover:text-pop-gold uppercase tracking-widest transition-colors font-bold text-pop-gold shadow-[0_0_10px_rgba(242,199,119,0.2)]">Recompensas</Link>
-        <Link href="/mis-facturas" className="text-xs font-black text-white hover:text-pop-gold uppercase tracking-widest transition-colors">Mis Facturas</Link>
-        <Link href="/menu" className="text-xs font-black text-white hover:text-pop-gold uppercase tracking-widest transition-colors">Menú Real</Link>
+        <Link href="/reservas" className="text-xs font-black text-white hover:text-pop-gold uppercase tracking-widest transition-colors">Reservas</Link>
+        <Link href="/pedidos" className="text-xs font-black text-white hover:text-pop-gold uppercase tracking-widest transition-colors">Pedidos</Link>
+        <Link href="/recompensas" className="text-xs font-black text-white hover:text-pop-gold uppercase tracking-widest transition-colors">Recompensas</Link>
+        <Link href="/mis-facturas" className="text-xs font-black text-white hover:text-pop-gold uppercase tracking-widest transition-colors">Facturas</Link>
       </div>
 
       <div className="flex items-center gap-6" ref={menuRef}>

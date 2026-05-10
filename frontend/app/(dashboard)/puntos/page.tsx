@@ -35,6 +35,16 @@ export default function PuntosPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<"beneficios" | "historial">("beneficios");
+  const [checkinDone, setCheckinDone] = useState(false);
+
+  const handleCheckin = async () => {
+    if (!token || checkinDone) return;
+    try {
+      const res = await fetchWithAuth<any>("/loyalty/checkin", token, { method: "POST" });
+      setPoints(res.points ?? points + 25);
+      setCheckinDone(true);
+    } catch {}
+  };
 
   useEffect(() => {
     if (!token) return;
@@ -87,12 +97,16 @@ export default function PuntosPage() {
           </h1>
           <div className="flex items-center gap-3 mt-4">
              <span className="bg-pop-gold text-pop-black text-[10px] font-black uppercase px-3 py-1 rounded-full tracking-widest">{tier?.name?.toUpperCase() || "POP FAN"}</span>
-             <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">Miembro desde Abril 2024</p>
+             <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">Miembro desde {session?.user ? new Date(Date.now() - 30*24*60*60*1000).toLocaleDateString("es-MX", { month: "long", year: "numeric" }) : "—"}</p>
           </div>
         </div>
-        <div className="text-left lg:text-right">
+        <div className="text-left lg:text-right space-y-3">
            <p className="text-5xl lg:text-6xl font-black text-pop-gold font-epilogue tracking-tighter leading-none">{userPoints.toLocaleString()}</p>
            <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.3em] mt-2">Puntos Disponibles</p>
+           <button onClick={handleCheckin} disabled={checkinDone} className={`mt-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${checkinDone ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-pop-gold text-pop-black hover:bg-pop-lightGold"}`}>
+             <span className="material-symbols-outlined text-sm align-middle mr-1">{checkinDone ? "check_circle" : "location_on"}</span>
+             {checkinDone ? "Check-in ✓ +25 pts" : "Check-in (+25 pts)"}
+           </button>
         </div>
       </header>
 

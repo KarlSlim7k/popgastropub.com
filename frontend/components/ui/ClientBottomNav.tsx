@@ -4,9 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
-  { label: "Dashboard", href: "/puntos", icon: "dashboard" },
-  { label: "Menú", href: "/menu", icon: "restaurant" },
+  { label: "Puntos", href: "/puntos", icon: "token" },
+  { label: "Reservas", href: "/reservas", icon: "calendar_month" },
   { label: "Premios", href: "/recompensas", icon: "redeem" },
+  { label: "Pedidos", href: "/pedidos", icon: "receipt_long" },
   { label: "Perfil", href: "/perfil", icon: "account_circle" },
 ];
 

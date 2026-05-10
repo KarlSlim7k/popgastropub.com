@@ -23,6 +23,7 @@ class User extends Authenticatable
         'last_visit',
         'orders_count',
         'total_spent',
+        'referral_code',
         'email_verified_at',
         'oauth_provider',
         'oauth_provider_id',

@@ -50,6 +50,19 @@ class AuthController extends Controller
             'role' => 'cliente',
         ]);
 
+        // Process referral code
+        $refCode = $request->input('ref') ?? $request->input('referral_code');
+        if ($refCode) {
+            $referrer = User::where('referral_code', $refCode)->first();
+            if ($referrer && $referrer->id !== $user->id) {
+                \App\Models\Referral::create([
+                    'referrer_id' => $referrer->id,
+                    'referred_id' => $user->id,
+                    'status' => 'pending',
+                ]);
+            }
+        }
+
         $token = $this->issueToken($user);
 
         return response()->json([

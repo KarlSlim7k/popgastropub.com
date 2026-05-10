@@ -16,7 +16,7 @@ export interface AuthSession {
 const AUTH_SESSION_KEY = 'pop_auth_session';
 
 function canUseStorage(): boolean {
-  return typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined';
+  return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
 }
 
 export function saveAuthSession(session: AuthSession): void {
@@ -24,7 +24,7 @@ export function saveAuthSession(session: AuthSession): void {
     return;
   }
 
-  window.sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
+  window.localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
 }
 
 export function getAuthSession(): AuthSession | null {
@@ -32,7 +32,7 @@ export function getAuthSession(): AuthSession | null {
     return null;
   }
 
-  const raw = window.sessionStorage.getItem(AUTH_SESSION_KEY);
+  const raw = window.localStorage.getItem(AUTH_SESSION_KEY);
 
   if (!raw) {
     return null;
@@ -56,7 +56,7 @@ export function clearAuthSession(): void {
     return;
   }
 
-  window.sessionStorage.removeItem(AUTH_SESSION_KEY);
+  window.localStorage.removeItem(AUTH_SESSION_KEY);
 }
 
 export function normalizeRole(role?: string): string {

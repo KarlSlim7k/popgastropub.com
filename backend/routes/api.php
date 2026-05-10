@@ -65,9 +65,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/facturas', [FacturaController::class, 'store']);
     Route::get('/facturas/{id}', [FacturaController::class, 'show']);
 
+    // Referidos
+    Route::get('/referidos', [\App\Http\Controllers\ReferralController::class, 'index']);
+
     // Reservas
     Route::get('/reservas', [ReservaController::class, 'index']);
     Route::post('/reservas', [ReservaController::class, 'store']);
+    Route::patch('/reservas/{id}/cancel', [ReservaController::class, 'cancel']);
 
     // Pedidos
     Route::get('/pedidos', [PedidoController::class, 'index']);
