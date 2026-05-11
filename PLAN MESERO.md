@@ -104,18 +104,26 @@ Tabs funcionales. Datos staff hardcoded. Ningún "Guardar" envía datos. Notific
 
 ### Tarea 1.1: Corregir bug doble-prefijo API
 
-**Archivo:** `frontend/lib/api.ts`
-- Línea 1: `NEXT_PUBLIC_API_URL` = `https://api.popgastropub.com/api`
-- Línea 13: `${API_URL}${endpoint}` concatena `/api` + `/api/ranking` = `/api/api/ranking`
-- **Solución:** Cambiar llamadas para no incluir `/api/` en endpoint path, ej: `fetchWithAuth('/ranking', token)`
+**Contexto:** `NEXT_PUBLIC_API_URL` = `https://api.popgastropub.com/api`. La función `fetchWithAuth(endpoint, token)` construye la URL como `${API_URL}${endpoint}`. Si el endpoint empieza con `/api/`, la URL final será `https://api.popgastropub.com/api/api/...` → 404.
 
-**Archivos a actualizar:**
-- `frontend/app/(staff)/staff/dashboard/page.tsx` — línea 74
-- `frontend/app/(staff)/staff/ranking/page.tsx` — línea 61
+**Regla:** Los endpoints pasados a `fetchWithAuth()` y `fetchAPI()` NUNCA deben empezar con `/api/`. Solo usar la ruta relativa al prefijo `/api` de Laravel.
 
-### Tarea 1.2: Verificar middleware role alias
+**Archivos a corregir:**
 
-**Archivo:** `backend/app/Http/Middleware/EnsureRole.php` — verificar que alias `role` está registrado en kernel/bootstrap.
+| Archivo | Línea aprox. | Cambiar | Por |
+|---------|------|---------|-----|
+| `frontend/app/(staff)/staff/dashboard/page.tsx` | ~74 | `'/api/ranking'` | `'/ranking'` |
+| `frontend/app/(staff)/staff/ranking/page.tsx` | ~61 | `'/api/ranking'` | `'/ranking'` |
+
+**Esfuerzo:** 5 minutos. **Impacto:** Desbloquea Dashboard y Ranking en producción.
+
+### Tarea 1.2: Verificar middleware role
+
+El middleware `role:mesero` ya está registrado y funcional. Las rutas existentes son:
+- `GET /ranking` — lista ranking de meseros activos
+- `POST /ranking/points` — agregar puntos a un mesero
+
+Estas rutas están protegidas con `auth:sanctum` + `role:mesero` en `backend/routes/api.php`.
 
 ---
 
@@ -123,90 +131,105 @@ Tabs funcionales. Datos staff hardcoded. Ningún "Guardar" envía datos. Notific
 
 ### Tarea 2.1: Dashboard del mesero
 **Crear:** `backend/app/Http/Controllers/Staff/StaffDashboardController.php`
-- `GET /api/staff/dashboard` → stats personales, órdenes activas, notificaciones
+- `GET /staff/dashboard` → stats personales (mesas atendidas, bebidas vendidas, puntos), órdenes activas, notificaciones
 
 ### Tarea 2.2: Analíticas del mesero
 **Crear:** `backend/app/Http/Controllers/Staff/StaffAnalyticsController.php`
-- `GET /api/staff/analytics?period=week|month` → ventas por día, eficiencia, categorías
+- `GET /staff/analytics?period=week|month` → ventas por día, eficiencia, categorías vendidas
 
 ### Tarea 2.3: Reservaciones para staff
 **Crear:** `backend/app/Http/Controllers/Staff/StaffReservaController.php`
-- `GET /api/staff/reservas?fecha=YYYY-MM-DD` → TODAS las reservas del día + estado salón
-- `PATCH /api/staff/reservas/{id}/status` → cambiar estado de reserva
+- `GET /staff/reservas?fecha=YYYY-MM-DD` → TODAS las reservas del día (no filtradas por user_id) + estado salón
+- `PATCH /staff/reservas/{id}/status` → cambiar estado de reserva (confirmar, sentar, completar)
 
 ### Tarea 2.4: Menú con disponibilidad
 **Crear:** `backend/app/Http/Controllers/Staff/StaffMenuController.php`
-- `GET /api/staff/menu` → productos con campo `disponible`
-- `PATCH /api/staff/menu/{id}/disponibilidad` → toggle disponibilidad
+- `GET /staff/menu` → todos los productos con campo `disponible` y `stock`
+- `PATCH /staff/menu/{id}/disponibilidad` → toggle disponibilidad rápido
 
 ### Tarea 2.5: Ranking personal y badges
 **Crear:** `backend/app/Http/Controllers/Staff/StaffRankingController.php`
-- `GET /api/staff/mi-ranking` → posición, progreso, badges, desglose puntos
+- `GET /staff/mi-ranking` → posición personal, progreso al siguiente tier, badges ganados, desglose de puntos por categoría
 
 ### Tarea 2.6: Configuración staff
 **Crear:** `backend/app/Http/Controllers/Staff/StaffConfigController.php`
-- `GET /api/staff/configuracion` + `PUT /api/staff/configuracion`
-- **Migración:** agregar campo `preferences` JSON a tabla `meseros`
+- `GET /staff/configuracion` + `PUT /staff/configuracion`
+- Usa tabla `settings` existente con group `staff_{user_id}` o campo `preferences` JSON en `meseros`
 
 ### Tarea 2.7: Registrar rutas en api.php
+
 **Archivo:** `backend/routes/api.php`
+
+> [!IMPORTANT]
+> Las rutas se registran SIN prefijo `/api/` en Laravel (Laravel ya agrega `/api` automáticamente vía `RouteServiceProvider`). El frontend las llama como `/staff/dashboard`, `/staff/analytics`, etc. (sin `/api/` al inicio).
+
 ```php
 Route::middleware(['auth:sanctum', 'role:mesero'])->prefix('staff')->group(function () {
-    Route::get('/dashboard', [Staff\StaffDashboardController::class, 'index']);
-    Route::get('/analytics', [Staff\StaffAnalyticsController::class, 'index']);
-    Route::get('/reservas', [Staff\StaffReservaController::class, 'index']);
-    Route::patch('/reservas/{id}/status', [Staff\StaffReservaController::class, 'updateStatus']);
-    Route::get('/menu', [Staff\StaffMenuController::class, 'index']);
-    Route::patch('/menu/{id}/disponibilidad', [Staff\StaffMenuController::class, 'toggleDisponibilidad']);
-    Route::get('/mi-ranking', [Staff\StaffRankingController::class, 'miRanking']);
-    Route::get('/configuracion', [Staff\StaffConfigController::class, 'index']);
-    Route::put('/configuracion', [Staff\StaffConfigController::class, 'update']);
+    Route::get('/dashboard', [App\Http\Controllers\Staff\StaffDashboardController::class, 'index']);
+    Route::get('/analytics', [App\Http\Controllers\Staff\StaffAnalyticsController::class, 'index']);
+    Route::get('/reservas', [App\Http\Controllers\Staff\StaffReservaController::class, 'index']);
+    Route::patch('/reservas/{id}/status', [App\Http\Controllers\Staff\StaffReservaController::class, 'updateStatus']);
+    Route::get('/menu', [App\Http\Controllers\Staff\StaffMenuController::class, 'index']);
+    Route::patch('/menu/{id}/disponibilidad', [App\Http\Controllers\Staff\StaffMenuController::class, 'toggleDisponibilidad']);
+    Route::get('/mi-ranking', [App\Http\Controllers\Staff\StaffRankingController::class, 'miRanking']);
+    Route::get('/configuracion', [App\Http\Controllers\Staff\StaffConfigController::class, 'index']);
+    Route::put('/configuracion', [App\Http\Controllers\Staff\StaffConfigController::class, 'update']);
 });
 ```
 
+**Nota:** Las rutas existentes de ranking (`GET /ranking`, `POST /ranking/points`) se mantienen tal cual — ya funcionan con middleware `role:mesero`.
+
 ### Tarea 2.8: Seeders con datos de prueba
-**Crear:** `backend/database/seeders/MeseroSeeder.php` con 5-8 meseros ficticios con puntos variados
-- Poblar tabla `productos` con menú real del restaurante
+**Crear:** `backend/database/seeders/MeseroSeeder.php` con 5-8 meseros ficticios con puntos variados para que el ranking tenga datos visibles.
 
 ---
 
 ## FASE 3 — FRONTEND: Conectar Páginas al Backend
 
+> [!IMPORTANT]
+> **Convención de endpoints en frontend:** Todos los endpoints se pasan a `fetchWithAuth()` SIN el prefijo `/api/`. Ejemplos correctos: `'/staff/dashboard'`, `'/ranking'`, `'/staff/menu'`. NUNCA usar `'/api/staff/...'`.
+
 ### Tarea 3.1: Dashboard — reemplazar hardcoded
 **Archivo:** `frontend/app/(staff)/staff/dashboard/page.tsx`
-- Stats cards → datos de `GET /api/staff/dashboard`
-- Órdenes → datos del API
-- Notificaciones → datos del API
-- Botón ranking → agregar navegación
+- Stats cards → consumir `fetchWithAuth('/staff/dashboard', token)`
+- Ranking snapshot → ya usa `'/ranking'` (corregido en Fase 1)
+- Botón "Ver Ranking Completo" → agregar `<Link href="/staff/ranking">`
 
 ### Tarea 3.2: Ranking — posición personal y badges
 **Archivo:** `frontend/app/(staff)/staff/ranking/page.tsx`
-- Cargar `GET /api/staff/mi-ranking` para datos personales
-- Reemplazar progreso y badges hardcoded
-- Highlight del mesero logueado en tabla
+- Cargar `fetchWithAuth('/staff/mi-ranking', token)` para datos personales
+- Reemplazar progreso hardcoded (65%, Tier Pro) con datos reales
+- Reemplazar badges hardcoded con badges del API
+- Highlight del mesero logueado en la tabla general
 
 ### Tarea 3.3: Analíticas — implementar desde cero
 **Archivo:** `frontend/app/(staff)/staff/analiticas/page.tsx`
-- Consumir `GET /api/staff/analytics`
-- Filtro período funcional
-- Gráfico dinámico, descarga reporte
+- Consumir `fetchWithAuth('/staff/analytics?period=week', token)`
+- Filtro período funcional (cambia query param)
+- Gráfico dinámico con datos reales
 
 ### Tarea 3.4: Menú — conectar API
 **Archivo:** `frontend/app/(staff)/staff/menu/page.tsx`
-- Consumir API menú, agregar buscador, disponibilidad real
+- Consumir `fetchWithAuth('/staff/menu', token)`
+- Toggle disponibilidad → `fetchWithAuth('/staff/menu/{id}/disponibilidad', token, { method: 'PATCH' })`
+- Agregar buscador client-side
 
 ### Tarea 3.5: Reservaciones — conectar API staff
 **Archivo:** `frontend/app/(staff)/staff/reservaciones/page.tsx`
-- Consumir API staff reservas, fecha dinámica, botones funcionales
+- Consumir `fetchWithAuth('/staff/reservas?fecha=2026-05-10', token)`
+- Fecha dinámica (hoy por defecto, selector de fecha)
+- Botones de estado → `fetchWithAuth('/staff/reservas/{id}/status', token, { method: 'PATCH', body: ... })`
 
 ### Tarea 3.6: Perfil — conectar guardado
 **Archivo:** `frontend/app/(staff)/staff/perfil/page.tsx`
-- Conectar a `PUT /auth/profile` y `PUT /auth/password`
-- Feedback visual (toast) al guardar
+- Guardar cambios → `fetchWithAuth('/auth/profile', token, { method: 'PUT', body: ... })`
+- Cambiar contraseña → `fetchWithAuth('/auth/password', token, { method: 'PUT', body: ... })`
+- Feedback visual (toast/mensaje) al guardar
 
 ### Tarea 3.7: Configuración — persistencia
 **Archivo:** `frontend/app/(staff)/staff/configuracion/page.tsx`
-- Consumir y guardar configuración via API
+- Cargar → `fetchWithAuth('/staff/configuracion', token)`
+- Guardar → `fetchWithAuth('/staff/configuracion', token, { method: 'PUT', body: ... })`
 
 ---
 
