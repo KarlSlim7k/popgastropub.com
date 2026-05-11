@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 const bottomNavItems = [
   { label: "Dashboard", href: "/staff/dashboard", icon: "dashboard" },
-  { label: "Menú", href: "/staff/menu", icon: "restaurant" },
+  { label: "Ventas", href: "/staff/ventas", icon: "local_bar" },
   { label: "Ranking", href: "/staff/ranking", icon: "military_tech" },
   { label: "Reservas", href: "/staff/reservaciones", icon: "calendar_month" },
   { label: "Perfil", href: "/staff/perfil", icon: "person" },

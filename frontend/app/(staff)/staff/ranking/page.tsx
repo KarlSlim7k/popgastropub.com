@@ -48,6 +48,7 @@ export default function RankingPage() {
   const [meseros, setMeseros] = useState<Mesero[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [miRanking, setMiRanking] = useState<{ position: number; tier: string; progress: number; puntos_totales: number } | null>(null);
 
   useEffect(() => {
     if (!session?.token) return;
@@ -58,11 +59,14 @@ export default function RankingPage() {
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchWithAuth<Mesero[]>('/ranking', session!.token);
+        const [data, personal] = await Promise.all([
+          fetchWithAuth<Mesero[]>('/ranking', session!.token),
+          fetchWithAuth<any>('/staff/mi-ranking', session!.token).catch(() => null),
+        ]);
         if (!cancelled) {
-          // Ensure descending order by points
           const sorted = [...data].sort((a, b) => b.puntos - a.puntos);
           setMeseros(sorted);
+          if (personal) setMiRanking(personal);
         }
       } catch (err: any) {
         if (!cancelled) {
@@ -244,14 +248,14 @@ export default function RankingPage() {
           <article className="bg-pop-gold p-8 rounded-2xl text-pop-black relative overflow-hidden group">
             <div className="relative z-10">
               <h4 className="text-[10px] font-black uppercase tracking-widest mb-2 opacity-60">Tu Progreso</h4>
-              <p className="text-3xl font-black uppercase tracking-tighter mb-6">Sigue sumando</p>
-              <p className="text-xs font-bold font-manrope leading-tight mb-8">Cada venta cuenta. Mantén el ritmo para escalar posiciones en el Wall of Fame.</p>
+              <p className="text-3xl font-black uppercase tracking-tighter mb-6">{miRanking ? `#${miRanking.position}` : "Cargando..."}</p>
+              <p className="text-xs font-bold font-manrope leading-tight mb-8">{miRanking ? `${miRanking.puntos_totales.toLocaleString()} puntos acumulados` : "Cada venta cuenta."}</p>
               <div className="h-2 bg-pop-black/10 rounded-full overflow-hidden mb-2">
-                <div className="h-full bg-pop-black w-[65%]" />
+                <div className="h-full bg-pop-black" style={{ width: `${miRanking?.progress || 0}%` }} />
               </div>
               <div className="flex justify-between text-[9px] font-black uppercase tracking-widest">
-                <span>65% del Objetivo</span>
-                <span>Tier Pro</span>
+                <span>{miRanking?.progress || 0}% del Objetivo</span>
+                <span>Tier {miRanking?.tier || "—"}</span>
               </div>
             </div>
             <span className="material-symbols-outlined absolute -right-6 -bottom-6 text-9xl text-pop-black/5 rotate-12 group-hover:scale-110 transition-transform duration-700">trending_up</span>

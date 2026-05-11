@@ -52,42 +52,41 @@ export default function WaiterDashboardPage() {
   const userName = session?.user?.name || 'Mesero';
 
   const stats = [
-    { label: "Mesas Atendidas", value: "14", icon: "table_restaurant" },
-    { label: "Bebidas Vendidas", value: "42", icon: "local_bar" },
-    { label: "Puntos Ganados", value: "2,840", icon: "military_tech" },
+    { label: "Mesas Atendidas", value: "—", icon: "table_restaurant" },
+    { label: "Bebidas Vendidas", value: "—", icon: "local_bar" },
+    { label: "Puntos Ganados", value: "—", icon: "military_tech" },
   ];
 
-  const orders: OrderItem[] = [
-    { id: "1", description: "2x Old Fashioned, 1x Tartare", status: "ready", time: "Recoger ahora en Barra 1" },
-    { id: "2", description: "1x Ribeye, 1x Red Wine", status: "preparing", time: "En preparación (5 min)" },
-    { id: "3", description: "3x Margarita Pops", status: "preparing", time: "En preparación (8 min)" },
-  ];
+  const orders: OrderItem[] = [];
 
   useEffect(() => {
     if (!session?.token) return;
 
     let cancelled = false;
 
-    async function loadRanking() {
+    async function loadData() {
       try {
         setRankingLoading(true);
-        const data = await fetchWithAuth<Mesero[]>('/ranking', session!.token);
+        const [rankingData, dashData] = await Promise.all([
+          fetchWithAuth<Mesero[]>('/ranking', session!.token),
+          fetchWithAuth<any>('/staff/dashboard', session!.token).catch(() => null),
+        ]);
         if (!cancelled) {
-          const sorted = [...data].sort((a, b) => b.puntos - a.puntos);
+          const sorted = [...rankingData].sort((a, b) => b.puntos - a.puntos);
           setMeseros(sorted);
+          if (dashData?.stats) {
+            stats[0].value = String(dashData.stats.mesas_hoy);
+            stats[1].value = String(dashData.stats.bebidas_vendidas);
+            stats[2].value = dashData.stats.puntos_totales.toLocaleString();
+          }
         }
-      } catch {
-        // Silently fail for dashboard ranking snapshot; data stays empty
-      } finally {
+      } catch {} finally {
         if (!cancelled) setRankingLoading(false);
       }
     }
 
-    loadRanking();
-
-    return () => {
-      cancelled = true;
-    };
+    loadData();
+    return () => { cancelled = true; };
   }, [session?.token]);
 
   const topMesero = useMemo(() => meseros[0] || null, [meseros]);

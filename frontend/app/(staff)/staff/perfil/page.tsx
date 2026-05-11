@@ -1,254 +1,116 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-provider";
+import { fetchWithAuth } from "@/lib/api";
 
 export default function StaffPerfilPage() {
   const { session, logout } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [showPwModal, setShowPwModal] = useState(false);
 
-  const userName = session?.user?.name || "Ricardo S.";
-  const userEmail = session?.user?.email || "";
-  const userPoints = session?.user?.points ?? 0;
-  const userTier = session?.user?.tier || "";
+  const [form, setForm] = useState({ name: session?.user?.name || "", email: session?.user?.email || "", phone: "" });
+  const [pwForm, setPwForm] = useState({ current_password: "", password: "", password_confirmation: "" });
 
-  const [formData, setFormData] = useState({
-    name: userName,
-    email: userEmail,
-    phone: "",
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
+  useEffect(() => {
+    if (!session?.token) return;
+    fetchWithAuth<any>("/auth/me", session.token).then((u) => {
+      const user = u.data ?? u;
+      setForm({ name: user.name || "", email: user.email || "", phone: user.phone || "" });
+    }).catch(() => {});
+  }, [session?.token]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleSave = async () => {
+    if (!session?.token) return;
+    setSaving(true);
+    try {
+      await fetchWithAuth("/auth/profile", session.token, { method: "PUT", body: JSON.stringify(form) });
+      setMessage("Perfil actualizado");
+      setIsEditing(false);
+    } catch (e: any) { setMessage(e.message || "Error"); }
+    finally { setSaving(false); setTimeout(() => setMessage(""), 3000); }
   };
+
+  const handlePassword = async () => {
+    if (!session?.token) return;
+    if (pwForm.password !== pwForm.password_confirmation) { setMessage("Las contraseñas no coinciden"); return; }
+    setSaving(true);
+    try {
+      await fetchWithAuth("/auth/password", session.token, { method: "PUT", body: JSON.stringify(pwForm) });
+      setMessage("Contraseña actualizada");
+      setShowPwModal(false);
+      setPwForm({ current_password: "", password: "", password_confirmation: "" });
+    } catch (e: any) { setMessage(e.message || "Error"); }
+    finally { setSaving(false); setTimeout(() => setMessage(""), 3000); }
+  };
+
+  const userName = form.name || "Staff";
 
   return (
     <main className="pt-24 lg:pt-20 p-4 lg:p-10 min-h-screen bg-pop-black">
-      {/* Header */}
-      <header className="mb-8 lg:mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+      <header className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <h1 className="text-4xl lg:text-5xl font-black tracking-tighter text-white font-epilogue uppercase flex items-center gap-3">
-            <span className="material-symbols-outlined text-pop-gold text-5xl">person</span>
-            Mi Perfil
+            <span className="material-symbols-outlined text-pop-gold text-5xl">person</span>Mi Perfil
           </h1>
-          <p className="text-gray-400 mt-2 text-base lg:text-lg font-manrope">
-            Tu información personal y credenciales de acceso
-          </p>
+          <p className="text-gray-400 mt-2 text-base font-manrope">Tu información personal y credenciales</p>
         </div>
-        <button
-          onClick={() => setIsEditing(!isEditing)}
-          className={`px-5 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center gap-2 ${
-            isEditing
-              ? "text-gray-400 border border-gray-700 hover:bg-gray-800/50"
-              : "text-pop-black bg-pop-gold hover:bg-pop-light-gold"
-          }`}
-        >
-          <span className="material-symbols-outlined text-lg">{isEditing ? "close" : "edit"}</span>
-          {isEditing ? "Cancelar" : "Editar Perfil"}
+        <button onClick={() => setIsEditing(!isEditing)} className={`px-5 py-2.5 text-sm font-semibold rounded-lg transition-all flex items-center gap-2 ${isEditing ? "text-gray-400 border border-gray-700" : "text-pop-black bg-pop-gold hover:bg-pop-light-gold"}`}>
+          <span className="material-symbols-outlined text-lg">{isEditing ? "close" : "edit"}</span>{isEditing ? "Cancelar" : "Editar"}
         </button>
       </header>
 
-      {/* Profile Card */}
-      <section className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl border border-white/5 overflow-hidden mb-8">
-        {/* Avatar Section */}
+      {message && <div className={`mb-6 p-4 rounded-xl text-sm font-bold ${message.includes("Error") || message.includes("no coinciden") ? "bg-red-500/10 text-red-400" : "bg-green-500/10 text-green-400"}`}>{message}</div>}
+
+      <section className="bg-[#1C1B1B] rounded-xl border border-white/5 overflow-hidden mb-8">
         <div className="p-8 border-b border-white/5 flex flex-col sm:flex-row items-center sm:items-start gap-6">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pop-orange to-pop-gold p-[3px] flex-shrink-0">
+          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pop-orange to-pop-gold p-[3px]">
             <div className="w-full h-full rounded-full bg-pop-black flex items-center justify-center text-pop-gold font-black text-3xl font-epilogue">
-              {userName
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()
-                .slice(0, 2)}
+              {userName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
             </div>
           </div>
-          <div className="text-center sm:text-left flex-1">
+          <div className="text-center sm:text-left">
             <h2 className="text-2xl font-black text-white font-epilogue">{userName}</h2>
-            <p className="text-sm text-gray-400 mt-1">{userEmail || "Sin email registrado"}</p>
-            <div className="flex flex-wrap gap-2 mt-3 justify-center sm:justify-start">
-              <span className="bg-pop-orange/10 text-pop-orange text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-                Staff
-              </span>
-              <span className="bg-pop-gold/10 text-pop-gold text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-                Mesero
-              </span>
-              {userPoints > 0 && (
-                <span className="bg-green-500/10 text-green-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-                  {userPoints} pts
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="text-center sm:text-right">
-            <p className="text-[10px] text-gray-500 uppercase tracking-widest">Último acceso</p>
-            <p className="text-sm text-gray-300 font-medium mt-1">Hoy, 14:30</p>
+            <p className="text-sm text-gray-400 mt-1">{form.email}</p>
+            <span className="inline-block mt-2 bg-pop-gold/10 text-pop-gold text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Staff</span>
           </div>
         </div>
-
-        {/* Personal Info Form */}
         <div className="p-6 lg:p-8">
-          <h3 className="text-lg font-black uppercase font-epilogue tracking-tighter text-white mb-6 flex items-center gap-3">
-            <span className="material-symbols-outlined text-pop-gold">badge</span>
-            Información Personal
-          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Nombre Completo</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-pop-gold/50 focus:ring-1 focus:ring-pop-gold/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-pop-gold/50 focus:ring-1 focus:ring-pop-gold/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Teléfono</label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                placeholder="282-XXX-XXXX"
-                className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-pop-gold/50 focus:ring-1 focus:ring-pop-gold/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Rol</label>
-              <input
-                type="text"
-                value="Mesero / Staff"
-                disabled
-                className="w-full bg-gray-800/30 border border-white/5 rounded-lg px-4 py-3 text-sm text-gray-500 cursor-not-allowed"
-              />
-            </div>
+            <div><label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Nombre</label><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} disabled={!isEditing} className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-pop-gold outline-none disabled:opacity-50 disabled:cursor-not-allowed" /></div>
+            <div><label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Email</label><input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} disabled={!isEditing} className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-pop-gold outline-none disabled:opacity-50 disabled:cursor-not-allowed" /></div>
+            <div><label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Teléfono</label><input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} disabled={!isEditing} className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-pop-gold outline-none disabled:opacity-50 disabled:cursor-not-allowed" /></div>
           </div>
-          {isEditing && (
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => setIsEditing(false)}
-                className="px-6 py-2.5 text-sm font-semibold text-gray-400 border border-gray-700 rounded-lg hover:bg-gray-800/50 transition-all"
-              >
-                Descartar
-              </button>
-              <button className="px-6 py-2.5 text-sm font-semibold text-pop-black bg-pop-gold rounded-lg hover:bg-pop-light-gold transition-all">
-                Guardar Cambios
-              </button>
-            </div>
-          )}
+          {isEditing && <div className="mt-6 flex justify-end"><button onClick={handleSave} disabled={saving} className="px-6 py-2.5 text-sm font-semibold text-pop-black bg-pop-gold rounded-lg hover:bg-pop-light-gold disabled:opacity-50">{saving ? "Guardando..." : "Guardar Cambios"}</button></div>}
         </div>
       </section>
 
-      {/* Change Password */}
-      <section className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl border border-white/5 overflow-hidden">
-        <div className="p-6 lg:p-8">
-          <h3 className="text-lg font-black uppercase font-epilogue tracking-tighter text-white mb-6 flex items-center gap-3">
-            <span className="material-symbols-outlined text-pop-gold">lock</span>
-            Cambiar Contraseña
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Contraseña Actual</label>
-              <input
-                type="password"
-                name="currentPassword"
-                value={formData.currentPassword}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                placeholder="••••••••"
-                className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-pop-gold/50 focus:ring-1 focus:ring-pop-gold/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-            </div>
-            <div />
-            <div>
-              <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Nueva Contraseña</label>
-              <input
-                type="password"
-                name="newPassword"
-                value={formData.newPassword}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                placeholder="Mínimo 8 caracteres"
-                className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-pop-gold/50 focus:ring-1 focus:ring-pop-gold/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Confirmar Contraseña</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                placeholder="Repite la contraseña"
-                className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-pop-gold/50 focus:ring-1 focus:ring-pop-gold/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-            </div>
-          </div>
-          {isEditing && (
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => {
-                  setFormData({ ...formData, currentPassword: "", newPassword: "", confirmPassword: "" });
-                }}
-                className="px-6 py-2.5 text-sm font-semibold text-gray-400 border border-gray-700 rounded-lg hover:bg-gray-800/50 transition-all"
-              >
-                Limpiar
-              </button>
-              <button className="px-6 py-2.5 text-sm font-semibold text-pop-black bg-pop-gold rounded-lg hover:bg-pop-light-gold transition-all flex items-center gap-2">
-                <span className="material-symbols-outlined text-lg">lock_reset</span>
-                Actualizar Contraseña
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Activity Summary */}
-      <section className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-6 border border-white/5 text-center">
-          <span className="material-symbols-outlined text-pop-gold text-3xl mb-3">login</span>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Último Acceso</p>
-          <p className="text-lg font-black text-white font-epilogue mt-1">Hoy, 14:30</p>
-        </div>
-        <div className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-6 border border-white/5 text-center">
-          <span className="material-symbols-outlined text-pop-orange text-3xl mb-3">history</span>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Sesiones Activas</p>
-          <p className="text-lg font-black text-white font-epilogue mt-1">1 dispositivo</p>
-        </div>
-        <div className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-6 border border-white/5 text-center">
-          <span className="material-symbols-outlined text-pop-light-gold text-3xl mb-3">military_tech</span>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Mis Puntos POP</p>
-          <p className="text-lg font-black text-white font-epilogue mt-1">{userPoints > 0 ? `${userPoints} pts` : "—"}</p>
-        </div>
-      </section>
-
-      {/* Danger Zone / Logout */}
-      <section className="mt-8 mb-12">
-        <button 
-          onClick={() => logout()}
-          className="w-full bg-red-500/10 border border-red-500/20 text-red-500 py-4 rounded-xl font-black uppercase text-xs tracking-[0.2em] hover:bg-red-500/20 transition-all flex items-center justify-center gap-3"
-        >
-          <span className="material-symbols-outlined">logout</span>
-          Cerrar Sesión Segura
+      <div className="space-y-2">
+        <button onClick={() => setShowPwModal(true)} className="w-full flex items-center justify-between bg-[#1C1B1B] p-5 rounded-xl border border-white/5 hover:bg-white/[0.02] transition-all">
+          <div className="flex items-center gap-4"><span className="material-symbols-outlined text-pop-gold">lock_reset</span><span className="text-xs font-black text-white uppercase">Cambiar Contraseña</span></div>
+          <span className="material-symbols-outlined text-gray-600">chevron_right</span>
         </button>
-      </section>
+        <button onClick={() => logout()} className="w-full flex items-center justify-between bg-red-500/5 p-5 rounded-xl border border-red-500/10 hover:bg-red-500/10 transition-all">
+          <div className="flex items-center gap-4"><span className="material-symbols-outlined text-red-500/50">logout</span><span className="text-xs font-black text-white uppercase">Cerrar Sesión</span></div>
+        </button>
+      </div>
+
+      {showPwModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-pop-black/90 backdrop-blur-xl" onClick={() => setShowPwModal(false)} />
+          <div className="relative bg-[#1C1B1B] border border-white/10 w-full max-w-md rounded-3xl overflow-hidden">
+            <div className="p-6 border-b border-white/5 flex justify-between items-center"><h2 className="text-xl font-black uppercase font-epilogue text-white">Cambiar Contraseña</h2><button onClick={() => setShowPwModal(false)} className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-gray-500"><span className="material-symbols-outlined">close</span></button></div>
+            <div className="p-6 space-y-5">
+              <div><label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Actual</label><input type="password" value={pwForm.current_password} onChange={(e) => setPwForm({ ...pwForm, current_password: e.target.value })} className="w-full bg-pop-black border border-white/10 rounded-xl p-3 text-white focus:border-pop-gold outline-none text-sm mt-2" /></div>
+              <div><label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Nueva</label><input type="password" value={pwForm.password} onChange={(e) => setPwForm({ ...pwForm, password: e.target.value })} className="w-full bg-pop-black border border-white/10 rounded-xl p-3 text-white focus:border-pop-gold outline-none text-sm mt-2" /></div>
+              <div><label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Confirmar</label><input type="password" value={pwForm.password_confirmation} onChange={(e) => setPwForm({ ...pwForm, password_confirmation: e.target.value })} className="w-full bg-pop-black border border-white/10 rounded-xl p-3 text-white focus:border-pop-gold outline-none text-sm mt-2" /></div>
+            </div>
+            <div className="p-6 border-t border-white/5 flex gap-3"><button onClick={() => setShowPwModal(false)} className="flex-1 py-3 text-xs font-black text-gray-500 uppercase">Cancelar</button><button onClick={handlePassword} disabled={saving} className="flex-[2] py-3 bg-pop-gold text-pop-black text-xs font-black uppercase rounded-xl disabled:opacity-50">{saving ? "..." : "Cambiar"}</button></div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
