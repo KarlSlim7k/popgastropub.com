@@ -58,7 +58,7 @@ export default function RankingPage() {
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchWithAuth<Mesero[]>('/api/ranking', session!.token);
+        const data = await fetchWithAuth<Mesero[]>('/ranking', session!.token);
         if (!cancelled) {
           // Ensure descending order by points
           const sorted = [...data].sort((a, b) => b.puntos - a.puntos);

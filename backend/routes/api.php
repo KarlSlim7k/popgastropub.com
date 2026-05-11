@@ -93,6 +93,18 @@ Route::middleware(['auth:sanctum', 'role:mesero'])->group(function () {
     Route::post('/ranking/points', [RankingController::class, 'addPoints']);
 });
 
+Route::middleware(['auth:sanctum', 'role:mesero'])->prefix('staff')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\Staff\StaffDashboardController::class, 'index']);
+    Route::get('/analytics', [App\Http\Controllers\Staff\StaffAnalyticsController::class, 'index']);
+    Route::get('/reservas', [App\Http\Controllers\Staff\StaffReservaController::class, 'index']);
+    Route::patch('/reservas/{id}/status', [App\Http\Controllers\Staff\StaffReservaController::class, 'updateStatus']);
+    Route::get('/menu', [App\Http\Controllers\Staff\StaffMenuController::class, 'index']);
+    Route::patch('/menu/{id}/disponibilidad', [App\Http\Controllers\Staff\StaffMenuController::class, 'toggleDisponibilidad']);
+    Route::get('/mi-ranking', [App\Http\Controllers\Staff\StaffRankingController::class, 'miRanking']);
+    Route::get('/configuracion', [App\Http\Controllers\Staff\StaffConfigController::class, 'index']);
+    Route::put('/configuracion', [App\Http\Controllers\Staff\StaffConfigController::class, 'update']);
+});
+
 /*
 |--------------------------------------------------------------------------
 | Admin Routes (admin role)

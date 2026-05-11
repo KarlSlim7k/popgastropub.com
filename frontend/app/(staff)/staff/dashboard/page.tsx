@@ -71,7 +71,7 @@ export default function WaiterDashboardPage() {
     async function loadRanking() {
       try {
         setRankingLoading(true);
-        const data = await fetchWithAuth<Mesero[]>('/api/ranking', session!.token);
+        const data = await fetchWithAuth<Mesero[]>('/ranking', session!.token);
         if (!cancelled) {
           const sorted = [...data].sort((a, b) => b.puntos - a.puntos);
           setMeseros(sorted);
