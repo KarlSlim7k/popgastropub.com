@@ -10,13 +10,19 @@ interface Promo {
   descuento: string;
   dia_inicio: string;
   dia_fin: string;
-  dias_activos: string[];
+  dias_activos: string | string[] | null;
   activa: boolean;
   estado: string;
 }
 
-const DIAS_SEMANA = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+const DIAS_SEMANA = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
 const DIAS_CORTOS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+function parseDias(dias: string | string[] | null): string[] {
+  if (!dias) return [];
+  if (Array.isArray(dias)) return dias;
+  return dias.split(',').map(d => d.trim());
+}
 const API_URL = 'https://api.popgastropub.com/api/promociones';
 
 function getWeekDates(): Date[] {
@@ -37,7 +43,7 @@ function getTodayIndex(): number {
 }
 
 function getPromosForDay(promos: Promo[], diaName: string): Promo[] {
-  return promos.filter(p => p.activa && p.dias_activos?.includes(diaName));
+  return promos.filter(p => p.activa && parseDias(p.dias_activos).includes(diaName));
 }
 
 export default function Promociones() {
@@ -66,7 +72,7 @@ export default function Promociones() {
   const todayName = DIAS_SEMANA[todayIndex];
   const weekDates = getWeekDates();
   const activePromos = promos.filter(p => p.activa);
-  const heroPromo = activePromos.find(p => p.dias_activos?.includes(todayName)) || activePromos[0];
+  const heroPromo = activePromos.find(p => parseDias(p.dias_activos).includes(todayName)) || activePromos[0];
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <ErrorState onRetry={fetchPromos} />;
@@ -92,7 +98,7 @@ export default function Promociones() {
             </div>
             <div className="w-full md:w-2/5 p-12 flex flex-col justify-center relative z-10">
               <div className="inline-flex items-center px-3 py-1 bg-[#D96725]/20 border border-[#D96725]/30 text-[#D96725] text-xs font-bold tracking-widest uppercase mb-6 w-fit">
-                {heroPromo.dias_activos?.includes(todayName) ? 'Disponible hoy' : 'Próximamente'}
+                {parseDias(heroPromo.dias_activos).includes(todayName) ? 'Disponible hoy' : 'Próximamente'}
               </div>
               <h2 className="text-4xl md:text-5xl font-black font-headline text-white leading-none mb-4 uppercase">
                 {heroPromo.titulo}
@@ -180,7 +186,7 @@ export default function Promociones() {
                       <span className="text-[#F2C777] font-headline font-bold text-sm">{promo.descuento}</span>
                     )}
                     <span className="text-[10px] uppercase font-bold text-gray-500 tracking-widest">
-                      {promo.dias_activos?.join(', ')}
+                      {parseDias(promo.dias_activos).join(', ')}
                     </span>
                   </div>
                 </div>
