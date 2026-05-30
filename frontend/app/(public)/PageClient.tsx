@@ -2,6 +2,25 @@
 
 import Image from 'next/image';
 import React, { useCallback, useEffect, useState } from 'react';
+import { fetchAPI } from '@/lib/api';
+
+interface Promo {
+  id: number;
+  titulo: string;
+  descripcion: string;
+  dias_activos: string[];
+}
+
+interface Producto {
+  id: number;
+  nombre: string;
+  descripcion: string | null;
+  precio: number;
+  imagen: string | null;
+  destacado: boolean;
+}
+
+const DIAS_SEMANA = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
 
 const HERO_SLIDES = [
   {
@@ -52,6 +71,11 @@ function getOpenStatus(): { isOpen: boolean; label: string; colorClass: string; 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [openStatus, setOpenStatus] = useState<{ isOpen: boolean; label: string; colorClass: string; dotClass: string } | null>(null);
+  const [promoHoy, setPromoHoy] = useState<Promo | null>(null);
+  const [promoLoading, setPromoLoading] = useState(true);
+  const [destacados, setDestacados] = useState<Producto[]>([]);
+  const [destacadosLoading, setDestacadosLoading] = useState(true);
+  const [destacadosError, setDestacadosError] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -62,6 +86,26 @@ export default function Home() {
 
   useEffect(() => {
     setOpenStatus(getOpenStatus());
+  }, []);
+
+  useEffect(() => {
+    const diaHoy = DIAS_SEMANA[new Date().getDay()];
+    fetchAPI<{ data: Promo[] }>('/promociones')
+      .then(({ data }) => {
+        const activa = data.find((p) => p.dias_activos?.includes(diaHoy));
+        setPromoHoy(activa || null);
+      })
+      .catch(() => setPromoHoy(null))
+      .finally(() => setPromoLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetchAPI<{ data: Producto[] }>('/menu')
+      .then(({ data }) => {
+        setDestacados(data.filter((p) => p.destacado).slice(0, 6));
+      })
+      .catch(() => setDestacadosError(true))
+      .finally(() => setDestacadosLoading(false));
   }, []);
 
   const goToSlide = useCallback((index: number) => {
@@ -137,14 +181,34 @@ export default function Home() {
       <section className="relative py-8">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="bg-gradient-to-r from-[#732817] to-surface-container-low p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 group">
-            <div className="space-y-4 text-center md:text-left">
-              <span className="bg-[#F2C777] text-surface font-black text-[10px] px-3 py-1 inline-block animate-pulse tracking-widest">🔥 PROMO ACTIVA</span>
-              <h2 className="text-secondary font-headline text-3xl md:text-5xl font-black">Sushiércoles - 2x1 en Rollos Seleccionados</h2>
-              <p className="text-on-surface/70 font-body max-w-xl">Aprovecha todos los miércoles nuestra promoción estrella. El mejor sushi de Perote al doble de sabor.</p>
-            </div>
-            <a className="bg-primary-container text-on-surface font-black px-10 py-5 group-hover:translate-x-2 transition-transform duration-500 flex items-center gap-3 whitespace-nowrap" href="/promociones">
-              VER ESTA PROMO <span className="material-symbols-outlined">arrow_forward</span>
-            </a>
+            {promoLoading ? (
+              <div className="space-y-4 w-full animate-pulse">
+                <div className="h-6 w-40 bg-white/10 rounded"></div>
+                <div className="h-10 w-3/4 bg-white/10 rounded"></div>
+                <div className="h-4 w-1/2 bg-white/10 rounded"></div>
+              </div>
+            ) : promoHoy ? (
+              <>
+                <div className="space-y-4 text-center md:text-left">
+                  <span className="bg-[#F2C777] text-surface font-black text-[10px] px-3 py-1 inline-block animate-pulse tracking-widest">🔥 PROMO ACTIVA HOY</span>
+                  <h2 className="text-secondary font-headline text-3xl md:text-5xl font-black">{promoHoy.titulo}</h2>
+                  <p className="text-on-surface/70 font-body max-w-xl">{promoHoy.descripcion}</p>
+                </div>
+                <a className="bg-primary-container text-on-surface font-black px-10 py-5 group-hover:translate-x-2 transition-transform duration-500 flex items-center gap-3 whitespace-nowrap" href="/promociones">
+                  VER ESTA PROMO <span className="material-symbols-outlined">arrow_forward</span>
+                </a>
+              </>
+            ) : (
+              <>
+                <div className="space-y-4 text-center md:text-left">
+                  <h2 className="text-secondary font-headline text-3xl md:text-5xl font-black">Siempre hay algo especial en POP</h2>
+                  <p className="text-on-surface/70 font-body max-w-xl">Descubre todas nuestras promociones y ofertas exclusivas.</p>
+                </div>
+                <a className="bg-primary-container text-on-surface font-black px-10 py-5 group-hover:translate-x-2 transition-transform duration-500 flex items-center gap-3 whitespace-nowrap" href="/promociones">
+                  VER PROMOCIONES <span className="material-symbols-outlined">arrow_forward</span>
+                </a>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -229,6 +293,54 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/*  1.3b Productos Destacados  */}
+      {!destacadosError && (destacadosLoading || destacados.length > 0) && (
+        <section className="py-24 bg-surface">
+          <div className="max-w-7xl mx-auto px-4 md:px-8">
+            <div className="text-center mb-16">
+              <h3 className="text-[#F2C777] font-headline text-5xl font-black tracking-tighter uppercase mb-4">Lo más pedido</h3>
+              <div className="w-24 h-1 bg-[#D96725] mx-auto"></div>
+            </div>
+            {destacadosLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="bg-surface-container-low animate-pulse rounded-sm overflow-hidden">
+                    <div className="aspect-square bg-white/5"></div>
+                    <div className="p-4 space-y-3">
+                      <div className="h-4 w-3/4 bg-white/10 rounded"></div>
+                      <div className="h-3 w-full bg-white/10 rounded"></div>
+                      <div className="h-5 w-1/3 bg-white/10 rounded"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex md:grid md:grid-cols-3 gap-6 overflow-x-auto pb-4 md:pb-0 snap-x snap-mandatory">
+                {destacados.map((producto) => (
+                  <div key={producto.id} className="min-w-[260px] md:min-w-0 snap-start bg-surface-container-low rounded-sm overflow-hidden border border-outline-variant/10">
+                    <div className="relative aspect-square">
+                      <img
+                        src={producto.imagen || '/images/logopop.png'}
+                        alt={producto.nombre}
+                        className="w-full h-full object-cover"
+                      />
+                      <span className="absolute top-3 left-3 bg-[#F2C777] text-[#0D0D0D] font-black text-[10px] px-2 py-1 tracking-widest">DESTACADO</span>
+                    </div>
+                    <div className="p-4">
+                      <h4 className="text-on-surface font-headline font-bold text-sm uppercase mb-1">{producto.nombre}</h4>
+                      {producto.descripcion && (
+                        <p className="text-on-surface/60 text-xs line-clamp-2 mb-2">{producto.descripcion}</p>
+                      )}
+                      <p className="text-[#F2C777] font-black text-lg">${producto.precio.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/*  1.4 POP Points Teaser  */}
       <section className="py-24 tonal-shift relative overflow-hidden">
