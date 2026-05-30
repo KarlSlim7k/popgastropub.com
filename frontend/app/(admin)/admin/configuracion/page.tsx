@@ -13,7 +13,7 @@ export default function AdminConfiguracionPage() {
   useEffect(() => {
     const session = getAuthSession();
     if (!session) return;
-    fetchWithAuth<Record<string, Record<string, string>>>("/api/admin/configuracion", session.token)
+    fetchWithAuth<Record<string, Record<string, string>>>("/admin/configuracion", session.token)
       .then((data) => {
         setSettings({
           general: { nombre: "POP Perote", telefono: "282-825-32-43", email: "contacto@pop-perote.com", direccion: "Justo Sierra No. 11, Col. Amado Nervo, Perote, Veracruz", timezone: "America/Mexico_City", idioma: "es", ...data.general },
@@ -34,7 +34,7 @@ export default function AdminConfiguracionPage() {
     setSaving(true);
     setMessage("");
     try {
-      await fetchWithAuth("/api/admin/configuracion", session.token, { method: "PUT", body: JSON.stringify({ group, data: settings[group] }) });
+      await fetchWithAuth("/admin/configuracion", session.token, { method: "PUT", body: JSON.stringify({ group, data: settings[group] }) });
       setMessage("Configuración guardada");
       setTimeout(() => setMessage(""), 3000);
     } catch { setMessage("Error al guardar"); }

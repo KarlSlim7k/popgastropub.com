@@ -25,11 +25,11 @@ export default function AdminDashboardPage() {
     if (!session) { setLoading(false); return; }
 
     Promise.all([
-      fetchWithAuth<DashboardData>("/api/admin/dashboard", session.token),
-      fetchWithAuth<ChartItem[]>(`/api/admin/dashboard/chart-data?period=${chartPeriod}`, session.token),
-      fetchWithAuth<SalesMixItem[]>("/api/admin/dashboard/sales-mix", session.token),
-      fetchWithAuth<WaiterItem[]>("/api/admin/dashboard/top-waiters", session.token),
-      fetchWithAuth<MenuItem[]>("/api/admin/dashboard/live-menu", session.token),
+      fetchWithAuth<DashboardData>("/admin/dashboard", session.token),
+      fetchWithAuth<ChartItem[]>(`/admin/dashboard/chart-data?period=${chartPeriod}`, session.token),
+      fetchWithAuth<SalesMixItem[]>("/admin/dashboard/sales-mix", session.token),
+      fetchWithAuth<WaiterItem[]>("/admin/dashboard/top-waiters", session.token),
+      fetchWithAuth<MenuItem[]>("/admin/dashboard/live-menu", session.token),
     ]).then(([data, chart, mix, waiters, menu]) => {
       setKpiData([
         { label: "Usuarios Totales", value: data.totalUsers?.toLocaleString() || "0", trend: "Total", icon: "group" },

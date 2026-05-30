@@ -39,7 +39,7 @@ export default function AdminUsuariosPage() {
     if (!session) return;
     setLoading(true);
     try {
-      const data = await fetchWithAuth<User[]>("/api/admin/usuarios", session.token);
+      const data = await fetchWithAuth<User[]>("/admin/usuarios", session.token);
       setUsers(data);
     } catch {}
     finally { setLoading(false); }
@@ -66,10 +66,10 @@ export default function AdminUsuariosPage() {
     if (!payload.password) delete payload.password;
     try {
       if (editingUser) {
-        await fetchWithAuth(`/api/admin/usuarios/${editingUser.id}`, session.token, { method: "PUT", body: JSON.stringify(payload) });
+        await fetchWithAuth(`/admin/usuarios/${editingUser.id}`, session.token, { method: "PUT", body: JSON.stringify(payload) });
       } else {
         if (!form.password) { alert("La contraseña es requerida"); return; }
-        await fetchWithAuth("/api/admin/usuarios", session.token, { method: "POST", body: JSON.stringify(payload) });
+        await fetchWithAuth("/admin/usuarios", session.token, { method: "POST", body: JSON.stringify(payload) });
       }
       setShowModal(false);
       fetchUsers();
@@ -81,7 +81,7 @@ export default function AdminUsuariosPage() {
     if (!session) return;
     if (!confirm("¿Eliminar este usuario?")) return;
     try {
-      await fetchWithAuth(`/api/admin/usuarios/${id}`, session.token, { method: "DELETE" });
+      await fetchWithAuth(`/admin/usuarios/${id}`, session.token, { method: "DELETE" });
       fetchUsers();
     } catch { alert("Error al eliminar"); }
   };

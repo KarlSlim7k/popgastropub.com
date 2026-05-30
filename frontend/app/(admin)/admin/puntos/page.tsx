@@ -41,10 +41,10 @@ export default function AdminPuntosPage() {
     const session = getAuthSession();
     if (!session) return;
     Promise.all([
-      fetchWithAuth<Stats>("/api/admin/puntos/stats", session.token),
-      fetchWithAuth<TierData[]>("/api/admin/puntos/tiers", session.token),
-      fetchWithAuth<TopMember[]>("/api/admin/puntos/top-members", session.token),
-      fetchWithAuth<MemberActivity[]>("/api/admin/puntos/activity", session.token),
+      fetchWithAuth<Stats>("/admin/puntos/stats", session.token),
+      fetchWithAuth<TierData[]>("/admin/puntos/tiers", session.token),
+      fetchWithAuth<TopMember[]>("/admin/puntos/top-members", session.token),
+      fetchWithAuth<MemberActivity[]>("/admin/puntos/activity", session.token),
     ]).then(([s, t, m, a]) => { setStats(s); setTiers(t); setTopMembers(m); setActivity(a); }).catch(() => {});
   }, []);
 
@@ -54,7 +54,7 @@ export default function AdminPuntosPage() {
     const session = getAuthSession();
     if (!session) return;
     try {
-      const users = await fetchWithAuth<any[]>("/api/admin/usuarios", session.token);
+      const users = await fetchWithAuth<any[]>("/admin/usuarios", session.token);
       setSearchResults(users.filter((u: any) => u.name.toLowerCase().includes(q.toLowerCase()) || u.email.includes(q)).slice(0, 5).map((u: any) => ({ id: Number(u.id), name: u.name, points: u.points })));
     } catch {}
   };
@@ -63,14 +63,14 @@ export default function AdminPuntosPage() {
     const session = getAuthSession();
     if (!session || !redeemForm.user_id || !redeemForm.points) return;
     try {
-      await fetchWithAuth("/api/admin/puntos/redeem", session.token, { method: "POST", body: JSON.stringify({ user_id: Number(redeemForm.user_id), points: Number(redeemForm.points), description: redeemForm.description }) });
+      await fetchWithAuth("/admin/puntos/redeem", session.token, { method: "POST", body: JSON.stringify({ user_id: Number(redeemForm.user_id), points: Number(redeemForm.points), description: redeemForm.description }) });
       setShowRedeemModal(false);
       setRedeemForm({ user_id: "", points: "", description: "" });
       // Refresh data
       const [s, m, a] = await Promise.all([
-        fetchWithAuth<Stats>("/api/admin/puntos/stats", session.token),
-        fetchWithAuth<TopMember[]>("/api/admin/puntos/top-members", session.token),
-        fetchWithAuth<MemberActivity[]>("/api/admin/puntos/activity", session.token),
+        fetchWithAuth<Stats>("/admin/puntos/stats", session.token),
+        fetchWithAuth<TopMember[]>("/admin/puntos/top-members", session.token),
+        fetchWithAuth<MemberActivity[]>("/admin/puntos/activity", session.token),
       ]);
       setStats(s); setTopMembers(m); setActivity(a);
     } catch (e: any) { alert(e.message || "Error al registrar canje"); }

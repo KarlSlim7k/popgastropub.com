@@ -50,7 +50,7 @@ export default function AdminMeserosPage() {
     if (!session) return;
     setLoading(true);
     try {
-      const data = await fetchWithAuth<Waiter[]>(`/api/admin/meseros?period=${selectedPeriod}`, session.token);
+      const data = await fetchWithAuth<Waiter[]>(`/admin/meseros?period=${selectedPeriod}`, session.token);
       const sorted = [...data].sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
       sorted.forEach((w, i) => (w.rank = i + 1));
       setWaiters(sorted);
@@ -99,9 +99,9 @@ export default function AdminMeserosPage() {
     const body = JSON.stringify(form);
     try {
       if (editingWaiter) {
-        await fetchWithAuth(`/api/admin/meseros/${editingWaiter.id}`, session.token, { method: "PUT", body });
+        await fetchWithAuth(`/admin/meseros/${editingWaiter.id}`, session.token, { method: "PUT", body });
       } else {
-        await fetchWithAuth("/api/admin/meseros", session.token, { method: "POST", body });
+        await fetchWithAuth("/admin/meseros", session.token, { method: "POST", body });
       }
       closeModal();
       fetchWaiters();
@@ -115,7 +115,7 @@ export default function AdminMeserosPage() {
     if (!session) return;
     if (!confirm("¿Eliminar este mesero?")) return;
     try {
-      await fetchWithAuth(`/api/admin/meseros/${id}`, session.token, { method: "DELETE" });
+      await fetchWithAuth(`/admin/meseros/${id}`, session.token, { method: "DELETE" });
       fetchWaiters();
     } catch {
       alert("Error al eliminar");

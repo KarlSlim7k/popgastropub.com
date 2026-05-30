@@ -46,7 +46,7 @@ export default function AdminPromocionesPage() {
     if (!session) return;
     setLoading(true);
     try {
-      const data = await fetchWithAuth<Promo[]>("/api/admin/promociones", session.token);
+      const data = await fetchWithAuth<Promo[]>("/admin/promociones", session.token);
       setPromos(data);
     } catch {
       // error
@@ -79,9 +79,9 @@ export default function AdminPromocionesPage() {
     const body = JSON.stringify(form);
     try {
       if (editingPromo) {
-        await fetchWithAuth(`/api/admin/promociones/${editingPromo.id}`, session.token, { method: "PUT", body });
+        await fetchWithAuth(`/admin/promociones/${editingPromo.id}`, session.token, { method: "PUT", body });
       } else {
-        await fetchWithAuth("/api/admin/promociones", session.token, { method: "POST", body });
+        await fetchWithAuth("/admin/promociones", session.token, { method: "POST", body });
       }
       closeModal();
       fetchPromos();
@@ -95,7 +95,7 @@ export default function AdminPromocionesPage() {
     if (!session) return;
     if (!confirm("¿Eliminar esta promoción?")) return;
     try {
-      await fetchWithAuth(`/api/admin/promociones/${id}`, session.token, { method: "DELETE" });
+      await fetchWithAuth(`/admin/promociones/${id}`, session.token, { method: "DELETE" });
       fetchPromos();
     } catch {
       alert("Error al eliminar");

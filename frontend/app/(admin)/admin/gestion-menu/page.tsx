@@ -53,7 +53,7 @@ export default function AdminGestionMenuPage() {
     if (!session) return;
     setLoading(true);
     try {
-      const data = await fetchWithAuth<MenuItem[]>("/api/admin/menu", session.token);
+      const data = await fetchWithAuth<MenuItem[]>("/admin/menu", session.token);
       setMenuItems(data);
     } catch {
       // error
@@ -100,9 +100,9 @@ export default function AdminGestionMenuPage() {
     const body = JSON.stringify(form);
     try {
       if (editingItem) {
-        await fetchWithAuth(`/api/admin/menu/${editingItem.id}`, session.token, { method: "PUT", body });
+        await fetchWithAuth(`/admin/menu/${editingItem.id}`, session.token, { method: "PUT", body });
       } else {
-        await fetchWithAuth("/api/admin/menu", session.token, { method: "POST", body });
+        await fetchWithAuth("/admin/menu", session.token, { method: "POST", body });
       }
       closeModal();
       fetchMenu();
@@ -116,7 +116,7 @@ export default function AdminGestionMenuPage() {
     if (!session) return;
     if (!confirm("¿Eliminar este platillo?")) return;
     try {
-      await fetchWithAuth(`/api/admin/menu/${id}`, session.token, { method: "DELETE" });
+      await fetchWithAuth(`/admin/menu/${id}`, session.token, { method: "DELETE" });
       fetchMenu();
     } catch {
       alert("Error al eliminar");
@@ -127,7 +127,7 @@ export default function AdminGestionMenuPage() {
     const session = getAuthSession();
     if (!session) return;
     try {
-      await fetchWithAuth(`/api/admin/menu/${id}`, session.token, {
+      await fetchWithAuth(`/admin/menu/${id}`, session.token, {
         method: "PUT",
         body: JSON.stringify({ active: !current }),
       });

@@ -33,7 +33,7 @@ export default function AdminFacturacionPage() {
     if (!session) return;
     setLoading(true);
     try {
-      let endpoint = "/api/admin/facturas";
+      let endpoint = "/admin/facturas";
       const params = new URLSearchParams();
       if (dateFrom) params.append("from", dateFrom);
       if (dateTo) params.append("to", dateTo);
@@ -56,7 +56,7 @@ export default function AdminFacturacionPage() {
     const session = getAuthSession();
     if (!session) return;
     try {
-      await fetchWithAuth(`/api/admin/facturas/${id}/status`, session.token, {
+      await fetchWithAuth(`/admin/facturas/${id}/status`, session.token, {
         method: "PATCH",
         body: JSON.stringify({ status: newStatus }),
       });

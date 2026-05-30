@@ -40,7 +40,7 @@ export default function AdminPerfilPage() {
     setSaving(true);
     setMessage("");
     try {
-      await fetchWithAuth("/api/auth/profile", auth.token, {
+      await fetchWithAuth("/auth/profile", auth.token, {
         method: "PUT",
         body: JSON.stringify(formData),
       });
@@ -63,7 +63,7 @@ export default function AdminPerfilPage() {
     setSaving(true);
     setMessage("");
     try {
-      await fetchWithAuth("/api/auth/password", auth.token, {
+      await fetchWithAuth("/auth/password", auth.token, {
         method: "PUT",
         body: JSON.stringify(passwordData),
       });
