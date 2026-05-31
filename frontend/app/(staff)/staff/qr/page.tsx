@@ -89,7 +89,7 @@ export default function StaffQrPage() {
       ) : (
         <section className="max-w-md bg-pop-cardGreen p-8 rounded-2xl border border-pop-gold/20 space-y-6 text-center">
           <div className="bg-pop-black p-6 rounded-2xl inline-block mx-auto">
-            <QRCodeSVG value={qr.url} size={256} bgColor="#1A3028" fgColor="#F2C166" level="M" />
+            <QRCodeSVG value={qr.url} size={256} bgColor="#1C3028" fgColor="#F2C166" level="M" />
           </div>
           <div>
             <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">El cliente ganará</p>

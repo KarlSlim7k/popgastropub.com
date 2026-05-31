@@ -59,12 +59,12 @@ const config: Config = {
 
         pop: {
           gold: '#F2C166',
-          lightGold: '#F2C894',
-          orange: '#D96725',
+          lightGold: '#F2D194',
+          orange: '#D96E30',
           brown: '#732B1A',
           black: '#234032',
-          darkGreen: '#1A3028',
-          cardGreen: '#2D5040',
+          darkGreen: '#1C3028',
+          cardGreen: '#2E592D',
         },
       },
       fontFamily: {

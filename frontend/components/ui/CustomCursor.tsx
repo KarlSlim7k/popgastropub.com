@@ -21,13 +21,13 @@ export default function CustomCursor() {
 
     const grow = () => {
       cursor.style.transform = 'translate(-50%, -50%) scale(1.8)';
-      cursor.style.borderColor = '#D96725';
+      cursor.style.borderColor = '#D96E30';
       cursor.style.background = 'rgba(217,103,37,0.08)';
     };
 
     const shrink = () => {
       cursor.style.transform = 'translate(-50%, -50%) scale(1)';
-      cursor.style.borderColor = '#F2C777';
+      cursor.style.borderColor = '#F2C166';
       cursor.style.background = 'transparent';
     };
 

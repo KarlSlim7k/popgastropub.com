@@ -38,9 +38,9 @@ function getCategory(pts: number): string {
 }
 
 const podiumColors = [
-  { border: '#F2C777', bg: '#F2C777', text: 'pop-black', glow: true, scale: true },
-  { border: '#F2C894', bg: '#F2C894', text: 'pop-black', glow: false, scale: false },
-  { border: '#D96725', bg: '#D96725', text: 'white', glow: false, scale: false },
+  { border: '#F2C166', bg: '#F2C166', text: 'pop-black', glow: true, scale: true },
+  { border: '#F2D194', bg: '#F2D194', text: 'pop-black', glow: false, scale: false },
+  { border: '#D96E30', bg: '#D96E30', text: 'white', glow: false, scale: false },
 ];
 
 export default function RankingPage() {
@@ -266,8 +266,8 @@ export default function RankingPage() {
             <h3 className="text-lg font-black uppercase font-epilogue tracking-tighter text-white mb-8">Insignias del Mes</h3>
             <div className="grid grid-cols-2 gap-6">
               {[
-                { label: "Margarita Queen", icon: "local_bar", color: "#F2C777", active: true },
-                { label: "Ventas Shark", icon: "trending_up", color: "#D96725", active: true },
+                { label: "Margarita Queen", icon: "local_bar", color: "#F2C166", active: true },
+                { label: "Ventas Shark", icon: "trending_up", color: "#D96E30", active: true },
                 { label: "Punctual Pro", icon: "schedule", color: "#666", active: false },
                 { label: "Service God", icon: "verified", color: "#666", active: false },
               ].map((badge, i) => (
