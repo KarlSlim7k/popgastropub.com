@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-provider";
 const navItems = [
   { label: "Mi Dashboard", href: "/staff/dashboard", icon: "dashboard" },
   { label: "Registrar Venta", href: "/staff/ventas", icon: "local_bar" },
+  { label: "QR de Puntos", href: "/staff/qr", icon: "qr_code_2" },
   { label: "Reservaciones", href: "/staff/reservaciones", icon: "calendar_month" },
   { label: "Carta / Menú", href: "/staff/menu", icon: "restaurant_menu" },
   { label: "Ranking POP Stars", href: "/staff/ranking", icon: "star" },

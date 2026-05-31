@@ -114,6 +114,17 @@ function socialButtonIcon(provider: SocialProvider) {
 
 export default function Login() {
   const router = useRouter();
+
+  const redirectAfterAuth = (role?: string) => {
+    if (typeof window !== 'undefined') {
+      const redirect = new URLSearchParams(window.location.search).get('redirect');
+      if (redirect && redirect.startsWith('/')) {
+        router.push(redirect);
+        return;
+      }
+    }
+    router.push(getRoleDashboard(role));
+  };
   const { refreshSession } = useAuth();
 
   const [activeTab, setActiveTab] = useState<AuthTab>('login');
@@ -215,7 +226,7 @@ export default function Login() {
         saveAuthSession({ token, user, provider });
         setStatusSuccess(`Acceso con ${providerLabel(provider)} completado. Redirigiendo...`);
         refreshSession();
-        router.push(getRoleDashboard(user.role));
+        redirectAfterAuth(user.role);
       })
       .catch(() => {
         setStatusSuccess(null);
@@ -241,7 +252,7 @@ export default function Login() {
       saveAuthSession({ token: response.token, user: response.user, provider: 'password' });
       setStatusSuccess('Inicio de sesión exitoso. Redirigiendo...');
       refreshSession();
-      router.push(getRoleDashboard(response.user.role));
+      redirectAfterAuth(response.user.role);
     } catch (error) {
       setStatusError(getErrorMessage(error));
     } finally {
@@ -284,7 +295,7 @@ export default function Login() {
       saveAuthSession({ token: response.token, user: response.user, provider: 'password' });
       setStatusSuccess('Cuenta creada correctamente. Ya tienes tus puntos de bienvenida.');
       refreshSession();
-      router.push(getRoleDashboard(response.user.role));
+      redirectAfterAuth(response.user.role);
     } catch (error) {
       setStatusError(getErrorMessage(error));
     } finally {

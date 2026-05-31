@@ -23,6 +23,7 @@ Route::get('/menu', [MenuController::class, 'index']);
 Route::get('/menu/{id}', [MenuController::class, 'show']);
 Route::get('/promociones', [PromocionController::class, 'index']);
 Route::get('/ubicacion', [UbicacionController::class, 'show']);
+Route::get('/tickets/validate', [\App\Http\Controllers\TicketRedeemController::class, 'validate']);
 
 /*
 |--------------------------------------------------------------------------
@@ -80,6 +81,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Recompensas
     Route::get('/recompensas', [RecompensaController::class, 'index']);
     Route::post('/recompensas/{id}/canjear', [RecompensaController::class, 'redeem']);
+
+    // Tickets — canje de puntos por QR
+    Route::post('/tickets/redeem', [\App\Http\Controllers\TicketRedeemController::class, 'redeem']);
 });
 
 /*
@@ -103,6 +107,7 @@ Route::middleware(['auth:sanctum', 'role:mesero'])->prefix('staff')->group(funct
     Route::get('/mi-ranking', [App\Http\Controllers\Staff\StaffRankingController::class, 'miRanking']);
     Route::get('/configuracion', [App\Http\Controllers\Staff\StaffConfigController::class, 'index']);
     Route::put('/configuracion', [App\Http\Controllers\Staff\StaffConfigController::class, 'update']);
+    Route::post('/tickets/generate', [App\Http\Controllers\Staff\TicketGeneratorController::class, 'generate']);
 });
 
 /*

@@ -5,6 +5,8 @@ return [
     'env' => env('APP_ENV', 'production'),
     'debug' => (bool) env('APP_DEBUG', false),
     'url' => env('APP_URL', 'https://popgastropub.com'),
+    'frontend_url' => env('FRONTEND_URL', 'https://popgastropub.com'),
+    'qr_secret' => env('QR_SECRET', ''),
     'asset_url' => env('ASSET_URL'),
     'timezone' => 'America/Mexico_City',
     'locale' => 'es',
