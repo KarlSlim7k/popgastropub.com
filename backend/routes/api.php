@@ -25,6 +25,9 @@ Route::get('/promociones', [PromocionController::class, 'index']);
 Route::get('/ubicacion', [UbicacionController::class, 'show']);
 Route::get('/tickets/validate', [\App\Http\Controllers\TicketRedeemController::class, 'validate']);
 
+// Public reservation (works with or without auth - controller checks $request->user())
+Route::post('/reservas/public', [ReservaController::class, 'store'])->middleware('throttle:6,1');
+
 /*
 |--------------------------------------------------------------------------
 | Auth Routes (Sanctum)

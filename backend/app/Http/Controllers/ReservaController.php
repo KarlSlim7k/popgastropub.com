@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Reserva;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class ReservaController extends Controller
 {
@@ -28,21 +29,18 @@ class ReservaController extends Controller
             'notas' => 'nullable|string',
         ]);
 
-        // Validate: Tuesday is closed
         $date = Carbon::parse($validated['fecha']);
         if ($date->dayOfWeek === Carbon::TUESDAY) {
             return response()->json(['message' => 'El restaurante está cerrado los martes.'], 422);
         }
 
-        // Validate operating hours
         $hora = $validated['hora'];
         $dayOfWeek = $date->dayOfWeek;
         $closeTime = in_array($dayOfWeek, [Carbon::FRIDAY, Carbon::SATURDAY]) ? '22:00' : '21:30';
         if ($dayOfWeek === Carbon::SUNDAY) $closeTime = '21:00';
-        $openTime = '14:00';
 
-        if ($hora < $openTime || $hora > $closeTime) {
-            return response()->json(['message' => "Horario no disponible. Operamos de {$openTime} a {$closeTime}."], 422);
+        if ($hora < '14:00' || $hora > $closeTime) {
+            return response()->json(['message' => "Horario no disponible. Operamos de 14:00 a {$closeTime}."], 422);
         }
 
         $validated['estado'] = 'pendiente';
@@ -52,7 +50,20 @@ class ReservaController extends Controller
 
         $reserva = Reserva::create($validated);
 
-        return response()->json($reserva, 201);
+        Log::channel('single')->info('NUEVA_RESERVA', [
+            'id' => $reserva->id,
+            'nombre' => $reserva->nombre,
+            'telefono' => $reserva->telefono,
+            'fecha' => $reserva->fecha,
+            'hora' => $reserva->hora,
+            'personas' => $reserva->personas,
+            'user_id' => $reserva->user_id,
+        ]);
+
+        return response()->json([
+            'reserva' => $reserva,
+            'message' => 'Reservación creada exitosamente. El equipo de POP confirmará tu reservación.',
+        ], 201);
     }
 
     public function cancel(Request $request, $id)
