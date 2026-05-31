@@ -59,6 +59,7 @@ services:
       - SESSION_DRIVER=${SESSION_DRIVER:-file}
       - APP_URL=${APP_URL:-https://api.popgastropub.com}
       - FRONTEND_URL=${FRONTEND_URL:-https://popgastropub.com}
+      - QR_SECRET=${QR_SECRET:-}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
       - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI:-https://api.popgastropub.com/api/auth/social/google/callback}
