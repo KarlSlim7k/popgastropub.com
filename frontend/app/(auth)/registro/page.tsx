@@ -57,11 +57,11 @@ export default function RegistroPage() {
     setForm((f) => ({ ...f, [field]: e.target.value }));
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-[#234032] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-extrabold uppercase tracking-widest text-[#F2C777]">Crear Cuenta</h1>
-          <p className="mt-3 inline-block rounded-full bg-[#D96725]/15 border border-[#D96725]/30 px-4 py-1.5 text-sm text-[#F2C894]">
+          <h1 className="text-3xl font-extrabold uppercase tracking-widest text-[#F2C166]">Crear Cuenta</h1>
+          <p className="mt-3 inline-block rounded-full bg-[#D96E30]/15 border border-[#D96E30]/30 px-4 py-1.5 text-sm text-[#F2D194]">
             🎁 Obtén 50 puntos de bienvenida al registrarte
           </p>
         </div>
@@ -72,49 +72,49 @@ export default function RegistroPage() {
           )}
 
           <div>
-            <label className="block text-[10px] uppercase tracking-widest text-[#F2C777] mb-1">Nombre completo</label>
+            <label className="block text-[10px] uppercase tracking-widest text-[#F2C166] mb-1">Nombre completo</label>
             <input type="text" required value={form.name} onChange={set("name")} autoComplete="name"
-              className="w-full bg-transparent border border-white/10 rounded-md px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#D96725] transition-colors"
+              className="w-full bg-transparent border border-white/10 rounded-md px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#D96E30] transition-colors"
               placeholder="Tu nombre" />
           </div>
 
           <div>
-            <label className="block text-[10px] uppercase tracking-widest text-[#F2C777] mb-1">Email</label>
+            <label className="block text-[10px] uppercase tracking-widest text-[#F2C166] mb-1">Email</label>
             <input type="email" required value={form.email} onChange={set("email")} autoComplete="email"
-              className="w-full bg-transparent border border-white/10 rounded-md px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#D96725] transition-colors"
+              className="w-full bg-transparent border border-white/10 rounded-md px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#D96E30] transition-colors"
               placeholder="correo@ejemplo.com" />
           </div>
 
           <div>
-            <label className="block text-[10px] uppercase tracking-widest text-[#F2C777] mb-1">Teléfono <span className="text-white/40">(opcional)</span></label>
+            <label className="block text-[10px] uppercase tracking-widest text-[#F2C166] mb-1">Teléfono <span className="text-white/40">(opcional)</span></label>
             <input type="tel" value={form.phone} onChange={set("phone")} autoComplete="tel"
-              className="w-full bg-transparent border border-white/10 rounded-md px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#D96725] transition-colors"
+              className="w-full bg-transparent border border-white/10 rounded-md px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#D96E30] transition-colors"
               placeholder="2828253243" />
           </div>
 
           <div>
-            <label className="block text-[10px] uppercase tracking-widest text-[#F2C777] mb-1">Contraseña</label>
+            <label className="block text-[10px] uppercase tracking-widest text-[#F2C166] mb-1">Contraseña</label>
             <input type="password" required minLength={8} value={form.password} onChange={set("password")} autoComplete="new-password"
-              className="w-full bg-transparent border border-white/10 rounded-md px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#D96725] transition-colors"
+              className="w-full bg-transparent border border-white/10 rounded-md px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#D96E30] transition-colors"
               placeholder="Mínimo 8 caracteres" />
           </div>
 
           <div>
-            <label className="block text-[10px] uppercase tracking-widest text-[#F2C777] mb-1">Confirmar contraseña</label>
+            <label className="block text-[10px] uppercase tracking-widest text-[#F2C166] mb-1">Confirmar contraseña</label>
             <input type="password" required minLength={8} value={form.password_confirmation} onChange={set("password_confirmation")} autoComplete="new-password"
-              className="w-full bg-transparent border border-white/10 rounded-md px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#D96725] transition-colors"
+              className="w-full bg-transparent border border-white/10 rounded-md px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#D96E30] transition-colors"
               placeholder="Repite tu contraseña" />
           </div>
 
           <button type="submit" disabled={loading}
-            className="w-full bg-[#D96725] hover:bg-[#D96725]/85 text-white font-bold uppercase tracking-widest py-4 rounded-md transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+            className="w-full bg-[#D96E30] hover:bg-[#D96E30]/85 text-white font-bold uppercase tracking-widest py-4 rounded-md transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
             {loading ? "Creando cuenta..." : "Registrarme"}
           </button>
         </form>
 
         <p className="text-center text-sm text-white/50">
           ¿Ya tienes cuenta?{" "}
-          <Link href="/login" className="text-[#F2C777] font-bold hover:underline">Inicia sesión</Link>
+          <Link href="/login" className="text-[#F2C166] font-bold hover:underline">Inicia sesión</Link>
         </p>
       </div>
     </div>

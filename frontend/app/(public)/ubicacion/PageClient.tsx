@@ -60,7 +60,7 @@ export default function Ubicacion() {
         <section className="max-w-7xl mx-auto px-6 -mt-32 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/*  Custom Styled Map Placeholder  */}
           <div className="lg:col-span-8 h-[600px] bg-surface-container-low rounded-lg overflow-hidden relative group">
-            <div className="absolute inset-0 bg-[#131313] opacity-40 mix-blend-color"></div>
+            <div className="absolute inset-0 bg-[#1C3028] opacity-40 mix-blend-color"></div>
             <iframe allowFullScreen className="w-full h-full grayscale invert brightness-90 contrast-125" data-location="POP Perote" loading="lazy" src="https://maps.google.com/maps?q=POP+Perote,+Justo+Sierra+No.+11,+Col.+Amado+Nervo,+Perote,+Veracruz&t=&z=16&ie=UTF8&iwloc=&output=embed"></iframe>
             <div className="absolute bottom-6 left-6 glass-panel p-6 max-w-sm rounded-lg border-l-4 border-primary">
               <span className="inline-block bg-green-900/30 text-green-400 text-[10px] font-black px-2 py-1 rounded mb-3 tracking-widest uppercase">ABIERTO AHORA</span>

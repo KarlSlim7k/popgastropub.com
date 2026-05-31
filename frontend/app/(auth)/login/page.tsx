@@ -361,7 +361,7 @@ export default function Login() {
         />
       </div>
       <div className="absolute inset-0 -z-20 bg-black/60" />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-tr from-[#0D0D0D]/90 via-[#0D0D0D]/75 to-[#732817]/70" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-tr from-[#234032]/90 via-[#234032]/75 to-[#732B1A]/70" />
       <div className="absolute inset-0 z-0 particle-bg opacity-25 pointer-events-none" />
 
       <main className="relative z-10 min-h-screen w-full px-4 py-8 md:py-16 flex items-center justify-center">

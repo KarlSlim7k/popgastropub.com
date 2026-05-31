@@ -69,11 +69,11 @@ function CanjearContent() {
   };
 
   return (
-    <main className="min-h-screen bg-[#0D0D0D] flex items-center justify-center px-4 pt-24 pb-16">
-      <div className="w-full max-w-md bg-[#1C1B1B] rounded-3xl border border-white/5 p-8 text-center space-y-6">
+    <main className="min-h-screen bg-[#234032] flex items-center justify-center px-4 pt-24 pb-16">
+      <div className="w-full max-w-md bg-[#2E592D] rounded-3xl border border-white/5 p-8 text-center space-y-6">
         {status === 'loading' && (
           <>
-            <div className="w-10 h-10 border-2 border-[#F2C777] border-t-transparent rounded-full animate-spin mx-auto" />
+            <div className="w-10 h-10 border-2 border-[#F2C166] border-t-transparent rounded-full animate-spin mx-auto" />
             <p className="text-gray-500 font-black uppercase text-[10px] tracking-widest">Validando QR...</p>
           </>
         )}
@@ -91,22 +91,22 @@ function CanjearContent() {
 
         {status === 'valid' && info && (
           <>
-            <span className="material-symbols-outlined text-[#F2C777] text-6xl">stars</span>
+            <span className="material-symbols-outlined text-[#F2C166] text-6xl">stars</span>
             <h1 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">¡Ganaste puntos POP!</h1>
             <div className="space-y-1">
               <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Cuenta</p>
               <p className="text-2xl font-black text-white">${info.total} MXN</p>
             </div>
-            <div className="bg-[#0D0D0D] rounded-2xl p-6 border border-[#F2C777]/20">
+            <div className="bg-[#234032] rounded-2xl p-6 border border-[#F2C166]/20">
               <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1">Puntos a ganar</p>
-              <p className="text-5xl font-black text-[#F2C777] font-epilogue leading-none">+{info.puntos}</p>
+              <p className="text-5xl font-black text-[#F2C166] font-epilogue leading-none">+{info.puntos}</p>
             </div>
 
             {session ? (
               <button
                 onClick={handleRedeem}
                 disabled={redeeming}
-                className="w-full py-4 bg-[#D96725] text-white font-black uppercase text-xs tracking-widest rounded-xl hover:bg-[#F2C777] hover:text-[#0D0D0D] transition-all disabled:opacity-50"
+                className="w-full py-4 bg-[#D96E30] text-white font-black uppercase text-xs tracking-widest rounded-xl hover:bg-[#F2C166] hover:text-[#234032] transition-all disabled:opacity-50"
               >
                 {redeeming ? 'Canjeando...' : `Canjear ${info.puntos} puntos`}
               </button>
@@ -114,13 +114,13 @@ function CanjearContent() {
               <div className="space-y-3">
                 <a
                   href={`/login?redirect=/puntos/canjear?${encodeURIComponent(query)}`}
-                  className="block w-full py-4 bg-[#D96725] text-white font-black uppercase text-xs tracking-widest rounded-xl hover:bg-[#F2C777] hover:text-[#0D0D0D] transition-all"
+                  className="block w-full py-4 bg-[#D96E30] text-white font-black uppercase text-xs tracking-widest rounded-xl hover:bg-[#F2C166] hover:text-[#234032] transition-all"
                 >
                   Inicia sesión para canjear
                 </a>
                 <a
                   href={`/login?tab=register&redirect=/puntos/canjear?${encodeURIComponent(query)}`}
-                  className="block text-[#F2C777] text-xs font-bold uppercase tracking-widest hover:underline"
+                  className="block text-[#F2C166] text-xs font-bold uppercase tracking-widest hover:underline"
                 >
                   ¿No tienes cuenta? Regístrate gratis
                 </a>
@@ -135,10 +135,10 @@ function CanjearContent() {
             <h1 className="text-3xl font-black text-white uppercase tracking-tighter">¡Puntos acreditados!</h1>
             {balance !== null && (
               <p className="text-gray-400 text-sm">
-                Tu nuevo saldo: <span className="text-[#F2C777] font-black">{balance} pts</span>
+                Tu nuevo saldo: <span className="text-[#F2C166] font-black">{balance} pts</span>
               </p>
             )}
-            <a href="/puntos" className="inline-block px-8 py-3 bg-[#F2C777] text-[#0D0D0D] font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-[#F2C894] transition-all">
+            <a href="/puntos" className="inline-block px-8 py-3 bg-[#F2C166] text-[#234032] font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-[#F2D194] transition-all">
               Ver mis puntos
             </a>
           </>
@@ -150,7 +150,7 @@ function CanjearContent() {
 
 export default function CanjearPage() {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-[#0D0D0D]" />}>
+    <Suspense fallback={<main className="min-h-screen bg-[#234032]" />}>
       <CanjearContent />
     </Suspense>
   );

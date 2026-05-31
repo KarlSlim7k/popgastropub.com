@@ -2,11 +2,11 @@
 @config "../tailwind.config.ts";
 
 :root {
-  --pop-gold: #F2C777;
-  --pop-light-gold: #F2C894;
-  --pop-orange: #D96725;
-  --pop-brown: #732817;
-  --pop-black: #0D0D0D;
+  --pop-gold: #F2C166;
+  --pop-light-gold: #F2D194;
+  --pop-orange: #D96E30;
+  --pop-brown: #732B1A;
+  --pop-black: #234032;
 }
 
 body {
@@ -74,5 +74,5 @@ h3,
 }
 
 .tonal-shift {
-  background: linear-gradient(180deg, #131313 0%, #1c1b1b 100%);
+  background: linear-gradient(180deg, #1C3028 0%, #1c1b1b 100%);
 }

@@ -25,7 +25,7 @@ export default function SobreNosotros() {
 <div className="absolute bottom-0 right-0 w-1/3 h-64 bg-gradient-to-t from-surface to-transparent opacity-50"></div>
 </section>
 {/* Story Section */}
-<section className="bg-[#0D0D0D] py-24 px-8 md:px-24">
+<section className="bg-[#234032] py-24 px-8 md:px-24">
 <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-16 items-start">
 <div className="md:col-span-7">
 <span className="text-primary font-headline font-bold tracking-[0.2em] uppercase text-sm block mb-4">Nuestra Historia</span>
@@ -137,7 +137,7 @@ export default function SobreNosotros() {
 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 blur-[120px] rounded-full"></div>
 <div className="relative z-10">
 <h2 className="text-5xl md:text-7xl font-black font-headline text-on-surface mb-12 tracking-tighter">¿Listo para probar?</h2>
-<a className="inline-flex items-center gap-4 bg-[#D96725] text-[#131313] px-12 py-6 text-2xl font-black font-headline rounded-lg hover:bg-primary transition-all duration-500 scale-100 active:scale-95 group" href="#">
+<a className="inline-flex items-center gap-4 bg-[#D96E30] text-[#1C3028] px-12 py-6 text-2xl font-black font-headline rounded-lg hover:bg-primary transition-all duration-500 scale-100 active:scale-95 group" href="#">
                     VER MENÚ
                     <span className="material-symbols-outlined transition-transform duration-300 group-hover:translate-x-2">arrow_forward</span>
 </a>

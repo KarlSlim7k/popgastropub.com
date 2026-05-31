@@ -10,10 +10,10 @@ const FOODBOOKING_URL =
 
 export default function MenuPage() {
   return (
-    <main className="min-h-screen bg-[#0D0D0D] flex flex-col items-center justify-center px-4 text-center gap-8">
+    <main className="min-h-screen bg-[#234032] flex flex-col items-center justify-center px-4 text-center gap-8">
       <div className="space-y-4">
         <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-white uppercase leading-none">
-          Nuestro <span className="text-[#F2C777]">Menú</span>
+          Nuestro <span className="text-[#F2C166]">Menú</span>
         </h1>
         <p className="text-gray-400 text-lg max-w-md mx-auto">
           Explora todos nuestros platillos y realiza tu pedido directamente en nuestra plataforma.
@@ -24,7 +24,7 @@ export default function MenuPage() {
         href={FOODBOOKING_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-3 bg-[#D96725] hover:bg-[#F2C777] hover:text-[#0D0D0D] text-white font-black uppercase tracking-widest text-sm px-12 py-5 rounded-sm transition-all duration-300 hover:shadow-[0_0_40px_rgba(217,103,37,0.4)] hover:scale-105"
+        className="inline-flex items-center gap-3 bg-[#D96E30] hover:bg-[#F2C166] hover:text-[#234032] text-white font-black uppercase tracking-widest text-sm px-12 py-5 rounded-sm transition-all duration-300 hover:shadow-[0_0_40px_rgba(217,103,37,0.4)] hover:scale-105"
       >
         <span className="material-symbols-outlined">restaurant_menu</span>
         Ver Menú Completo
