@@ -74,7 +74,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       {children}
 
       {/* Footer */}
-      <footer className="bg-[#732B1A] text-on-surface py-20 px-8 flex-shrink-0 relative z-40">
+      <footer className="bg-pop-darkGreen text-on-surface py-20 px-8 flex-shrink-0 relative z-40">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="col-span-1 md:col-span-1">
             <span className="text-[#F2C166] font-headline font-black text-4xl mb-6 block tracking-tighter">POP</span>
