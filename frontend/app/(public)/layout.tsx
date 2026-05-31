@@ -105,8 +105,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <div>
             <h5 className="text-[#F2C166] font-headline font-bold uppercase tracking-widest text-sm mb-6">Legal</h5>
             <ul className="space-y-4 text-on-surface/70 text-sm">
-              <li><a className="hover:text-[#F2C166] transition-colors" href="#">Privacy Policy</a></li>
-              <li><a className="hover:text-[#F2C166] transition-colors" href="#">Terminos y Condiciones</a></li>
+              <li><a className="hover:text-[#F2C166] transition-colors" href="/privacidad">Aviso de Privacidad</a></li>
+              <li><a className="hover:text-[#F2C166] transition-colors" href="/terminos">Términos y Condiciones</a></li>
               <li><a className="hover:text-[#F2C166] transition-colors" href="/login">Cuenta</a></li>
             </ul>
           </div>
