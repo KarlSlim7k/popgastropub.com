@@ -383,29 +383,8 @@ export default function Home() {
       {/*  1.5 Testimonials  */}
       <section className="py-24 bg-surface">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
-            <div>
-              <h3 className="text-[#F2C166] font-headline text-4xl font-black uppercase tracking-tighter mb-2">Lo que dicen nuestros clientes</h3>
-              <p className="text-on-surface/50 font-body">Reseñas reales de Google.</p>
-            </div>
-            <a
-              href="https://maps.app.goo.gl/DHXbVv4zebSWr4uS9"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-4 bg-surface-container-high px-6 py-3 rounded-sm border border-outline-variant/10 cursor-pointer hover:bg-surface-container-highest transition-colors"
-            >
-              <Image alt="Google Logo" width={24} height={24} src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_M7ZLydxa1eruvCDljLoqVBQ0t7xlUq0In9gp1Z_Z9TKr_ITzUvWXXWC5nTtVCOz-kLmaQL-qxWKM79gjHtzGf5vb-1OWwbrZAXvcdsp8OWeiBcECg7At6NAQPrx20Vf_kR7QCVvZur6P-b08Xpiiyehy2JhqYo9-0FELyjpYB2xx4qlVgbcT53jYIKwcQsvT96ki0AULJUdzUpRnb3AIyji4YO21g9Y5ZI0DTWv-IeLyAIgnUsvYTqb5-OM8YbtHA8J_l91x0sKx" />
-              <div className="text-left">
-                <p className="text-[10px] font-black tracking-widest text-[#F2C166]">EXCELENTE</p>
-                <div className="flex text-[#F2C166] text-xs">
-                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                </div>
-              </div>
-            </a>
+          <div className="mb-16">
+            <h3 className="text-[#F2C166] font-headline text-4xl font-black uppercase tracking-tighter">Lo que dicen nuestros clientes</h3>
           </div>
 
           {/* Elfsight Google Reviews Widget */}
