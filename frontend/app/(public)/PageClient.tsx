@@ -389,7 +389,7 @@ export default function Home() {
               <p className="text-on-surface/50 font-body">Basado en más de 1,200 reseñas reales.</p>
             </div>
             <a
-              href="https://www.google.com/maps/place/POP+Perote,+Justo+Sierra+No.+11,+Col.+Amado+Nervo,+Perote,+Ver."
+              href="https://maps.app.goo.gl/DHXbVv4zebSWr4uS9"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-4 bg-surface-container-high px-6 py-3 rounded-sm border border-outline-variant/10 cursor-pointer hover:bg-surface-container-highest transition-colors"
@@ -461,7 +461,7 @@ export default function Home() {
             </div>
           </div>
           <div className="text-center">
-            <a href="https://www.google.com/maps/place/POP+Perote" target="_blank" rel="noopener noreferrer" className="mt-12 inline-flex items-center gap-2 text-[#F2C166] font-black text-sm uppercase tracking-widest hover:underline">
+            <a href="https://maps.app.goo.gl/DHXbVv4zebSWr4uS9" target="_blank" rel="noopener noreferrer" className="mt-12 inline-flex items-center gap-2 text-[#F2C166] font-black text-sm uppercase tracking-widest hover:underline">
               Deja tu reseña en Google <span className="material-symbols-outlined">open_in_new</span>
             </a>
           </div>
