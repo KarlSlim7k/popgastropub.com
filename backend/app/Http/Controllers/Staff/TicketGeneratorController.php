@@ -40,4 +40,20 @@ class TicketGeneratorController extends Controller
             'ref' => $ref,
         ]);
     }
+
+    public function historial(Request $request)
+    {
+        $mesero = $request->user()->mesero;
+
+        if (!$mesero) {
+            return response()->json([]);
+        }
+
+        $tickets = TicketRedeem::where('mesero_id', $mesero->id)
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get(['ref', 'total', 'puntos', 'canjeado_at', 'created_at']);
+
+        return response()->json($tickets);
+    }
 }

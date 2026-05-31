@@ -108,6 +108,7 @@ Route::middleware(['auth:sanctum', 'role:mesero'])->prefix('staff')->group(funct
     Route::get('/configuracion', [App\Http\Controllers\Staff\StaffConfigController::class, 'index']);
     Route::put('/configuracion', [App\Http\Controllers\Staff\StaffConfigController::class, 'update']);
     Route::post('/tickets/generate', [App\Http\Controllers\Staff\TicketGeneratorController::class, 'generate']);
+    Route::get('/tickets', [App\Http\Controllers\Staff\TicketGeneratorController::class, 'historial']);
 });
 
 /*
