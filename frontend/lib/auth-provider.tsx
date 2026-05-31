@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(async () => {
     if (session?.token) {
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://popgastropub.com/api'}/auth/logout`, {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.popgastropub.com/api'}/auth/logout`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${session.token}`, 'Content-Type': 'application/json' },
         });

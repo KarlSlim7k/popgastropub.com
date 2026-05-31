@@ -65,6 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/facturas', [FacturaController::class, 'index']);
     Route::post('/facturas', [FacturaController::class, 'store']);
     Route::get('/facturas/{id}', [FacturaController::class, 'show']);
+    Route::get('/facturas/{id}/ticket', [FacturaController::class, 'ticket']);
 
     // Referidos
     Route::get('/referidos', [\App\Http\Controllers\ReferralController::class, 'index']);
@@ -145,6 +146,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     // Facturas management
     Route::get('/facturas', [App\Http\Controllers\Admin\FacturaController::class, 'index']);
     Route::get('/facturas/{id}', [App\Http\Controllers\Admin\FacturaController::class, 'show']);
+    Route::get('/facturas/{id}/ticket', [App\Http\Controllers\Admin\FacturaController::class, 'ticket']);
     Route::patch('/facturas/{id}/status', [App\Http\Controllers\Admin\FacturaController::class, 'updateStatus']);
 
     // Usuarios CRUD
@@ -155,12 +157,14 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::apiResource('meseros', App\Http\Controllers\Admin\MeseroController::class);
 
     // Reservas
-    Route::apiResource('reservas', App\Http\Controllers\Admin\ReservaController::class)->except(['store']);
+    Route::get('/reservas', [App\Http\Controllers\Admin\ReservaController::class, 'index']);
     Route::patch('/reservas/{id}/status', [App\Http\Controllers\Admin\ReservaController::class, 'updateStatus']);
+    Route::delete('/reservas/{id}', [App\Http\Controllers\Admin\ReservaController::class, 'destroy']);
 
     // Pedidos
-    Route::apiResource('pedidos', App\Http\Controllers\Admin\PedidoController::class)->except(['store']);
+    Route::get('/pedidos', [App\Http\Controllers\Admin\PedidoController::class, 'index']);
     Route::patch('/pedidos/{id}/status', [App\Http\Controllers\Admin\PedidoController::class, 'updateStatus']);
+    Route::delete('/pedidos/{id}', [App\Http\Controllers\Admin\PedidoController::class, 'destroy']);
 
     // Recompensas
     Route::apiResource('recompensas', App\Http\Controllers\Admin\RecompensaController::class);

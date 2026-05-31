@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\LoyaltyTransaction;
 use App\Models\Pedido;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class PedidoController extends Controller
 {
@@ -16,9 +14,11 @@ class PedidoController extends Controller
 
     public function store(Request $request)
     {
+        abort_unless($request->user()->role === 'cliente', 403, 'Solo los clientes pueden registrar pedidos.');
+
         $validated = $request->validate([
-            'items' => 'required|array',
-            'total' => 'required|numeric|min:0',
+            'items' => 'required|array|min:1',
+            'total' => 'required|numeric|min:0.01',
             'foodbooking_ref' => 'nullable|string|max:255',
             'notas' => 'nullable|string',
         ]);
@@ -29,21 +29,7 @@ class PedidoController extends Controller
         $validated['estado'] = 'pendiente';
         $validated['user_id'] = $request->user()->id;
 
-        $pedido = DB::transaction(function () use ($validated, $request, $puntosGanados) {
-            $pedido = Pedido::create($validated);
-
-            $user = $request->user();
-            $user->points += $puntosGanados;
-            $user->save();
-
-            LoyaltyTransaction::create([
-                'user_id' => $user->id,
-                'points' => $puntosGanados,
-                'concept' => 'Pedido completado',
-            ]);
-
-            return $pedido;
-        });
+        $pedido = Pedido::create($validated);
 
         return response()->json($pedido, 201);
     }

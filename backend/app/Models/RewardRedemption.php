@@ -14,6 +14,7 @@ class RewardRedemption extends Model
         'recompensa_id',
         'puntos_usados',
         'estado',
+        'descripcion',
     ];
 
     public function user()

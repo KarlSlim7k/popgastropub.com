@@ -62,7 +62,7 @@ type MenuSectionDynamic = {
   items: MenuItem[];
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://popgastropub.com/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.popgastropub.com/api';
 
 export default function MenuExperience() {
   const cart = useOrderCart();

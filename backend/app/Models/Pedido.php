@@ -15,12 +15,14 @@ class Pedido extends Model
         'items',
         'total',
         'puntos_ganados',
+        'puntos_acreditados_at',
         'estado',
         'notas',
     ];
 
     protected $casts = [
         'items' => 'array',
+        'puntos_acreditados_at' => 'datetime',
     ];
 
     public function user()

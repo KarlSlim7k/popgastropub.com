@@ -21,6 +21,8 @@ class RecompensaController extends Controller
             'puntos_requeridos' => 'required|integer|min:0',
             'imagen' => 'nullable|string|max:255',
             'disponible' => 'boolean',
+            'categoria' => 'nullable|string|max:100',
+            'tier' => 'nullable|in:fan,lover,vip,elite',
         ]);
 
         if (! isset($validated['disponible'])) {
@@ -45,6 +47,8 @@ class RecompensaController extends Controller
             'puntos_requeridos' => 'required|integer|min:0',
             'imagen' => 'nullable|string|max:255',
             'disponible' => 'boolean',
+            'categoria' => 'nullable|string|max:100',
+            'tier' => 'nullable|in:fan,lover,vip,elite',
         ]);
 
         $recompensa = Recompensa::findOrFail($id);
@@ -56,6 +60,11 @@ class RecompensaController extends Controller
     public function destroy($id)
     {
         $recompensa = Recompensa::findOrFail($id);
+
+        if ($recompensa->redemptions()->exists()) {
+            abort(422, 'La recompensa tiene canjes registrados. Puedes pausarla, pero no eliminarla.');
+        }
+
         $recompensa->delete();
 
         return response()->json(['message' => 'Recompensa eliminada.']);

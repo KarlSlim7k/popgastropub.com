@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Factura;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class FacturaController extends Controller
 {
@@ -48,6 +49,18 @@ class FacturaController extends Controller
         }
 
         return response()->json($factura);
+    }
+
+    public function ticket($id, Request $request)
+    {
+        $factura = Factura::findOrFail($id);
+        $disk = Storage::disk('public');
+
+        abort_unless($disk->exists($factura->ticket_path), 404, 'Ticket no encontrado.');
+
+        return $request->boolean('download')
+            ? $disk->download($factura->ticket_path)
+            : response()->file($disk->path($factura->ticket_path));
     }
 
     private function sendStatusNotification(Factura $factura): void

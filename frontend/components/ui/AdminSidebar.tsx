@@ -12,6 +12,9 @@ const navItems = [
   { label: "Puntos POP", href: "/admin/puntos", icon: "military_tech" },
   { label: "Usuarios", href: "/admin/usuarios", icon: "group" },
   { label: "Ranking Staff", href: "/admin/meseros", icon: "star" },
+  { label: "Reservas", href: "/admin/reservas", icon: "event_seat" },
+  { label: "Pedidos", href: "/admin/pedidos", icon: "receipt" },
+  { label: "Recompensas", href: "/admin/recompensas", icon: "redeem" },
   { label: "Facturación", href: "/admin/facturacion", icon: "receipt_long" },
 ];
 

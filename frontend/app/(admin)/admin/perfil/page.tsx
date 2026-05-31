@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-provider";
 import { fetchWithAuth } from "@/lib/api";
-import { getAuthSession } from "@/lib/auth-session";
+import { getAuthSession, saveAuthSession } from "@/lib/auth-session";
 
 export default function AdminPerfilPage() {
-  const { session } = useAuth();
+  const { session, refreshSession } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -26,6 +26,14 @@ export default function AdminPerfilPage() {
     password_confirmation: "",
   });
 
+  useEffect(() => {
+    const auth = getAuthSession();
+    if (!auth) return;
+    fetchWithAuth<any>("/auth/me", auth.token).then((user) => {
+      setFormData({ name: user.name || "", email: user.email || "", phone: user.phone || "" });
+    }).catch(() => {});
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -40,10 +48,12 @@ export default function AdminPerfilPage() {
     setSaving(true);
     setMessage("");
     try {
-      await fetchWithAuth("/auth/profile", auth.token, {
+      const response = await fetchWithAuth<{ user: typeof auth.user }>("/auth/profile", auth.token, {
         method: "PUT",
         body: JSON.stringify(formData),
       });
+      saveAuthSession({ ...auth, user: response.user });
+      refreshSession();
       setMessage("Perfil actualizado correctamente");
       setIsEditing(false);
     } catch (e: any) {

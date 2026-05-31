@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Factura;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class FacturaController extends Controller
@@ -53,5 +54,23 @@ class FacturaController extends Controller
         $factura = $request->user()->facturas()->findOrFail($id);
 
         return response()->json($factura);
+    }
+
+    public function ticket($id, Request $request)
+    {
+        $factura = $request->user()->facturas()->findOrFail($id);
+
+        return $this->ticketResponse($factura, $request->boolean('download'));
+    }
+
+    private function ticketResponse(Factura $factura, bool $download)
+    {
+        $disk = Storage::disk('public');
+
+        abort_unless($disk->exists($factura->ticket_path), 404, 'Ticket no encontrado.');
+
+        return $download
+            ? $disk->download($factura->ticket_path)
+            : response()->file($disk->path($factura->ticket_path));
     }
 }

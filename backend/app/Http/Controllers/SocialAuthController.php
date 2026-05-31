@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LoyaltyTransaction;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -124,7 +125,20 @@ class SocialAuthController extends Controller
                 'oauth_provider_id' => $socialId !== '' ? $socialId : null,
                 'avatar_url' => $avatar !== '' ? $avatar : null,
             ]);
+
+            LoyaltyTransaction::create([
+                'user_id' => $user->id,
+                'points' => self::WELCOME_POINTS,
+                'concept' => 'Bono de bienvenida',
+            ]);
         } else {
+            if ($user->status === 'inactivo') {
+                return $this->redirectToFrontend([
+                    'error' => 'account_inactive',
+                    'provider' => $provider,
+                ]);
+            }
+
             $user->forceFill([
                 'name' => $user->name ?: $displayName,
                 'email_verified_at' => $user->email_verified_at ?: now(),

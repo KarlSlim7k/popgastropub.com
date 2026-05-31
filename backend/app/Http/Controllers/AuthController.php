@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\LoyaltyTransaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -41,27 +43,36 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::create([
-            'name' => $payload['name'],
-            'email' => $payload['email'],
-            'password' => Hash::make($payload['password']),
-            'phone' => $payload['phone'] ?: null,
-            'points' => self::WELCOME_POINTS,
-            'role' => 'cliente',
-        ]);
+        $user = DB::transaction(function () use ($payload, $request) {
+            $user = User::create([
+                'name' => $payload['name'],
+                'email' => $payload['email'],
+                'password' => Hash::make($payload['password']),
+                'phone' => $payload['phone'] ?: null,
+                'points' => self::WELCOME_POINTS,
+                'role' => 'cliente',
+            ]);
 
-        // Process referral code
-        $refCode = $request->input('ref') ?? $request->input('referral_code');
-        if ($refCode) {
-            $referrer = User::where('referral_code', $refCode)->first();
-            if ($referrer && $referrer->id !== $user->id) {
-                \App\Models\Referral::create([
-                    'referrer_id' => $referrer->id,
-                    'referred_id' => $user->id,
-                    'status' => 'pending',
-                ]);
+            LoyaltyTransaction::create([
+                'user_id' => $user->id,
+                'points' => self::WELCOME_POINTS,
+                'concept' => 'Bono de bienvenida',
+            ]);
+
+            $refCode = $request->input('ref') ?? $request->input('referral_code');
+            if ($refCode) {
+                $referrer = User::where('referral_code', $refCode)->first();
+                if ($referrer && $referrer->id !== $user->id) {
+                    \App\Models\Referral::create([
+                        'referrer_id' => $referrer->id,
+                        'referred_id' => $user->id,
+                        'status' => 'pending',
+                    ]);
+                }
             }
-        }
+
+            return $user;
+        });
 
         $token = $this->issueToken($user);
 
@@ -94,6 +105,10 @@ class AuthController extends Controller
 
         if (!$user || !Hash::check($payload['password'], $user->password)) {
             return response()->json(['message' => 'Credenciales inválidas.'], 401);
+        }
+
+        if ($user->status === 'inactivo') {
+            return response()->json(['message' => 'La cuenta está inactiva.'], 403);
         }
 
         $token = $this->issueToken($user);

@@ -7,6 +7,7 @@ use App\Models\LoyaltyTransaction;
 use App\Models\RewardRedemption;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PuntosController extends Controller
 {
@@ -79,26 +80,38 @@ class PuntosController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $user = User::findOrFail($request->input('user_id'));
+        $newPoints = DB::transaction(function () use ($request) {
+            $user = User::whereKey($request->input('user_id'))->lockForUpdate()->firstOrFail();
+            $points = (int) $request->input('points');
+            $description = $request->input('description') ?: 'Canje manual admin';
 
-        if ($user->points < $request->input('points')) {
-            return response()->json(['message' => 'Puntos insuficientes'], 422);
-        }
+            if ($user->role !== 'cliente') {
+                abort(422, 'Solo puedes registrar canjes para clientes.');
+            }
 
-        $user->decrement('points', $request->input('points'));
+            if ($user->points < $points) {
+                abort(422, 'Puntos insuficientes');
+            }
 
-        RewardRedemption::create([
-            'user_id' => $user->id,
-            'recompensa_id' => 1,
-            'puntos_usados' => $request->input('points'),
-        ]);
+            $user->decrement('points', $points);
 
-        LoyaltyTransaction::create([
-            'user_id' => $user->id,
-            'points' => -$request->input('points'),
-            'concept' => $request->input('description', 'Canje manual admin'),
-        ]);
+            RewardRedemption::create([
+                'user_id' => $user->id,
+                'recompensa_id' => null,
+                'puntos_usados' => $points,
+                'estado' => 'canjeado',
+                'descripcion' => $description,
+            ]);
 
-        return response()->json(['message' => 'Canje registrado', 'newPoints' => $user->fresh()->points]);
+            LoyaltyTransaction::create([
+                'user_id' => $user->id,
+                'points' => -$points,
+                'concept' => $description,
+            ]);
+
+            return $user->fresh()->points;
+        });
+
+        return response()->json(['message' => 'Canje registrado', 'newPoints' => $newPoints]);
     }
 }

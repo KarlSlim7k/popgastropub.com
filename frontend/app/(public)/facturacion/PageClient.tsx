@@ -36,7 +36,7 @@ const regimenesFiscales = [
   '626 — Régimen Simplificado de Confianza',
 ];
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://popgastropub.com/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.popgastropub.com/api';
 
 export default function FacturacionPage() {
   const [step, setStep] = useState<Step>('idle');

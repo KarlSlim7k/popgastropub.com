@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-provider";
-import { fetchWithAuth } from "@/lib/api";
+import { fetchWithAuth, openAuthenticatedFile } from "@/lib/api";
 import { useEffect, useState } from "react";
 
 interface Factura {
@@ -51,6 +51,15 @@ export default function MisFacturasPage() {
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
     return d.toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric" });
+  };
+
+  const viewTicket = async (id: number) => {
+    if (!token) return;
+    try {
+      await openAuthenticatedFile(`/facturas/${id}/ticket`, token);
+    } catch (err: any) {
+      setError(err?.message || "No se pudo abrir el ticket");
+    }
   };
 
   return (
@@ -114,14 +123,12 @@ export default function MisFacturasPage() {
 
                      <div className="flex items-center justify-between md:justify-end gap-8 pt-4 md:pt-0 border-t md:border-none border-white/5">
                         {inv.ticket_path && (
-                          <a
-                            href={inv.ticket_path.startsWith('http') ? inv.ticket_path : `${process.env.NEXT_PUBLIC_API_URL || 'https://popgastropub.com/api'}/${inv.ticket_path}`}
-                            target="_blank"
-                            rel="noreferrer"
+                          <button
+                            onClick={() => viewTicket(inv.id)}
                             className="text-pop-gold text-xs font-black uppercase tracking-widest hover:text-white transition-colors flex items-center gap-1"
                           >
                             <span className="material-symbols-outlined text-sm">image</span> Ver Ticket
-                          </a>
+                          </button>
                         )}
                      </div>
                   </article>

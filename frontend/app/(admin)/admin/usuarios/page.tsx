@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { fetchWithAuth } from "@/lib/api";
+import { downloadAuthenticatedFile, fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://popgastropub.com/api";
 
 interface User {
   id: string;
@@ -86,10 +84,14 @@ export default function AdminUsuariosPage() {
     } catch { alert("Error al eliminar"); }
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     const session = getAuthSession();
     if (!session) return;
-    window.open(`${API_URL}/api/admin/usuarios-export?token=${session.token}`, "_blank");
+    try {
+      await downloadAuthenticatedFile("/admin/usuarios-export", session.token, "usuarios_pop_perote.csv");
+    } catch {
+      alert("Error al exportar usuarios");
+    }
   };
 
   const filteredUsers = users.filter((user) => {

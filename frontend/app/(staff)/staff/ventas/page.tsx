@@ -33,10 +33,8 @@ export default function StaffVentasPage() {
       await fetchWithAuth("/ranking/points", session.token, {
         method: "POST",
         body: JSON.stringify({
-          mesero_id: undefined, // backend will use auth user's mesero
-          points: totalPts,
-          concepto: `${quantity}x ${cat.label}`,
           category: selected,
+          quantity,
         }),
       });
       setTodayPoints(prev => prev + totalPts);

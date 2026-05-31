@@ -4,7 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Mesero;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class MeseroController extends Controller
 {
@@ -30,15 +34,24 @@ class MeseroController extends Controller
 
     public function store(Request $request)
     {
+        $this->validatePayload($request, true);
         $data = $this->fromFrontend($request);
+        $data['puntos'] = $this->totalPoints($data);
 
-        if (!isset($data['nombre']) && $request->has('name')) {
-            $data['nombre'] = $request->input('name');
-        }
+        $mesero = DB::transaction(function () use ($request, $data) {
+            $user = User::create([
+                'name' => $request->input('name'),
+                'email' => $request->input('accountEmail'),
+                'password' => Hash::make($request->input('password')),
+                'phone' => $request->input('accountPhone'),
+                'role' => 'mesero',
+                'status' => $request->input('status') === 'inactivo' ? 'inactivo' : 'activo',
+            ]);
 
-        $mesero = Mesero::create($data);
+            return Mesero::create(['user_id' => $user->id] + $data);
+        });
 
-        return response()->json($this->toFrontend($mesero), 201);
+        return response()->json($this->toFrontend($mesero->load('user')), 201);
     }
 
     public function show($id)
@@ -48,16 +61,44 @@ class MeseroController extends Controller
 
     public function update(Request $request, $id)
     {
-        $mesero = Mesero::findOrFail($id);
+        $mesero = Mesero::with('user')->findOrFail($id);
+        $this->validatePayload($request, false, $mesero);
         $data = $this->fromFrontend($request);
-        $mesero->update($data);
+        $data['puntos'] = $this->totalPoints($data, $mesero);
 
-        return response()->json($this->toFrontend($mesero->fresh()));
+        DB::transaction(function () use ($request, $mesero, $data) {
+            $mesero->update($data);
+
+            if ($mesero->user) {
+                $userData = [
+                    'name' => $request->input('name', $mesero->user->name),
+                    'role' => 'mesero',
+                    'status' => $request->input('status') === 'inactivo' ? 'inactivo' : 'activo',
+                ];
+
+                if ($request->has('accountEmail')) $userData['email'] = $request->input('accountEmail');
+                if ($request->has('accountPhone')) $userData['phone'] = $request->input('accountPhone');
+                if ($request->filled('password')) $userData['password'] = Hash::make($request->input('password'));
+
+                $mesero->user->update($userData);
+                if ($mesero->user->status === 'inactivo') {
+                    $mesero->user->tokens()->delete();
+                }
+            }
+        });
+
+        return response()->json($this->toFrontend($mesero->fresh()->load('user')));
     }
 
     public function destroy($id)
     {
-        Mesero::findOrFail($id)->delete();
+        $mesero = Mesero::with('user')->findOrFail($id);
+
+        DB::transaction(function () use ($mesero) {
+            $mesero->user?->update(['role' => 'cliente', 'status' => 'inactivo']);
+            $mesero->user?->tokens()->delete();
+            $mesero->delete();
+        });
 
         return response()->json(['message' => 'Mesero eliminado']);
     }
@@ -69,7 +110,10 @@ class MeseroController extends Controller
 
         return [
             'id' => $m->id,
+            'userId' => $m->user_id,
             'name' => $m->nombre,
+            'accountEmail' => $m->user?->email ?? '',
+            'accountPhone' => $m->user?->phone ?? '',
             'initials' => $m->iniciales ?: strtoupper(collect(explode(' ', $m->nombre))->map(fn($w) => $w[0] ?? '')->join('')),
             'status' => $m->status ?? ($m->activo ? 'activo' : 'inactivo'),
             'cocktailPoints' => $m->cocktail_points ?? 0,
@@ -108,5 +152,47 @@ class MeseroController extends Controller
         if ($request->has('avgRating')) $map['avg_rating'] = $request->input('avgRating');
 
         return $map;
+    }
+
+    private function validatePayload(Request $request, bool $creating, ?Mesero $mesero = null): void
+    {
+        $emailRules = ['required', 'email', 'max:255', Rule::unique('users', 'email')];
+
+        if (! $creating && $mesero?->user_id) {
+            $emailRules[0] = 'sometimes';
+            $emailRules[3] = Rule::unique('users', 'email')->ignore($mesero->user_id);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'initials' => 'nullable|string|max:5',
+            'status' => 'required|in:activo,inactivo,descanso',
+            'accountEmail' => $emailRules,
+            'accountPhone' => 'nullable|string|max:20',
+            'password' => $creating ? 'required|string|min:8' : 'nullable|string|min:8',
+            'cocktailPoints' => 'nullable|integer|min:0',
+            'premiumPoints' => 'nullable|integer|min:0',
+            'pitcherPoints' => 'nullable|integer|min:0',
+            'bottlePoints' => 'nullable|integer|min:0',
+            'comboPoints' => 'nullable|integer|min:0',
+            'upsellPoints' => 'nullable|integer|min:0',
+            'ratingPoints' => 'nullable|integer|min:0',
+            'totalSales' => 'nullable|numeric|min:0',
+            'ordersServed' => 'nullable|integer|min:0',
+            'avgRating' => 'nullable|numeric|min:0|max:5',
+        ]);
+    }
+
+    private function totalPoints(array $data, ?Mesero $mesero = null): int
+    {
+        return collect([
+            'cocktail_points',
+            'premium_points',
+            'pitcher_points',
+            'bottle_points',
+            'combo_points',
+            'upsell_points',
+            'rating_points',
+        ])->sum(fn ($field) => (int) ($data[$field] ?? $mesero?->{$field} ?? 0));
     }
 }

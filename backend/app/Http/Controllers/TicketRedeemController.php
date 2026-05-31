@@ -13,6 +13,10 @@ class TicketRedeemController extends Controller
 
     private function check(int $total, string $ref, int $ts, string $sig): ?array
     {
+        if ($total < 1) {
+            return ['error' => 'Monto inválido', 'status' => 422];
+        }
+
         $expected = hash_hmac('sha256', $total . $ref . $ts, config('app.qr_secret'));
         if (!hash_equals($expected, $sig)) {
             return ['error' => 'QR inválido', 'status' => 422];
@@ -22,13 +26,17 @@ class TicketRedeemController extends Controller
             return ['error' => 'QR expirado', 'status' => 422];
         }
 
+        if ($ts > now()->timestamp + 300) {
+            return ['error' => 'QR inválido', 'status' => 422];
+        }
+
         return null;
     }
 
     public function validate(Request $request)
     {
         $v = $request->validate([
-            'total' => 'required|integer',
+            'total' => 'required|integer|min:1',
             'ref' => 'required|string',
             'ts' => 'required|integer',
             'sig' => 'required|string',
@@ -53,8 +61,10 @@ class TicketRedeemController extends Controller
 
     public function redeem(Request $request)
     {
+        abort_unless($request->user()->role === 'cliente', 403, 'Solo los clientes pueden canjear tickets.');
+
         $v = $request->validate([
-            'total' => 'required|integer',
+            'total' => 'required|integer|min:1',
             'ref' => 'required|string',
             'ts' => 'required|integer',
             'sig' => 'required|string',

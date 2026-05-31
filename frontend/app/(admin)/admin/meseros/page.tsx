@@ -21,6 +21,9 @@ interface Waiter {
   totalSales: number;
   ordersServed: number;
   avgRating: number;
+  accountEmail: string;
+  accountPhone: string;
+  password?: string;
 }
 
 export default function AdminMeserosPage() {
@@ -43,6 +46,9 @@ export default function AdminMeserosPage() {
     totalSales: 0,
     ordersServed: 0,
     avgRating: 5,
+    accountEmail: "",
+    accountPhone: "",
+    password: "",
   });
 
   const fetchWaiters = async () => {
@@ -81,6 +87,9 @@ export default function AdminMeserosPage() {
       totalSales: 0,
       ordersServed: 0,
       avgRating: 5,
+      accountEmail: "",
+      accountPhone: "",
+      password: "",
     });
     setShowModal(true);
   };
@@ -350,6 +359,38 @@ export default function AdminMeserosPage() {
                   <option value="inactivo">Inactivo</option>
                   <option value="descanso">Descanso</option>
                 </select>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Email de acceso</label>
+                  <input
+                    type="email"
+                    value={form.accountEmail || ""}
+                    onChange={(e) => setForm({ ...form, accountEmail: e.target.value })}
+                    className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Teléfono</label>
+                  <input
+                    type="tel"
+                    value={form.accountPhone || ""}
+                    onChange={(e) => setForm({ ...form, accountPhone: e.target.value })}
+                    className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">
+                  {editingWaiter ? "Nueva contraseña (opcional)" : "Contraseña inicial"}
+                </label>
+                <input
+                  type="password"
+                  value={form.password || ""}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  placeholder={editingWaiter ? "Dejar vacío para conservar" : "Mínimo 8 caracteres"}
+                  className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none placeholder:text-gray-700"
+                />
               </div>
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">

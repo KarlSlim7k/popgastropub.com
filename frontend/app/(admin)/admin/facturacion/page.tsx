@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { fetchWithAuth } from "@/lib/api";
+import { downloadAuthenticatedFile, fetchWithAuth, openAuthenticatedFile } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://popgastropub.com/api";
 
 interface Factura {
   id: number;
@@ -94,21 +92,24 @@ export default function AdminFacturacionPage() {
   const completadas = requests.filter((r) => r.estado === "completada").length;
   const rechazadas = requests.filter((r) => r.estado === "rechazada").length;
 
-  const ticketUrl = (path?: string) => {
-    if (!path) return "";
-    return path.startsWith("http") ? path : `${API_URL}${path}`;
+  const viewTicket = async (id: number) => {
+    const session = getAuthSession();
+    if (!session) return;
+    try {
+      await openAuthenticatedFile(`/admin/facturas/${id}/ticket`, session.token);
+    } catch {
+      alert("No se pudo abrir el ticket");
+    }
   };
 
-  const downloadTicket = (path?: string) => {
-    if (!path) return;
-    const url = ticketUrl(path);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = path.split("/").pop() || "ticket";
-    a.target = "_blank";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const downloadTicket = async (id: number, path?: string) => {
+    const session = getAuthSession();
+    if (!session || !path) return;
+    try {
+      await downloadAuthenticatedFile(`/admin/facturas/${id}/ticket?download=1`, session.token, path.split("/").pop() || "ticket");
+    } catch {
+      alert("No se pudo descargar el ticket");
+    }
   };
 
   return (
@@ -232,17 +233,15 @@ export default function AdminFacturacionPage() {
                   <td className="py-6 px-4">
                     {r.ticket_path ? (
                       <div className="flex gap-1">
-                        <a
-                          href={ticketUrl(r.ticket_path)}
-                          target="_blank"
-                          rel="noreferrer"
+                        <button
+                          onClick={() => viewTicket(r.id)}
                           className="p-2 text-pop-gold hover:text-white transition-colors"
                           title="Ver ticket"
                         >
                           <span className="material-symbols-outlined text-sm">image</span>
-                        </a>
+                        </button>
                         <button
-                          onClick={() => downloadTicket(r.ticket_path)}
+                          onClick={() => downloadTicket(r.id, r.ticket_path)}
                           className="p-2 text-gray-400 hover:text-white transition-colors"
                           title="Descargar ticket"
                         >
@@ -305,7 +304,7 @@ export default function AdminFacturacionPage() {
                   <div className="flex gap-2">
                     {r.ticket_path && (
                       <button
-                        onClick={() => downloadTicket(r.ticket_path)}
+                        onClick={() => downloadTicket(r.id, r.ticket_path)}
                         className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-pop-gold font-black text-[10px] uppercase tracking-widest flex items-center gap-2"
                       >
                         <span className="material-symbols-outlined text-sm">download</span> Ticket
@@ -405,16 +404,14 @@ export default function AdminFacturacionPage() {
 
               {detailItem.ticket_path && (
                 <div className="flex gap-3">
-                  <a
-                    href={ticketUrl(detailItem.ticket_path)}
-                    target="_blank"
-                    rel="noreferrer"
+                  <button
+                    onClick={() => viewTicket(detailItem.id)}
                     className="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-pop-gold font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
                   >
                     <span className="material-symbols-outlined text-sm">image</span> Ver Ticket
-                  </a>
+                  </button>
                   <button
-                    onClick={() => downloadTicket(detailItem.ticket_path)}
+                    onClick={() => downloadTicket(detailItem.id, detailItem.ticket_path)}
                     className="flex-1 py-3 bg-pop-gold/10 border border-pop-gold/20 rounded-xl text-pop-gold font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
                   >
                     <span className="material-symbols-outlined text-sm">download</span> Descargar

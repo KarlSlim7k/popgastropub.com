@@ -45,7 +45,7 @@ interface SocialProvidersResponse {
   providers?: Partial<Record<SocialProvider, { enabled?: boolean }>>;
 }
 
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://popgastropub.com/api').replace(/\/api\/?$/, '');
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'https://api.popgastropub.com/api').replace(/\/api\/?$/, '');
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message.trim().length > 0) {

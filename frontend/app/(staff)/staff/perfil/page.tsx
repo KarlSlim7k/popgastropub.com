@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-provider";
 import { fetchWithAuth } from "@/lib/api";
+import { saveAuthSession } from "@/lib/auth-session";
 
 export default function StaffPerfilPage() {
-  const { session, logout } = useAuth();
+  const { session, logout, refreshSession } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -26,7 +27,9 @@ export default function StaffPerfilPage() {
     if (!session?.token) return;
     setSaving(true);
     try {
-      await fetchWithAuth("/auth/profile", session.token, { method: "PUT", body: JSON.stringify(form) });
+      const response = await fetchWithAuth<{ user: typeof session.user }>("/auth/profile", session.token, { method: "PUT", body: JSON.stringify(form) });
+      saveAuthSession({ ...session, user: response.user });
+      refreshSession();
       setMessage("Perfil actualizado");
       setIsEditing(false);
     } catch (e: any) { setMessage(e.message || "Error"); }

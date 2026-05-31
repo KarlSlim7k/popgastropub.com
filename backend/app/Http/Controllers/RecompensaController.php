@@ -17,23 +17,25 @@ class RecompensaController extends Controller
 
     public function redeem(Request $request, $id)
     {
-        $recompensa = Recompensa::where('id', $id)
-            ->where('disponible', true)
-            ->first();
+        abort_unless($request->user()->role === 'cliente', 403, 'Solo los clientes pueden canjear recompensas.');
 
-        if (! $recompensa) {
-            return response()->json(['message' => 'Recompensa no disponible.'], 404);
-        }
+        $redemption = DB::transaction(function () use ($request, $id) {
+            $recompensa = Recompensa::where('id', $id)
+                ->where('disponible', true)
+                ->lockForUpdate()
+                ->first();
 
-        $user = $request->user();
+            if (! $recompensa) {
+                abort(404, 'Recompensa no disponible.');
+            }
 
-        if ($user->points < $recompensa->puntos_requeridos) {
-            return response()->json(['message' => 'Puntos insuficientes.'], 422);
-        }
+            $user = \App\Models\User::whereKey($request->user()->id)->lockForUpdate()->firstOrFail();
 
-        $redemption = DB::transaction(function () use ($user, $recompensa) {
-            $user->points -= $recompensa->puntos_requeridos;
-            $user->save();
+            if ($user->points < $recompensa->puntos_requeridos) {
+                abort(422, 'Puntos insuficientes.');
+            }
+
+            $user->decrement('points', $recompensa->puntos_requeridos);
 
             $redemption = RewardRedemption::create([
                 'user_id' => $user->id,

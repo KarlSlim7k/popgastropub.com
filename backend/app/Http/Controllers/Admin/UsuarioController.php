@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Mesero;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class UsuarioController extends Controller
@@ -25,15 +27,21 @@ class UsuarioController extends Controller
             'role' => 'required|in:cliente,mesero,admin',
         ]);
 
-        $user = User::create([
-            'name' => $request->input('name'),
-            'email' => $request->input('email'),
-            'password' => Hash::make($request->input('password')),
-            'role' => $request->input('role'),
-            'phone' => $request->input('phone'),
-            'rfc' => $request->input('rfc'),
-            'status' => $request->input('status', 'activo'),
-        ]);
+        $user = DB::transaction(function () use ($request) {
+            $user = User::create([
+                'name' => $request->input('name'),
+                'email' => $request->input('email'),
+                'password' => Hash::make($request->input('password')),
+                'role' => $request->input('role'),
+                'phone' => $request->input('phone'),
+                'rfc' => $request->input('rfc'),
+                'status' => $request->input('status', 'activo'),
+            ]);
+
+            $this->syncMeseroProfile($user);
+
+            return $user;
+        });
 
         return response()->json($this->toFrontend($user), 201);
     }
@@ -62,14 +70,30 @@ class UsuarioController extends Controller
         if ($request->has('points')) $data['points'] = $request->input('points');
         if ($request->filled('password')) $data['password'] = Hash::make($request->input('password'));
 
-        $user->update($data);
+        DB::transaction(function () use ($user, $data) {
+            $user->update($data);
+            if ($user->status === 'inactivo') {
+                $user->tokens()->delete();
+            }
+            $this->syncMeseroProfile($user->fresh());
+        });
 
         return response()->json($this->toFrontend($user->fresh()));
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        User::findOrFail($id)->delete();
+        $user = User::findOrFail($id);
+
+        if ($request->user()->is($user)) {
+            abort(422, 'No puedes eliminar tu propia cuenta.');
+        }
+
+        if ($user->role === 'admin' && User::where('role', 'admin')->count() <= 1) {
+            abort(422, 'No puedes eliminar la única cuenta administradora.');
+        }
+
+        $user->delete();
 
         return response()->json(['message' => 'Usuario eliminado']);
     }
@@ -78,15 +102,27 @@ class UsuarioController extends Controller
     {
         $users = User::orderBy('name')->get();
 
-        $csv = "ID,Nombre,Email,Teléfono,Rol,Estado,Puntos,Tier,RFC,Registro\n";
-        foreach ($users as $u) {
-            $csv .= "{$u->id},\"{$u->name}\",{$u->email},{$u->phone},{$u->role},{$u->status},{$u->points},{$u->tier},{$u->rfc},{$u->created_at}\n";
-        }
+        return response()->streamDownload(function () use ($users) {
+            $output = fopen('php://output', 'w');
+            fputcsv($output, ['ID', 'Nombre', 'Email', 'Teléfono', 'Rol', 'Estado', 'Puntos', 'Tier', 'RFC', 'Registro']);
 
-        return response($csv, 200, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="usuarios_pop_perote.csv"',
-        ]);
+            foreach ($users as $user) {
+                fputcsv($output, [
+                    $user->id,
+                    $user->name,
+                    $user->email,
+                    $user->phone,
+                    $user->role,
+                    $user->status,
+                    $user->points,
+                    $user->tier,
+                    $user->rfc,
+                    $user->created_at,
+                ]);
+            }
+
+            fclose($output);
+        }, 'usuarios_pop_perote.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     private function toFrontend(User $u): array
@@ -115,5 +151,22 @@ class UsuarioController extends Controller
             'totalSpent' => '$' . number_format((float) ($u->total_spent ?? 0), 0, '.', ','),
             'avatar' => $u->name ? strtoupper(substr($u->name, 0, 1)) : '?',
         ];
+    }
+
+    private function syncMeseroProfile(User $user): void
+    {
+        if ($user->role !== 'mesero') {
+            $user->mesero?->update(['activo' => false, 'status' => 'inactivo']);
+            return;
+        }
+
+        Mesero::updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'nombre' => $user->name,
+                'activo' => $user->status !== 'inactivo',
+                'status' => $user->status === 'inactivo' ? 'inactivo' : 'activo',
+            ]
+        );
     }
 }

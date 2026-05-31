@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/lib/auth-provider";
 import { fetchWithAuth } from "@/lib/api";
+import { saveAuthSession } from "@/lib/auth-session";
 import { useEffect, useState } from "react";
 
 interface UserProfile {
@@ -16,7 +17,7 @@ interface UserProfile {
 }
 
 export default function PerfilPage() {
-  const { session, logout } = useAuth();
+  const { session, logout, refreshSession } = useAuth();
   const token = session?.token || "";
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -48,6 +49,10 @@ export default function PerfilPage() {
       const res = await fetchWithAuth<any>("/auth/profile", token, { method: "PUT", body: JSON.stringify(form) });
       const u = res.user ?? res;
       setProfile((prev) => ({ ...prev, ...u }));
+      if (session) {
+        saveAuthSession({ ...session, user: u });
+        refreshSession();
+      }
       setIsEditing(false);
       setMessage("Perfil actualizado");
       setTimeout(() => setMessage(""), 3000);

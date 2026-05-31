@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-provider";
-import { fetchWithAuth, fetchAPI } from "@/lib/api";
+import { fetchWithAuth } from "@/lib/api";
 import { useState, useEffect, useCallback } from "react";
 
 interface Recompensa {
@@ -30,7 +30,8 @@ export default function RecompensasPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchAPI<{ data?: Recompensa[]; recompensas?: Recompensa[] }>("/recompensas");
+      if (!token) return;
+      const data = await fetchWithAuth<{ data?: Recompensa[]; recompensas?: Recompensa[] }>("/recompensas", token);
       const list = Array.isArray(data) ? data : data.data ?? data.recompensas ?? [];
       setRewards(list);
     } catch (err: any) {
@@ -38,13 +39,13 @@ export default function RecompensasPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [token]);
 
   const fetchPoints = useCallback(async () => {
     if (!token) return;
     try {
       const data = await fetchWithAuth<{ puntos?: number; points?: number; total?: number }>("/loyalty/points", token);
-      const pts = (data as any).puntos ?? (data as any).points ?? (data as any).total ?? 0;
+      const pts = (data as any).user?.points ?? (data as any).puntos ?? (data as any).points ?? (data as any).total ?? 0;
       setUserPoints(Number(pts) || 0);
     } catch {
       // Silently fail; keep 0 points
