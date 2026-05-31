@@ -26,6 +26,7 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800;900&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
         />
+        <script src="https://elfsightcdn.com/platform.js" async defer />
       </head>
       <body className={inter.className}>
         <AuthProvider>

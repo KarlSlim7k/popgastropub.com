@@ -386,7 +386,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
             <div>
               <h3 className="text-[#F2C166] font-headline text-4xl font-black uppercase tracking-tighter mb-2">Lo que dicen nuestros clientes</h3>
-              <p className="text-on-surface/50 font-body">Basado en más de 1,200 reseñas reales.</p>
+              <p className="text-on-surface/50 font-body">Reseñas reales de Google.</p>
             </div>
             <a
               href="https://maps.app.goo.gl/DHXbVv4zebSWr4uS9"
@@ -407,61 +407,12 @@ export default function Home() {
               </div>
             </a>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="surface-container p-8 relative">
-              <span className="absolute top-4 right-8 text-6xl text-primary/10 font-black">&ldquo;</span>
-              <div className="flex items-center gap-4 mb-6">
-                <Image width={48} height={48} className="rounded-full object-cover grayscale" alt="Sofía Martínez" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBc6nI0OS5XX5sTvv7yr7Tn9PXzA_8moLQ4gD52so-5uHLIKCTtSccKBJvSwRzZaHC-OFvkxzwYUuz9KsVR7S_iti0SF6OouH7iIQr-Oz4ETpnCUaEJZ9lKjdaqURYwMZFTwS4dNKF3UeG0VRX625CJ0VlHx35JIgy0YpeXhUxzp_BAN3ZlUWsxll2R7AOwTbgARbxoYjiiueBtBSh7YZfIhobwLQdEdVMLnM4qbRU4ghJWM0EReUG8jTADcxgULx4LQ1ifv55AVZzE" />
-                <div>
-                  <p className="text-on-surface font-bold">Sofía Martínez</p>
-                  <div className="flex text-[#F2C166] text-[10px]">
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                  </div>
-                </div>
-              </div>
-              <p className="text-on-surface/70 italic font-body text-sm leading-relaxed">&ldquo;El mejor sushi que he probado en Perote. La frescura de los ingredientes se nota en cada bocado. ¡El ambiente es increíble!&rdquo;</p>
-            </div>
-            <div className="surface-container p-8 relative">
-              <span className="absolute top-4 right-8 text-6xl text-primary/10 font-black">&ldquo;</span>
-              <div className="flex items-center gap-4 mb-6">
-                <Image width={48} height={48} className="rounded-full object-cover grayscale" alt="Ricardo Luna" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSxJFpqeMXI_-crak6XYBsj-MbSwDX7_smH9Xz84BoJoVkawHvy_ErmmitpKkDINIXcyLQWaP8GqxRi8RPlhMT_Xde25mcXzgszFFid6dQkOoFWKTMclqMGhHPM_yYcGqXxEXCXr1G16abnBerLA5HASDDTPT9grJPTAYEMF9D2lfp-plYCZN9c1zrUqzuEHyeKCQsaBz4D9V8ThYnEu5dxnwjQrh1usydvJwvpu5AqCRMg_HiuwDaxGUtYAqPg3BlCj4FQFeR3Jtq" />
-                <div>
-                  <p className="text-on-surface font-bold">Ricardo Luna</p>
-                  <div className="flex text-[#F2C166] text-[10px]">
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                  </div>
-                </div>
-              </div>
-              <p className="text-on-surface/70 italic font-body text-sm leading-relaxed">&ldquo;Las alitas tienen el punto exacto de picante. Un lugar perfecto para venir con amigos y disfrutar de buena música y comida.&rdquo;</p>
-            </div>
-            <div className="surface-container p-8 relative">
-              <span className="absolute top-4 right-8 text-6xl text-primary/10 font-black">&ldquo;</span>
-              <div className="flex items-center gap-4 mb-6">
-                <Image width={48} height={48} className="rounded-full object-cover grayscale" alt="Elena Ruiz" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATp7oVnPQXk-3eSC077-9XvaLRguhkjRnZ9g3lAmiJf_8ZNATdl4WMGV3eerRNZgUPHapOJmGRK-ULXqIMfTXsyz50Bpm7eL8cQ-htdnZH6IjBzBlZsoGEbOfnuYWN6PquwAy2cz36MHmTo-d5zW9Dl8SWH2NGFQfQV427vrPKRdRX_6RPxPvEOsOa8zCnPi_PbePAuzg1xE9ZvKJ8i2p_isS4IOlm6pqeBlaJckC1fbLDnSYoSkq5PBe5gziOpUQWolFLXEyFvdga" />
-                <div>
-                  <p className="text-on-surface font-bold">Elena Ruiz</p>
-                  <div className="flex text-[#F2C166] text-[10px]">
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                  </div>
-                </div>
-              </div>
-              <p className="text-on-surface/70 italic font-body text-sm leading-relaxed">&ldquo;¡Las crepas dulces son mi debilidad! Pop Perote nunca decepciona, la atención al detalle es impecable.&rdquo;</p>
-            </div>
-          </div>
-          <div className="text-center">
-            <a href="https://maps.app.goo.gl/DHXbVv4zebSWr4uS9" target="_blank" rel="noopener noreferrer" className="mt-12 inline-flex items-center gap-2 text-[#F2C166] font-black text-sm uppercase tracking-widest hover:underline">
+
+          {/* Elfsight Google Reviews Widget */}
+          <div className="elfsight-app-9d213329-3cfd-4047-ab84-2790abd5a5cd" data-elfsight-app-lazy />
+
+          <div className="text-center mt-12">
+            <a href="https://maps.app.goo.gl/DHXbVv4zebSWr4uS9" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-[#F2C166] font-black text-sm uppercase tracking-widest hover:underline">
               Deja tu reseña en Google <span className="material-symbols-outlined">open_in_new</span>
             </a>
           </div>
