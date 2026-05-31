@@ -351,22 +351,22 @@ export default function Home() {
             <p className="text-on-surface/60 mt-6 max-w-2xl mx-auto font-body">Únete a nuestra comunidad y haz que cada bocado cuente. Sube de nivel y desbloquea beneficios exclusivos.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-            <a className="glass p-6 text-center transform hover:-translate-y-2 transition-transform duration-500" href="/puntos">
+            <a className="glass p-6 text-center transform hover:-translate-y-2 transition-transform duration-500" href="/pop-points">
               <span className="material-symbols-outlined text-[#FFB693] text-5xl mb-4" style={{ fontVariationSettings: "'FILL' 1" }}>military_tech</span>
               <h5 className="text-on-surface font-headline font-bold text-xl mb-1 uppercase">Fan</h5>
               <p className="text-[10px] text-[#F2C166] tracking-widest font-black uppercase">Nivel 01</p>
             </a>
-            <a className="glass p-6 text-center transform hover:-translate-y-2 transition-transform duration-500" href="/puntos">
+            <a className="glass p-6 text-center transform hover:-translate-y-2 transition-transform duration-500" href="/pop-points">
               <span className="material-symbols-outlined text-[#FFB693] text-5xl mb-4" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
               <h5 className="text-on-surface font-headline font-bold text-xl mb-1 uppercase">Lover</h5>
               <p className="text-[10px] text-[#F2C166] tracking-widest font-black uppercase">Nivel 02</p>
             </a>
-            <a className="glass p-6 text-center border-2 border-[#F2C166]/40 transform hover:-translate-y-2 transition-transform duration-500" href="/puntos">
+            <a className="glass p-6 text-center border-2 border-[#F2C166]/40 transform hover:-translate-y-2 transition-transform duration-500" href="/pop-points">
               <span className="material-symbols-outlined text-[#F2C166] text-5xl mb-4" style={{ fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
               <h5 className="text-on-surface font-headline font-bold text-xl mb-1 uppercase">VIP</h5>
               <p className="text-[10px] text-[#F2C166] tracking-widest font-black uppercase">Nivel 03</p>
             </a>
-            <a className="glass p-6 text-center transform hover:-translate-y-2 transition-transform duration-500" href="/puntos">
+            <a className="glass p-6 text-center transform hover:-translate-y-2 transition-transform duration-500" href="/pop-points">
               <span className="material-symbols-outlined text-[#D96E30] text-5xl mb-4" style={{ fontVariationSettings: "'FILL' 1" }}>diamond</span>
               <h5 className="text-on-surface font-headline font-bold text-xl mb-1 uppercase">Elite</h5>
               <p className="text-[10px] text-[#F2C166] tracking-widest font-black uppercase">Nivel 04</p>

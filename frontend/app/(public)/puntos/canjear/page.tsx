@@ -138,7 +138,7 @@ function CanjearContent() {
                 Tu nuevo saldo: <span className="text-[#F2C166] font-black">{balance} pts</span>
               </p>
             )}
-            <a href="/puntos" className="inline-block px-8 py-3 bg-[#F2C166] text-[#234032] font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-[#F2D194] transition-all">
+            <a href="/pop-points" className="inline-block px-8 py-3 bg-[#F2C166] text-[#234032] font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-[#F2D194] transition-all">
               Ver mis puntos
             </a>
           </>

@@ -9,7 +9,7 @@ const navLinks = [
   { href: '/menu', label: 'Menú' },
   { href: '/sobre-nosotros', label: 'Nosotros' },
   { href: '/promociones', label: 'Promos' },
-  { href: '/puntos', label: 'POP Points' },
+  { href: '/pop-points', label: 'POP Points' },
   { href: '/ubicacion', label: 'Ubicación' },
   { href: '/login', label: 'Cuenta' },
 ];
