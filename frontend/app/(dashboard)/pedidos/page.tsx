@@ -118,19 +118,19 @@ export default function PedidosPage() {
         <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest px-1">Pedidos Recientes</h2>
 
         {loading ? (
-          <div className="bg-[#1C1B1B] p-12 rounded-3xl border border-dashed border-white/5 text-center">
+          <div className="bg-pop-cardGreen p-12 rounded-3xl border border-dashed border-white/5 text-center">
             <div className="w-8 h-8 border-2 border-pop-gold border-t-transparent rounded-full animate-spin mx-auto" />
             <p className="text-gray-500 font-black uppercase text-[10px] tracking-widest mt-4">Cargando pedidos...</p>
           </div>
         ) : error ? (
-          <div className="bg-[#1C1B1B] p-12 rounded-3xl border border-dashed border-white/5 text-center space-y-4">
+          <div className="bg-pop-cardGreen p-12 rounded-3xl border border-dashed border-white/5 text-center space-y-4">
             <span className="material-symbols-outlined text-red-500 text-5xl">error</span>
             <p className="text-gray-500 font-black uppercase text-[10px] tracking-widest">{error}</p>
           </div>
         ) : orders.length > 0 ? (
           <div className="grid grid-cols-1 gap-4">
             {orders.map((order) => (
-              <article key={order.id} className="bg-[#1C1B1B] p-6 lg:p-8 rounded-3xl border border-white/5 hover:border-pop-gold/10 transition-all group">
+              <article key={order.id} className="bg-pop-cardGreen p-6 lg:p-8 rounded-3xl border border-white/5 hover:border-pop-gold/10 transition-all group">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div className="space-y-4 flex-1">
                     <div className="flex flex-wrap items-center gap-4">
@@ -161,7 +161,7 @@ export default function PedidosPage() {
             ))}
           </div>
         ) : (
-          <div className="bg-[#1C1B1B] p-12 rounded-3xl border border-dashed border-white/5 text-center space-y-4">
+          <div className="bg-pop-cardGreen p-12 rounded-3xl border border-dashed border-white/5 text-center space-y-4">
             <span className="material-symbols-outlined text-gray-700 text-5xl">receipt_long</span>
             <p className="text-gray-500 font-black uppercase text-[10px] tracking-widest">Aún no tienes pedidos registrados</p>
           </div>

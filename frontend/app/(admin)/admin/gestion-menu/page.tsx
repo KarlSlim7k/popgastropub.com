@@ -165,11 +165,11 @@ export default function AdminGestionMenuPage() {
       </header>
 
       <section className="flex lg:grid lg:grid-cols-4 gap-4 lg:gap-6 mb-10 overflow-x-auto no-scrollbar pb-2">
-        <div className="min-w-[160px] flex-1 bg-[#1C1B1B] p-5 rounded-2xl border border-white/5">
+        <div className="min-w-[160px] flex-1 bg-pop-cardGreen p-5 rounded-2xl border border-white/5">
           <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Items</p>
           <p className="text-2xl font-black text-white">{menuItems.length}</p>
         </div>
-        <div className="min-w-[160px] flex-1 bg-[#1C1B1B] p-5 rounded-2xl border border-white/5">
+        <div className="min-w-[160px] flex-1 bg-pop-cardGreen p-5 rounded-2xl border border-white/5">
           <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Margen</p>
           <p className="text-2xl font-black text-green-400">
             {menuItems.length
@@ -180,17 +180,17 @@ export default function AdminGestionMenuPage() {
             %
           </p>
         </div>
-        <div className="min-w-[160px] flex-1 bg-[#1C1B1B] p-5 rounded-2xl border border-white/5">
+        <div className="min-w-[160px] flex-1 bg-pop-cardGreen p-5 rounded-2xl border border-white/5">
           <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Agotados</p>
           <p className="text-2xl font-black text-pop-orange">{menuItems.filter((i) => i.status === "out").length}</p>
         </div>
-        <div className="min-w-[160px] flex-1 bg-[#1C1B1B] p-5 rounded-2xl border border-white/5">
+        <div className="min-w-[160px] flex-1 bg-pop-cardGreen p-5 rounded-2xl border border-white/5">
           <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Categorías</p>
           <p className="text-2xl font-black text-pop-gold">{CATEGORIES.length}</p>
         </div>
       </section>
 
-      <div className="bg-[#1C1B1B] p-5 lg:p-6 rounded-2xl border border-white/5 mb-8 space-y-4">
+      <div className="bg-pop-cardGreen p-5 lg:p-6 rounded-2xl border border-white/5 mb-8 space-y-4">
         <div className="relative">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">search</span>
           <input
@@ -230,7 +230,7 @@ export default function AdminGestionMenuPage() {
         {filteredItems.map((item) => (
           <article
             key={item.id}
-            className="bg-[#1C1B1B] lg:bg-transparent rounded-2xl lg:rounded-none p-5 lg:p-0 border border-white/5 lg:border-none lg:grid lg:grid-cols-6 lg:gap-4 lg:px-8 lg:py-6 lg:items-center hover:bg-white/[0.02] transition-all"
+            className="bg-pop-cardGreen lg:bg-transparent rounded-2xl lg:rounded-none p-5 lg:p-0 border border-white/5 lg:border-none lg:grid lg:grid-cols-6 lg:gap-4 lg:px-8 lg:py-6 lg:items-center hover:bg-white/[0.02] transition-all"
           >
             <div className="lg:col-span-2 flex items-center gap-4 mb-4 lg:mb-0">
               <div className="w-20 h-16 lg:w-16 lg:h-12 rounded-xl bg-pop-black border border-white/10 overflow-hidden shadow-lg">
@@ -310,7 +310,7 @@ export default function AdminGestionMenuPage() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
           <div className="absolute inset-0 bg-pop-black/90 backdrop-blur-xl" onClick={closeModal} />
-          <div className="relative bg-[#1C1B1B] border-t md:border border-white/10 w-full max-w-2xl rounded-t-3xl md:rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300">
+          <div className="relative bg-pop-cardGreen border-t md:border border-white/10 w-full max-w-2xl rounded-t-3xl md:rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300">
             <header className="p-6 lg:p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
               <div>
                 <h2 className="text-xl lg:text-2xl font-black uppercase font-epilogue tracking-tighter text-white">

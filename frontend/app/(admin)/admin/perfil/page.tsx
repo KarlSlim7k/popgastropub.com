@@ -101,7 +101,7 @@ export default function AdminPerfilPage() {
         </div>
       )}
 
-      <section className="bg-[#1C1B1B] rounded-xl border border-white/5 overflow-hidden mb-8">
+      <section className="bg-pop-cardGreen rounded-xl border border-white/5 overflow-hidden mb-8">
         <div className="p-8 border-b border-white/5 flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pop-orange to-pop-gold p-[3px] flex-shrink-0">
             <div className="w-full h-full rounded-full bg-pop-black flex items-center justify-center text-pop-gold font-black text-3xl font-epilogue">
@@ -148,7 +148,7 @@ export default function AdminPerfilPage() {
         </div>
       </section>
 
-      <section className="bg-[#1C1B1B] rounded-xl border border-white/5 overflow-hidden">
+      <section className="bg-pop-cardGreen rounded-xl border border-white/5 overflow-hidden">
         <div className="p-6 lg:p-8">
           <h3 className="text-lg font-black uppercase font-epilogue tracking-tighter text-white mb-6 flex items-center gap-3">
             <span className="material-symbols-outlined text-pop-gold">lock</span>Cambiar Contraseña

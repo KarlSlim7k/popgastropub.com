@@ -78,24 +78,24 @@ export default function MisFacturasPage() {
            <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest px-1">Historial de Solicitudes</h2>
            
            {loading ? (
-             <div className="bg-[#1C1B1B] p-8 rounded-2xl border border-white/5 text-center">
+             <div className="bg-pop-cardGreen p-8 rounded-2xl border border-white/5 text-center">
                 <div className="w-6 h-6 border-2 border-pop-gold border-t-transparent rounded-full animate-spin mx-auto" />
                 <p className="text-xs text-gray-500 mt-4 font-bold uppercase tracking-widest">Cargando facturas...</p>
              </div>
            ) : error ? (
-             <div className="bg-[#1C1B1B] p-8 rounded-2xl border border-white/5 text-center">
+             <div className="bg-pop-cardGreen p-8 rounded-2xl border border-white/5 text-center">
                 <span className="material-symbols-outlined text-red-500 text-3xl mb-2">error</span>
                 <p className="text-xs text-red-400 font-bold uppercase tracking-widest">{error}</p>
              </div>
            ) : facturas.length === 0 ? (
-             <div className="bg-[#1C1B1B] p-12 rounded-2xl border border-white/5 text-center">
+             <div className="bg-pop-cardGreen p-12 rounded-2xl border border-white/5 text-center">
                 <span className="material-symbols-outlined text-gray-600 text-5xl mb-4">receipt_long</span>
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-widest leading-relaxed">Aún no has solicitado ninguna factura.<br/>Haz clic en "Solicitar Nueva Factura" para comenzar.</p>
              </div>
            ) : (
              <div className="space-y-4">
                 {facturas.map((inv) => (
-                  <article key={inv.id} className="bg-[#1C1B1B] p-6 rounded-2xl border border-white/5 hover:border-pop-gold/10 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <article key={inv.id} className="bg-pop-cardGreen p-6 rounded-2xl border border-white/5 hover:border-pop-gold/10 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6">
                      <div className="flex items-start gap-5">
                         <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-500">
                            <span className="material-symbols-outlined text-2xl">receipt_long</span>

@@ -40,7 +40,7 @@ export default function StaffMenuPage() {
       </header>
 
       <div className="mb-6">
-        <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar platillo..." className="w-full max-w-md bg-[#1C1B1B] border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50" />
+        <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar platillo..." className="w-full max-w-md bg-pop-cardGreen border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50" />
       </div>
 
       <div className="flex overflow-x-auto gap-4 mb-8 pb-4 no-scrollbar">
@@ -49,7 +49,7 @@ export default function StaffMenuPage() {
         ))}
       </div>
 
-      <section className="bg-[#1C1B1B] p-8 rounded-xl border border-white/5">
+      <section className="bg-pop-cardGreen p-8 rounded-xl border border-white/5">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>

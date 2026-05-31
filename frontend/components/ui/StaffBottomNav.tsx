@@ -15,7 +15,7 @@ export default function StaffBottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 w-full bg-[#0D0D0D]/80 backdrop-blur-lg border-t border-white/10 z-50 lg:hidden flex justify-around items-center px-2 py-3 pb-6 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+    <nav className="fixed bottom-0 left-0 w-full bg-pop-darkGreen/90 backdrop-blur-lg border-t border-white/10 z-50 lg:hidden flex justify-around items-center px-2 py-3 pb-6 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
       {bottomNavItems.map((item) => {
         const isActive = pathname === item.href;
         return (

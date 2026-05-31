@@ -137,7 +137,7 @@ export default function AdminUsuariosPage() {
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-10">
         {roleStats.map((stat, i) => (
-          <article key={i} className="bg-[#1C1B1B] rounded-xl p-6 border-l-4 border-pop-gold hover:border-pop-orange transition-all group">
+          <article key={i} className="bg-pop-cardGreen rounded-xl p-6 border-l-4 border-pop-gold hover:border-pop-orange transition-all group">
             <div className="flex justify-between items-start mb-4">
               <div className="p-3 rounded-lg bg-white/5 group-hover:bg-pop-gold/10 transition-colors">
                 <span className="material-symbols-outlined text-pop-gold text-3xl">{stat.icon}</span>
@@ -149,7 +149,7 @@ export default function AdminUsuariosPage() {
         ))}
       </section>
 
-      <section className="bg-[#1C1B1B] rounded-xl p-6 border border-white/5 mb-8">
+      <section className="bg-pop-cardGreen rounded-xl p-6 border border-white/5 mb-8">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1 relative">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xl">search</span>
@@ -170,7 +170,7 @@ export default function AdminUsuariosPage() {
         </div>
       </section>
 
-      <section className="bg-[#1C1B1B] rounded-xl border border-white/5 overflow-hidden">
+      <section className="bg-pop-cardGreen rounded-xl border border-white/5 overflow-hidden">
         <div className="p-6 border-b border-white/5 flex justify-between items-center">
           <div>
             <h2 className="text-xl font-black uppercase font-epilogue tracking-tighter text-white">Lista de Usuarios</h2>
@@ -237,7 +237,7 @@ export default function AdminUsuariosPage() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-pop-black/90 backdrop-blur-xl" onClick={() => setShowModal(false)} />
-          <div className="relative bg-[#1C1B1B] border border-white/10 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl">
+          <div className="relative bg-pop-cardGreen border border-white/10 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl">
             <header className="p-6 border-b border-white/5 flex justify-between items-center">
               <div>
                 <h2 className="text-xl font-black uppercase font-epilogue tracking-tighter text-white">{editingUser ? "Editar Usuario" : "Crear Usuario"}</h2>

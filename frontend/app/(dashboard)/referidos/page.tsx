@@ -63,7 +63,7 @@ export default function ReferidosPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         <section className="lg:col-span-8 space-y-8">
-          <article className="bg-[#1C1B1B] p-8 lg:p-10 rounded-3xl border border-white/5 space-y-8">
+          <article className="bg-pop-cardGreen p-8 lg:p-10 rounded-3xl border border-white/5 space-y-8">
             <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest">Tu Enlace Personalizado</h2>
             <div className="space-y-4">
               <div className="bg-pop-black/60 border border-white/10 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -83,7 +83,7 @@ export default function ReferidosPage() {
             </div>
           </article>
 
-          <article className="bg-[#1C1B1B] p-8 rounded-3xl border border-white/5 space-y-6">
+          <article className="bg-pop-cardGreen p-8 rounded-3xl border border-white/5 space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest">Amigos Invitados</h2>
               <span className="text-xs font-black text-pop-gold">{data?.total_referrals || 0} total</span>
@@ -115,7 +115,7 @@ export default function ReferidosPage() {
         </section>
 
         <aside className="lg:col-span-4 space-y-8">
-          <article className="bg-[#1C1B1B] p-8 rounded-3xl border border-white/5 space-y-8">
+          <article className="bg-pop-cardGreen p-8 rounded-3xl border border-white/5 space-y-8">
             <h3 className="text-xs font-black text-gray-500 uppercase tracking-widest">Cómo Funciona</h3>
             <div className="space-y-8">
               <div className="flex gap-5"><span className="text-xl font-black text-pop-gold opacity-30 font-epilogue">01</span><p className="text-xs font-manrope text-gray-400">Envía tu enlace único a un amigo que aún no tenga cuenta en POP.</p></div>

@@ -103,7 +103,7 @@ export default function AdminPuntosPage() {
           { label: "Redenciones Totales", value: stats.totalRedemptions, icon: "redeem", border: "border-pop-orange" },
           { label: "Activos este Mes", value: stats.activeThisMonth, icon: "trending_up", border: "border-pop-gold" },
         ].map((kpi, i) => (
-          <article key={i} className={`bg-[#1C1B1B] rounded-xl p-6 border-l-4 ${kpi.border} group`}>
+          <article key={i} className={`bg-pop-cardGreen rounded-xl p-6 border-l-4 ${kpi.border} group`}>
             <div className="p-3 rounded-lg bg-white/5 group-hover:bg-pop-gold/10 transition-colors w-fit mb-4">
               <span className="material-symbols-outlined text-pop-gold text-3xl">{kpi.icon}</span>
             </div>
@@ -146,7 +146,7 @@ export default function AdminPuntosPage() {
       </section>
 
       {/* Points Actions */}
-      <section className="bg-[#1C1B1B] rounded-xl p-6 lg:p-8 border border-white/5 mb-8">
+      <section className="bg-pop-cardGreen rounded-xl p-6 lg:p-8 border border-white/5 mb-8">
         <h2 className="text-xl font-black uppercase font-epilogue tracking-tighter text-white mb-6">Cómo Ganar Puntos</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {POINTS_ACTIONS.map((a, i) => (
@@ -165,7 +165,7 @@ export default function AdminPuntosPage() {
 
       {/* Top Members + Activity */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-        <article className="lg:col-span-2 bg-[#1C1B1B] rounded-xl p-8 border border-white/5">
+        <article className="lg:col-span-2 bg-pop-cardGreen rounded-xl p-8 border border-white/5">
           <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white mb-6">Top 5 Miembros POP</h2>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -190,7 +190,7 @@ export default function AdminPuntosPage() {
           </div>
         </article>
 
-        <article className="bg-[#1C1B1B] rounded-xl p-8 border border-white/5">
+        <article className="bg-pop-cardGreen rounded-xl p-8 border border-white/5">
           <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white mb-6">Actividad Reciente</h2>
           <div className="space-y-6 relative">
             <div className="absolute left-4 top-2 bottom-2 w-px bg-gray-800" />
@@ -217,7 +217,7 @@ export default function AdminPuntosPage() {
       {/* Redeem Modal */}
       {showRedeemModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowRedeemModal(false)}>
-          <div className="bg-[#1C1B1B] border border-white/10 rounded-xl w-full max-w-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-pop-cardGreen border border-white/10 rounded-xl w-full max-w-xl" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-white/5 flex justify-between items-center">
               <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white flex items-center gap-3">
                 <span className="material-symbols-outlined text-pop-gold">redeem</span>Registrar Canje

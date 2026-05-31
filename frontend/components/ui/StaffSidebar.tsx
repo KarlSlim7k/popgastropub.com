@@ -64,7 +64,7 @@ export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {
         />
       )}
 
-      <nav className={`fixed top-0 left-0 w-64 h-full bg-[#0D0D0D] border-r border-[#1A1A1A] z-50 flex flex-col transition-transform duration-300 transform ${
+      <nav className={`fixed top-0 left-0 w-64 h-full bg-pop-darkGreen border-r border-white/10 z-50 flex flex-col transition-transform duration-300 transform ${
         isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       }`}>
         <div className="p-8 flex justify-between items-center">
@@ -112,7 +112,7 @@ export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {
         </div>
 
         {/* User Section with Dropdown */}
-        <div className="relative bg-[#131111] border-t border-[#1A1A1A]" ref={menuRef}>
+        <div className="relative bg-pop-black border-t border-white/10" ref={menuRef}>
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
             className="w-full p-6 flex items-center gap-4 hover:bg-white/5 transition-colors text-left"
@@ -137,10 +137,10 @@ export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {
 
           {/* Dropdown Menu */}
           {showUserMenu && (
-            <div className="absolute bottom-full left-0 right-0 bg-[#1C1B1B] border-t border-[#1A1A1A] border-b border-[#1A1A1A] shadow-[0_-10px_40px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-bottom-2 duration-200">
+            <div className="absolute bottom-full left-0 right-0 bg-pop-darkGreen border-t border-white/10 border-b border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-bottom-2 duration-200">
               <div className="p-3 space-y-1">
                 {/* User Info Header */}
-                <div className="px-3 py-2 mb-1 bg-black/30 rounded-lg">
+                <div className="px-3 py-2 mb-1 bg-black/20 rounded-lg">
                   <p className="text-xs font-bold text-white">{userName}</p>
                   <p className="text-[10px] text-gray-500 truncate">{userEmail || "Staff POP Perote"}</p>
                 </div>
@@ -172,7 +172,7 @@ export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {
                 </Link>
 
                 {/* Divider */}
-                <div className="border-t border-[#1A1A1A] my-1" />
+                <div className="border-t border-white/10 my-1" />
 
                 {/* Cerrar Sesión */}
                 <button

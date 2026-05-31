@@ -64,7 +64,7 @@ export default function StaffPerfilPage() {
 
       {message && <div className={`mb-6 p-4 rounded-xl text-sm font-bold ${message.includes("Error") || message.includes("no coinciden") ? "bg-red-500/10 text-red-400" : "bg-green-500/10 text-green-400"}`}>{message}</div>}
 
-      <section className="bg-[#1C1B1B] rounded-xl border border-white/5 overflow-hidden mb-8">
+      <section className="bg-pop-cardGreen rounded-xl border border-white/5 overflow-hidden mb-8">
         <div className="p-8 border-b border-white/5 flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <div className="w-24 h-24 rounded-full bg-gradient-to-br from-pop-orange to-pop-gold p-[3px]">
             <div className="w-full h-full rounded-full bg-pop-black flex items-center justify-center text-pop-gold font-black text-3xl font-epilogue">
@@ -88,7 +88,7 @@ export default function StaffPerfilPage() {
       </section>
 
       <div className="space-y-2">
-        <button onClick={() => setShowPwModal(true)} className="w-full flex items-center justify-between bg-[#1C1B1B] p-5 rounded-xl border border-white/5 hover:bg-white/[0.02] transition-all">
+        <button onClick={() => setShowPwModal(true)} className="w-full flex items-center justify-between bg-pop-cardGreen p-5 rounded-xl border border-white/5 hover:bg-white/[0.02] transition-all">
           <div className="flex items-center gap-4"><span className="material-symbols-outlined text-pop-gold">lock_reset</span><span className="text-xs font-black text-white uppercase">Cambiar Contraseña</span></div>
           <span className="material-symbols-outlined text-gray-600">chevron_right</span>
         </button>
@@ -100,7 +100,7 @@ export default function StaffPerfilPage() {
       {showPwModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-pop-black/90 backdrop-blur-xl" onClick={() => setShowPwModal(false)} />
-          <div className="relative bg-[#1C1B1B] border border-white/10 w-full max-w-md rounded-3xl overflow-hidden">
+          <div className="relative bg-pop-cardGreen border border-white/10 w-full max-w-md rounded-3xl overflow-hidden">
             <div className="p-6 border-b border-white/5 flex justify-between items-center"><h2 className="text-xl font-black uppercase font-epilogue text-white">Cambiar Contraseña</h2><button onClick={() => setShowPwModal(false)} className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-gray-500"><span className="material-symbols-outlined">close</span></button></div>
             <div className="p-6 space-y-5">
               <div><label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Actual</label><input type="password" value={pwForm.current_password} onChange={(e) => setPwForm({ ...pwForm, current_password: e.target.value })} className="w-full bg-pop-black border border-white/10 rounded-xl p-3 text-white focus:border-pop-gold outline-none text-sm mt-2" /></div>

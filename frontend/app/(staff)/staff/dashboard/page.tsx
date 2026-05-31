@@ -31,7 +31,7 @@ interface OrderItem {
 }
 
 const StatCard = ({ label, value, icon }: StatCardProps) => (
-  <div className="bg-[#1C1B1B] p-6 rounded-xl border border-white/5 hover:border-pop-gold/20 transition-all group">
+  <div className="bg-pop-cardGreen p-6 rounded-xl border border-white/5 hover:border-pop-gold/20 transition-all group">
     <div className="flex justify-between items-start mb-4">
       <div className="p-3 bg-white/5 rounded-lg group-hover:bg-pop-gold/10 transition-colors">
         <span className="material-symbols-outlined text-pop-gold text-3xl group-hover:scale-110 transition-transform">
@@ -112,7 +112,7 @@ export default function WaiterDashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
         {/* Real-time Orders */}
-        <section className="lg:col-span-2 bg-[#1C1B1B] p-8 rounded-xl border border-white/5">
+        <section className="lg:col-span-2 bg-pop-cardGreen p-8 rounded-xl border border-white/5">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white">Órdenes Activas</h2>
             <span className="material-symbols-outlined text-pop-gold animate-pulse">monitoring</span>
@@ -135,7 +135,7 @@ export default function WaiterDashboardPage() {
         </section>
 
         {/* Personal Ranking Snapshot */}
-        <section className="bg-[#1C1B1B] p-8 rounded-xl border border-white/5 flex flex-col">
+        <section className="bg-pop-cardGreen p-8 rounded-xl border border-white/5 flex flex-col">
           <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white mb-6">Ranking Personal</h2>
           <div className="flex-1 flex flex-col justify-center items-center text-center p-6 bg-pop-black/20 rounded-lg border border-white/5 mb-6">
             {rankingLoading ? (
@@ -165,7 +165,7 @@ export default function WaiterDashboardPage() {
       </div>
 
       {/* Notifications */}
-      <section className="bg-[#1C1B1B] p-8 rounded-xl border border-white/5">
+      <section className="bg-pop-cardGreen p-8 rounded-xl border border-white/5">
         <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white mb-8">Notificaciones</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="p-6 bg-red-500/5 border border-red-500/20 rounded-lg">

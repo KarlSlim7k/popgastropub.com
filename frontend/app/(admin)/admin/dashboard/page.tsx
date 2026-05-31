@@ -59,7 +59,7 @@ export default function AdminDashboardPage() {
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-10">
         {kpiData.map((kpi, idx) => (
-          <article key={idx} className="bg-[#1C1B1B] p-6 rounded-2xl border border-white/5 hover:border-pop-gold/30 transition-all group">
+          <article key={idx} className="bg-pop-cardGreen p-6 rounded-2xl border border-white/5 hover:border-pop-gold/30 transition-all group">
             <div className="flex justify-between items-start mb-6">
               <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-pop-gold/10 transition-all">
                 <span className="material-symbols-outlined text-pop-gold text-2xl">{kpi.icon}</span>
@@ -73,7 +73,7 @@ export default function AdminDashboardPage() {
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-        <article className="lg:col-span-2 bg-[#1C1B1B] p-6 lg:p-8 rounded-2xl border border-white/5">
+        <article className="lg:col-span-2 bg-pop-cardGreen p-6 lg:p-8 rounded-2xl border border-white/5">
           <div className="flex justify-between items-center mb-10">
             <h2 className="text-xl font-black uppercase tracking-tighter text-white font-epilogue">Facturación Diaria</h2>
             <div className="flex bg-pop-black/50 p-1 rounded-lg">
@@ -94,7 +94,7 @@ export default function AdminDashboardPage() {
           </div>
         </article>
 
-        <article className="bg-[#1C1B1B] p-6 lg:p-8 rounded-2xl border border-white/5">
+        <article className="bg-pop-cardGreen p-6 lg:p-8 rounded-2xl border border-white/5">
           <h2 className="text-xl font-black uppercase tracking-tighter text-white font-epilogue mb-10">Mix de Ventas</h2>
           <div className="space-y-6">
             {donutData.map((d, i) => (
@@ -113,7 +113,7 @@ export default function AdminDashboardPage() {
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-        <article className="bg-[#1C1B1B] rounded-2xl border border-white/5 overflow-hidden">
+        <article className="bg-pop-cardGreen rounded-2xl border border-white/5 overflow-hidden">
           <header className="p-6 border-b border-white/5 flex justify-between items-center">
             <h3 className="text-sm font-black text-white uppercase tracking-widest font-epilogue">Top Meseros</h3>
             <span className="material-symbols-outlined text-pop-gold">stars</span>
@@ -135,7 +135,7 @@ export default function AdminDashboardPage() {
           </table>
         </article>
 
-        <article className="bg-[#1C1B1B] rounded-2xl border border-white/5 overflow-hidden">
+        <article className="bg-pop-cardGreen rounded-2xl border border-white/5 overflow-hidden">
           <header className="p-6 border-b border-white/5 flex justify-between items-center">
             <h3 className="text-sm font-black text-white uppercase tracking-widest font-epilogue">Menú en Vivo</h3>
             <span className="material-symbols-outlined text-pop-orange">inventory_2</span>

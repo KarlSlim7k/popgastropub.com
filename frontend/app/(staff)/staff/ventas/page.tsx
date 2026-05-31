@@ -62,11 +62,11 @@ export default function StaffVentasPage() {
 
       {/* Today's Stats */}
       <div className="grid grid-cols-2 gap-4 mb-10">
-        <div className="bg-[#1C1B1B] p-6 rounded-xl border border-white/5">
+        <div className="bg-pop-cardGreen p-6 rounded-xl border border-white/5">
           <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Puntos Hoy</p>
           <p className="text-3xl font-black text-pop-gold font-epilogue">{todayPoints}</p>
         </div>
-        <div className="bg-[#1C1B1B] p-6 rounded-xl border border-white/5">
+        <div className="bg-pop-cardGreen p-6 rounded-xl border border-white/5">
           <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Ventas Hoy</p>
           <p className="text-3xl font-black text-white font-epilogue">{todaySales}</p>
         </div>
@@ -80,7 +80,7 @@ export default function StaffVentasPage() {
             <button
               key={cat.key}
               onClick={() => setSelected(cat.key)}
-              className={`p-6 rounded-xl border transition-all text-left ${selected === cat.key ? "bg-pop-gold/10 border-pop-gold" : "bg-[#1C1B1B] border-white/5 hover:border-pop-gold/30"}`}
+              className={`p-6 rounded-xl border transition-all text-left ${selected === cat.key ? "bg-pop-gold/10 border-pop-gold" : "bg-pop-cardGreen border-white/5 hover:border-pop-gold/30"}`}
             >
               <div className="flex items-center gap-4 mb-3">
                 <span className={`material-symbols-outlined text-3xl ${selected === cat.key ? "text-pop-gold" : "text-gray-500"}`}>{cat.icon}</span>
@@ -96,7 +96,7 @@ export default function StaffVentasPage() {
 
       {/* Quantity & Submit */}
       {selected && (
-        <section className="bg-[#1C1B1B] p-8 rounded-xl border border-pop-gold/20 space-y-6">
+        <section className="bg-pop-cardGreen p-8 rounded-xl border border-pop-gold/20 space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Cantidad</p>

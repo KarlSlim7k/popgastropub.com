@@ -105,7 +105,7 @@ export default function RecompensasPage() {
       )}
 
       {/* Header & Balance */}
-      <header className="flex flex-col lg:flex-row justify-between items-center bg-[#1C1B1B] p-8 lg:px-12 rounded-3xl border border-white/5 relative overflow-hidden group">
+      <header className="flex flex-col lg:flex-row justify-between items-center bg-pop-cardGreen p-8 lg:px-12 rounded-3xl border border-white/5 relative overflow-hidden group">
         <div className="absolute inset-0 bg-gradient-to-r from-pop-gold/5 via-transparent to-transparent pointer-events-none" />
         <div className="relative z-10 text-center lg:text-left">
           <h1 className="text-4xl lg:text-6xl font-black text-white font-epilogue tracking-tighter uppercase leading-none">
@@ -145,12 +145,12 @@ export default function RecompensasPage() {
 
       {/* Rewards Grid */}
       {loading ? (
-        <div className="bg-[#1C1B1B] p-12 rounded-3xl border border-dashed border-white/5 text-center">
+        <div className="bg-pop-cardGreen p-12 rounded-3xl border border-dashed border-white/5 text-center">
           <div className="w-8 h-8 border-2 border-pop-gold border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-gray-500 font-black uppercase text-[10px] tracking-widest mt-4">Cargando recompensas...</p>
         </div>
       ) : error ? (
-        <div className="bg-[#1C1B1B] p-12 rounded-3xl border border-dashed border-white/5 text-center space-y-4">
+        <div className="bg-pop-cardGreen p-12 rounded-3xl border border-dashed border-white/5 text-center space-y-4">
           <span className="material-symbols-outlined text-red-500 text-5xl">error</span>
           <p className="text-gray-500 font-black uppercase text-[10px] tracking-widest">{error}</p>
         </div>
@@ -161,7 +161,7 @@ export default function RecompensasPage() {
             return (
               <article
                 key={reward.id}
-                className={`group bg-[#1C1B1B] rounded-3xl overflow-hidden border border-white/5 transition-all flex flex-col ${
+                className={`group bg-pop-cardGreen rounded-3xl overflow-hidden border border-white/5 transition-all flex flex-col ${
                   !isAffordable ? "opacity-75" : "hover:border-pop-gold/30 hover:shadow-[0_0_30px_rgba(242,199,119,0.05)]"
                 }`}
               >
@@ -228,7 +228,7 @@ export default function RecompensasPage() {
           })}
         </div>
       ) : (
-        <div className="bg-[#1C1B1B] p-12 rounded-3xl border border-dashed border-white/5 text-center space-y-4">
+        <div className="bg-pop-cardGreen p-12 rounded-3xl border border-dashed border-white/5 text-center space-y-4">
           <span className="material-symbols-outlined text-gray-700 text-5xl">card_giftcard</span>
           <p className="text-gray-500 font-black uppercase text-[10px] tracking-widest">No hay recompensas disponibles</p>
         </div>

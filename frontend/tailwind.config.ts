@@ -58,11 +58,13 @@ const config: Config = {
           'primary-fixed': '#ffdbcb',
 
         pop: {
-          gold: '#F2C777',
+          gold: '#F2C166',
           lightGold: '#F2C894',
           orange: '#D96725',
-          brown: '#732817',
-          black: '#0D0D0D',
+          brown: '#732B1A',
+          black: '#234032',
+          darkGreen: '#1A3028',
+          cardGreen: '#2D5040',
         },
       },
       fontFamily: {

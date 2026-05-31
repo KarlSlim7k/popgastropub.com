@@ -48,7 +48,7 @@ export default function StaffAnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
         <section className="lg:col-span-3 space-y-8">
           {/* Points by Category Chart */}
-          <article className="bg-[#1C1B1B] p-8 rounded-xl border border-white/5 min-h-[400px] flex flex-col">
+          <article className="bg-pop-cardGreen p-8 rounded-xl border border-white/5 min-h-[400px] flex flex-col">
             <h3 className="text-xl font-black uppercase font-epilogue tracking-tighter text-white mb-10">Puntos por Categoría</h3>
             <div className="flex-1 flex items-end justify-between gap-1 sm:gap-4 px-4">
               {categorias.map((cat, i) => (
@@ -63,7 +63,7 @@ export default function StaffAnalyticsPage() {
           </article>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <article className="bg-[#1C1B1B] p-8 rounded-xl border border-white/5">
+            <article className="bg-pop-cardGreen p-8 rounded-xl border border-white/5">
               <h3 className="text-lg font-black uppercase font-epilogue tracking-tighter text-white mb-6">Eficiencia de Servicio</h3>
               <div className="space-y-6">
                 <div>
@@ -87,7 +87,7 @@ export default function StaffAnalyticsPage() {
               </div>
             </article>
 
-            <article className="bg-[#1C1B1B] p-8 rounded-xl border border-white/5">
+            <article className="bg-pop-cardGreen p-8 rounded-xl border border-white/5">
               <h3 className="text-lg font-black uppercase font-epilogue tracking-tighter text-white mb-6">Ventas Totales</h3>
               <p className="text-4xl font-black text-pop-gold font-epilogue tracking-tighter">${(data?.total_sales || 0).toLocaleString()}</p>
               <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-2 font-bold">Acumulado</p>
@@ -95,7 +95,7 @@ export default function StaffAnalyticsPage() {
           </div>
 
           {/* Historial de Tickets QR */}
-          <article className="bg-[#1C1B1B] rounded-xl border border-white/5 overflow-hidden">
+          <article className="bg-pop-cardGreen rounded-xl border border-white/5 overflow-hidden">
             <header className="p-6 border-b border-white/5 flex justify-between items-center">
               <h3 className="text-sm font-black text-white uppercase tracking-widest font-epilogue">Historial de QRs Generados</h3>
               <span className="material-symbols-outlined text-pop-gold">qr_code_2</span>
@@ -139,7 +139,7 @@ export default function StaffAnalyticsPage() {
         </section>
 
         <aside className="space-y-8">
-          <article className="bg-[#1C1B1B] p-8 rounded-xl border border-white/5 relative overflow-hidden">
+          <article className="bg-pop-cardGreen p-8 rounded-xl border border-white/5 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-pop-gold/10 blur-[60px] rounded-full" />
             <h3 className="text-lg font-black uppercase font-epilogue tracking-tighter text-white mb-8">Puntos Totales</h3>
             <p className="text-5xl font-black text-white tracking-tighter font-epilogue mb-2">{(data?.puntos_totales || 0).toLocaleString()}</p>
@@ -147,7 +147,7 @@ export default function StaffAnalyticsPage() {
           </article>
 
           {/* Resumen QR */}
-          <article className="bg-[#1C1B1B] p-8 rounded-xl border border-white/5">
+          <article className="bg-pop-cardGreen p-8 rounded-xl border border-white/5">
             <h3 className="text-sm font-black uppercase font-epilogue tracking-tighter text-white mb-6">Resumen QR</h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center">

@@ -164,7 +164,7 @@ export default function AdminMeserosPage() {
         </div>
       </header>
 
-      <div className="flex bg-[#1C1B1B] p-1 rounded-xl border border-white/5 mb-8 w-fit overflow-x-auto no-scrollbar">
+      <div className="flex bg-pop-cardGreen p-1 rounded-xl border border-white/5 mb-8 w-fit overflow-x-auto no-scrollbar">
         {(["semana", "mes", "todo"] as const).map((p) => (
           <button
             key={p}
@@ -186,7 +186,7 @@ export default function AdminMeserosPage() {
             return (
               <article
                 key={w.id}
-                className={`relative bg-[#1C1B1B] p-8 lg:p-10 rounded-3xl border transition-all flex flex-col items-center text-center ${
+                className={`relative bg-pop-cardGreen p-8 lg:p-10 rounded-3xl border transition-all flex flex-col items-center text-center ${
                   isWinner ? "border-pop-gold lg:py-16 shadow-[0_0_40px_rgba(242,199,119,0.1)] lg:-translate-y-4" : "border-white/5"
                 } ${w.rank === 2 ? "order-2 lg:order-1" : w.rank === 1 ? "order-1 lg:order-2" : "order-3"}`}
               >
@@ -239,7 +239,7 @@ export default function AdminMeserosPage() {
         {waiters.map((w) => (
           <article
             key={w.id}
-            className="bg-[#1C1B1B] lg:bg-transparent rounded-2xl lg:rounded-none p-5 lg:p-0 border border-white/5 lg:border-none lg:grid lg:grid-cols-6 lg:gap-4 lg:px-10 lg:py-6 lg:items-center hover:bg-white/[0.02] transition-all"
+            className="bg-pop-cardGreen lg:bg-transparent rounded-2xl lg:rounded-none p-5 lg:p-0 border border-white/5 lg:border-none lg:grid lg:grid-cols-6 lg:gap-4 lg:px-10 lg:py-6 lg:items-center hover:bg-white/[0.02] transition-all"
           >
             <div className="flex items-center justify-between lg:block mb-4 lg:mb-0">
               <span className={`w-8 h-8 lg:w-10 lg:h-10 rounded-full flex items-center justify-center font-black text-xs ${getRankBadge(w.rank)}`}>
@@ -303,7 +303,7 @@ export default function AdminMeserosPage() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-pop-black/95 backdrop-blur-xl" onClick={closeModal} />
-          <div className="relative bg-[#1C1B1B] border border-white/10 w-full max-w-xl rounded-3xl overflow-hidden shadow-2xl">
+          <div className="relative bg-pop-cardGreen border border-white/10 w-full max-w-xl rounded-3xl overflow-hidden shadow-2xl">
             <header className="p-8 lg:p-10 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
               <div>
                 <h2 className="text-2xl font-black text-white uppercase font-epilogue tracking-tighter">

@@ -44,12 +44,12 @@ export default function StaffReservationsPage() {
           <h1 className="text-4xl lg:text-5xl font-black tracking-tighter text-white font-epilogue uppercase">Reservaciones</h1>
           <p className="text-pop-orange mt-2 text-xs font-bold uppercase tracking-[0.3em]">Gestión de mesas</p>
         </div>
-        <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="bg-[#1C1B1B] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-pop-gold outline-none" />
+        <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="bg-pop-cardGreen border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-pop-gold outline-none" />
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <section className="lg:col-span-2">
-          <div className="bg-[#1C1B1B] p-8 rounded-xl border border-white/5">
+          <div className="bg-pop-cardGreen p-8 rounded-xl border border-white/5">
             <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white mb-8 flex items-center gap-3">
               Reservas del Día <span className="text-[10px] font-bold text-pop-gold bg-pop-gold/10 px-2 py-0.5 rounded tracking-widest uppercase">{reservas.length} total</span>
             </h2>
@@ -87,7 +87,7 @@ export default function StaffReservationsPage() {
         </section>
 
         <aside className="space-y-8">
-          <article className="bg-[#1C1B1B] p-8 rounded-xl border border-white/5">
+          <article className="bg-pop-cardGreen p-8 rounded-xl border border-white/5">
             <h3 className="text-lg font-black uppercase font-epilogue tracking-tighter text-white mb-6">Estado del Salón</h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center p-4 bg-pop-black/40 rounded-lg border border-white/5">

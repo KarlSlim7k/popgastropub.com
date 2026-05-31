@@ -86,7 +86,7 @@ export default function PerfilPage() {
         <div className={`p-4 rounded-xl text-sm font-bold ${message.includes("Error") || message.includes("no coinciden") ? "bg-red-500/10 text-red-400 border border-red-500/20" : "bg-green-500/10 text-green-400 border border-green-500/20"}`}>{message}</div>
       )}
 
-      <header className="flex flex-col md:flex-row items-center gap-8 bg-[#1C1B1B] p-10 rounded-3xl border border-white/5 relative overflow-hidden">
+      <header className="flex flex-col md:flex-row items-center gap-8 bg-pop-cardGreen p-10 rounded-3xl border border-white/5 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-64 h-64 bg-pop-gold/5 blur-[80px] -ml-32 -mt-32" />
         <div className="relative">
           <div className="w-32 h-32 rounded-full bg-gradient-to-br from-pop-orange to-pop-gold p-1">
@@ -109,7 +109,7 @@ export default function PerfilPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         <div className="lg:col-span-12">
-          <article className="bg-[#1C1B1B] p-8 lg:p-10 rounded-3xl border border-white/5 space-y-10">
+          <article className="bg-pop-cardGreen p-8 lg:p-10 rounded-3xl border border-white/5 space-y-10">
             <div className="flex justify-between items-center border-b border-white/5 pb-6">
               <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest">Información Personal</h2>
               <button onClick={() => setIsEditing(!isEditing)} className="text-pop-gold text-[10px] font-black uppercase tracking-widest hover:underline decoration-pop-gold/30 underline-offset-8">
@@ -146,7 +146,7 @@ export default function PerfilPage() {
         </div>
 
         <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-10">
-          <article className="bg-[#1C1B1B] p-8 lg:p-10 rounded-3xl border border-white/5 space-y-8">
+          <article className="bg-pop-cardGreen p-8 lg:p-10 rounded-3xl border border-white/5 space-y-8">
             <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest px-1">Beneficios de Nivel {currentTier}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {tierBenefits.map((item, i) => (
@@ -166,7 +166,7 @@ export default function PerfilPage() {
           <article className="space-y-4">
             <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest px-1">Seguridad</h2>
             <div className="space-y-2">
-              <button onClick={() => setShowPasswordModal(true)} className="w-full flex items-center justify-between bg-[#1C1B1B] p-5 rounded-2xl border border-white/5 hover:bg-white/[0.02] transition-all group">
+              <button onClick={() => setShowPasswordModal(true)} className="w-full flex items-center justify-between bg-pop-cardGreen p-5 rounded-2xl border border-white/5 hover:bg-white/[0.02] transition-all group">
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-pop-gold text-xl">lock_reset</span>
                   <span className="text-xs font-black text-white uppercase tracking-tight">Cambiar Contraseña</span>
@@ -187,7 +187,7 @@ export default function PerfilPage() {
       {showPasswordModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-pop-black/90 backdrop-blur-xl" onClick={() => setShowPasswordModal(false)} />
-          <div className="relative bg-[#1C1B1B] border border-white/10 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl">
+          <div className="relative bg-pop-cardGreen border border-white/10 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl">
             <header className="p-6 border-b border-white/5 flex justify-between items-center">
               <h2 className="text-xl font-black uppercase font-epilogue tracking-tighter text-white">Cambiar Contraseña</h2>
               <button onClick={() => setShowPasswordModal(false)} className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-full text-gray-500">

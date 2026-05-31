@@ -118,8 +118,8 @@ export default function PuntosPage() {
            
            {/* Loyalty Card (Digital Check-in) */}
            <article className="relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#1C1B1B] to-[#0D0D0D] p-[1.5px] rounded-3xl">
-                <div className="w-full h-full bg-[#0D0D0D] rounded-3xl overflow-hidden relative p-8 lg:p-10">
+              <div className="absolute inset-0 bg-gradient-to-br from-pop-cardGreen to-pop-black p-[1.5px] rounded-3xl">
+                <div className="w-full h-full bg-pop-black rounded-3xl overflow-hidden relative p-8 lg:p-10">
                    {/* Card Texture/Pattern */}
                    <div className="absolute top-0 right-0 w-64 h-64 bg-pop-gold/5 blur-[80px] -mr-32 -mt-32" />
                    
@@ -159,7 +159,7 @@ export default function PuntosPage() {
            </article>
 
            {/* Progress Tracker */}
-           <article className="bg-[#1C1B1B] p-8 lg:p-10 rounded-3xl border border-white/5 space-y-6">
+           <article className="bg-pop-cardGreen p-8 lg:p-10 rounded-3xl border border-white/5 space-y-6">
               <div className="flex justify-between items-end">
                  <div>
                     <h3 className="text-xs font-black text-gray-500 uppercase tracking-widest">Próximo Nivel</h3>
@@ -199,7 +199,7 @@ export default function PuntosPage() {
                  {activeTab === 'beneficios' ? (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                        {benefits.map((b, i) => (
-                         <div key={i} className="bg-[#1C1B1B] p-6 rounded-2xl border border-white/5 group hover:border-pop-gold/20 transition-all">
+                         <div key={i} className="bg-pop-cardGreen p-6 rounded-2xl border border-white/5 group hover:border-pop-gold/20 transition-all">
                             <span className="material-symbols-outlined text-pop-gold text-3xl mb-4 group-hover:scale-110 transition-transform">{b.icon}</span>
                             <p className="text-xs font-black text-white uppercase leading-tight mb-2">{b.title}</p>
                             <span className="text-[9px] font-black text-pop-orange uppercase tracking-widest">{b.status}</span>
@@ -209,23 +209,23 @@ export default function PuntosPage() {
                  ) : (
                     <div className="space-y-3">
                        {loading ? (
-                         <div className="bg-[#1C1B1B] p-8 rounded-2xl border border-white/5 text-center">
+                         <div className="bg-pop-cardGreen p-8 rounded-2xl border border-white/5 text-center">
                             <div className="w-6 h-6 border-2 border-pop-gold border-t-transparent rounded-full animate-spin mx-auto" />
                             <p className="text-xs text-gray-500 mt-4 font-bold uppercase tracking-widest">Cargando historial...</p>
                          </div>
                        ) : error ? (
-                         <div className="bg-[#1C1B1B] p-8 rounded-2xl border border-white/5 text-center">
+                         <div className="bg-pop-cardGreen p-8 rounded-2xl border border-white/5 text-center">
                             <span className="material-symbols-outlined text-red-500 text-3xl mb-2">error</span>
                             <p className="text-xs text-red-400 font-bold uppercase tracking-widest">{error}</p>
                          </div>
                        ) : history.length === 0 ? (
-                         <div className="bg-[#1C1B1B] p-8 rounded-2xl border border-white/5 text-center">
+                         <div className="bg-pop-cardGreen p-8 rounded-2xl border border-white/5 text-center">
                             <span className="material-symbols-outlined text-gray-600 text-4xl mb-4">history</span>
                             <p className="text-xs font-bold text-gray-500 uppercase tracking-widest leading-relaxed">Aún no tienes actividad en tu cuenta.<br/>¡Haz tu primera compra para empezar a acumular puntos!</p>
                          </div>
                        ) : (
                          history.map((a) => (
-                           <div key={a.id} className="bg-[#1C1B1B] p-5 rounded-2xl border border-white/5 flex items-center justify-between">
+                           <div key={a.id} className="bg-pop-cardGreen p-5 rounded-2xl border border-white/5 flex items-center justify-between">
                               <div className="flex items-center gap-4">
                                  <span className="text-[10px] font-black text-gray-500 w-12">{formatDate(a.created_at)}</span>
                                  <p className="text-xs font-bold text-white uppercase">{a.description}</p>
@@ -268,7 +268,7 @@ export default function PuntosPage() {
                    { label: "Gana 200 pts", icon: "group_add", href: "/referidos" },
                    { label: "Mis Facturas (CFDI)", icon: "receipt_long", href: "/mis-facturas" },
                  ].map((link, i) => (
-                   <a key={i} href={link.href} className="flex items-center justify-between bg-[#1C1B1B] p-5 rounded-2xl border border-white/5 hover:bg-white/[0.02] transition-all group">
+                   <a key={i} href={link.href} className="flex items-center justify-between bg-pop-cardGreen p-5 rounded-2xl border border-white/5 hover:bg-white/[0.02] transition-all group">
                       <div className="flex items-center gap-4">
                          <span className="material-symbols-outlined text-pop-gold text-xl">{link.icon}</span>
                          <span className="text-xs font-black text-white uppercase tracking-tight">{link.label}</span>
@@ -279,7 +279,7 @@ export default function PuntosPage() {
                  
                  <button 
                   onClick={() => logout()}
-                  className="flex items-center justify-between w-full bg-[#1C1B1B] p-5 rounded-2xl border border-white/5 hover:bg-red-500/5 hover:border-red-500/20 transition-all group group-logout mt-4"
+                  className="flex items-center justify-between w-full bg-pop-cardGreen p-5 rounded-2xl border border-white/5 hover:bg-red-500/5 hover:border-red-500/20 transition-all group group-logout mt-4"
                  >
                     <div className="flex items-center gap-4">
                        <span className="material-symbols-outlined text-red-500/50 group-hover:text-red-500 text-xl transition-colors">logout</span>
@@ -291,7 +291,7 @@ export default function PuntosPage() {
            </section>
 
            {/* Support Card */}
-           <article className="bg-[#1C1B1B] p-8 rounded-3xl border-2 border-white/5 border-dashed text-center">
+           <article className="bg-pop-cardGreen p-8 rounded-3xl border-2 border-white/5 border-dashed text-center">
               <span className="material-symbols-outlined text-gray-600 text-4xl mb-4">support_agent</span>
               <p className="text-xs font-bold text-gray-500 uppercase tracking-widest leading-relaxed">¿Necesitas ayuda con tus puntos?</p>
               <button className="text-pop-gold text-[10px] font-black uppercase mt-4 underline underline-offset-4 decoration-pop-gold/30">Contactar Soporte VIP</button>

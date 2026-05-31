@@ -59,9 +59,9 @@ export default function AdminConfiguracionPage() {
 
       {message && <div className={`mb-6 p-4 rounded-xl text-sm font-bold ${message.includes("Error") ? "bg-red-500/10 text-red-400" : "bg-green-500/10 text-green-400"}`}>{message}</div>}
 
-      <section className="flex overflow-x-auto gap-2 mb-8 pb-2 -mx-4 px-4 lg:mx-0 lg:px-0 lg:gap-0 lg:bg-[#1C1B1B] lg:rounded-xl lg:p-1.5 lg:border lg:border-white/5 lg:w-fit">
+      <section className="flex overflow-x-auto gap-2 mb-8 pb-2 -mx-4 px-4 lg:mx-0 lg:px-0 lg:gap-0 lg:bg-pop-cardGreen lg:rounded-xl lg:p-1.5 lg:border lg:border-white/5 lg:w-fit">
         {tabs.map((tab) => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 px-5 py-3 text-sm font-bold uppercase tracking-wider rounded-lg whitespace-nowrap transition-all ${activeTab === tab.id ? "bg-pop-gold text-pop-black" : "bg-[#1C1B1B] lg:bg-transparent text-gray-400 hover:text-white hover:bg-white/5"}`}>
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 px-5 py-3 text-sm font-bold uppercase tracking-wider rounded-lg whitespace-nowrap transition-all ${activeTab === tab.id ? "bg-pop-gold text-pop-black" : "bg-pop-cardGreen lg:bg-transparent text-gray-400 hover:text-white hover:bg-white/5"}`}>
             <span className="material-symbols-outlined text-lg">{tab.icon}</span>{tab.label}
           </button>
         ))}
@@ -69,7 +69,7 @@ export default function AdminConfiguracionPage() {
 
       {activeTab === "general" && (
         <section className="space-y-8">
-          <div className="bg-[#1C1B1B] rounded-xl border border-white/5 overflow-hidden">
+          <div className="bg-pop-cardGreen rounded-xl border border-white/5 overflow-hidden">
             <div className="p-6 border-b border-white/5">
               <h2 className="text-xl font-black uppercase font-epilogue tracking-tighter text-white flex items-center gap-3"><span className="material-symbols-outlined text-pop-gold">tune</span>Configuración General</h2>
             </div>
@@ -94,7 +94,7 @@ export default function AdminConfiguracionPage() {
               </div>
             </div>
           </div>
-          <div className="bg-[#1C1B1B] rounded-xl border border-white/5 overflow-hidden">
+          <div className="bg-pop-cardGreen rounded-xl border border-white/5 overflow-hidden">
             <div className="p-6 border-b border-white/5">
               <h2 className="text-xl font-black uppercase font-epilogue tracking-tighter text-white flex items-center gap-3"><span className="material-symbols-outlined text-pop-gold">schedule</span>Horario de Operación</h2>
             </div>
@@ -117,7 +117,7 @@ export default function AdminConfiguracionPage() {
 
       {activeTab === "notificaciones" && (
         <section className="space-y-8">
-          <div className="bg-[#1C1B1B] rounded-xl border border-white/5 overflow-hidden">
+          <div className="bg-pop-cardGreen rounded-xl border border-white/5 overflow-hidden">
             <div className="p-6 border-b border-white/5">
               <h2 className="text-xl font-black uppercase font-epilogue tracking-tighter text-white flex items-center gap-3"><span className="material-symbols-outlined text-pop-gold">notifications</span>Preferencias de Notificación</h2>
             </div>
@@ -151,7 +151,7 @@ export default function AdminConfiguracionPage() {
 
       {activeTab === "apariencia" && (
         <section className="space-y-8">
-          <div className="bg-[#1C1B1B] rounded-xl border border-white/5 overflow-hidden">
+          <div className="bg-pop-cardGreen rounded-xl border border-white/5 overflow-hidden">
             <div className="p-6 border-b border-white/5">
               <h2 className="text-xl font-black uppercase font-epilogue tracking-tighter text-white flex items-center gap-3"><span className="material-symbols-outlined text-pop-gold">palette</span>Apariencia del Panel</h2>
             </div>
@@ -187,7 +187,7 @@ export default function AdminConfiguracionPage() {
 
       {activeTab === "seguridad" && (
         <section className="space-y-8">
-          <div className="bg-[#1C1B1B] rounded-xl border border-white/5 overflow-hidden">
+          <div className="bg-pop-cardGreen rounded-xl border border-white/5 overflow-hidden">
             <div className="p-6 border-b border-white/5">
               <h2 className="text-xl font-black uppercase font-epilogue tracking-tighter text-white flex items-center gap-3"><span className="material-symbols-outlined text-pop-gold">security</span>Seguridad</h2>
             </div>

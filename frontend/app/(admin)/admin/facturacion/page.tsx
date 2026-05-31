@@ -125,22 +125,22 @@ export default function AdminFacturacionPage() {
       </header>
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-        <article className="bg-[#1C1B1B] p-6 rounded-2xl border border-white/5 border-l-4 border-pop-gold">
+        <article className="bg-pop-cardGreen p-6 rounded-2xl border border-white/5 border-l-4 border-pop-gold">
           <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Total Solicitudes</p>
           <p className="text-3xl font-black text-white font-epilogue tracking-tighter">{requests.length}</p>
           <p className="text-[9px] text-pop-gold font-bold uppercase mt-2">Este mes</p>
         </article>
-        <article className="bg-[#1C1B1B] p-6 rounded-2xl border border-white/5 border-l-4 border-pop-orange">
+        <article className="bg-pop-cardGreen p-6 rounded-2xl border border-white/5 border-l-4 border-pop-orange">
           <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Pendientes</p>
           <p className="text-3xl font-black text-white font-epilogue tracking-tighter">{pendientes}</p>
           <p className="text-[9px] text-pop-orange font-bold uppercase mt-2">Acción Requerida</p>
         </article>
-        <article className="bg-[#1C1B1B] p-6 rounded-2xl border border-white/5 border-l-4 border-green-500">
+        <article className="bg-pop-cardGreen p-6 rounded-2xl border border-white/5 border-l-4 border-green-500">
           <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Completadas</p>
           <p className="text-3xl font-black text-white font-epilogue tracking-tighter">{completadas}</p>
           <p className="text-[9px] text-green-500 font-bold uppercase mt-2">Procesadas</p>
         </article>
-        <article className="bg-[#1C1B1B] p-6 rounded-2xl border border-white/5 border-l-4 border-red-500">
+        <article className="bg-pop-cardGreen p-6 rounded-2xl border border-white/5 border-l-4 border-red-500">
           <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Rechazadas</p>
           <p className="text-3xl font-black text-white font-epilogue tracking-tighter">{rechazadas}</p>
           <p className="text-[9px] text-red-500 font-bold uppercase mt-2">Revisión Urgente</p>
@@ -187,7 +187,7 @@ export default function AdminFacturacionPage() {
         </div>
       </div>
 
-      <section className="bg-[#1C1B1B] rounded-3xl border border-white/5 overflow-hidden mb-10">
+      <section className="bg-pop-cardGreen rounded-3xl border border-white/5 overflow-hidden mb-10">
         <header className="p-6 lg:p-8 border-b border-white/5 flex justify-between items-center">
           <h2 className="text-xl font-black text-white uppercase font-epilogue tracking-tighter">Solicitudes Recientes</h2>
         </header>
@@ -332,7 +332,7 @@ export default function AdminFacturacionPage() {
       {detailItem && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
           <div className="absolute inset-0 bg-pop-black/90 backdrop-blur-xl" onClick={() => setDetailItem(null)} />
-          <div className="relative bg-[#1C1B1B] border-t md:border border-white/10 w-full max-w-lg rounded-t-3xl md:rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300">
+          <div className="relative bg-pop-cardGreen border-t md:border border-white/10 w-full max-w-lg rounded-t-3xl md:rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300">
             <header className="p-6 border-b border-white/5 flex justify-between items-center">
               <div>
                 <h2 className="text-xl font-black uppercase font-epilogue tracking-tighter text-white">

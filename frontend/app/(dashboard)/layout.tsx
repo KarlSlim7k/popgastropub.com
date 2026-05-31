@@ -14,7 +14,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {children}
           </div>
           
-          <footer className="bg-[#1C1B1B] py-12 px-6 lg:px-12 border-t border-white/5 mt-auto hidden lg:block">
+          <footer className="bg-pop-darkGreen py-12 px-6 lg:px-12 border-t border-white/10 mt-auto hidden lg:block">
             <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
               <div className="text-center md:text-left">
                 <span className="text-pop-gold font-black text-2xl font-epilogue tracking-tighter">POP PEROTE</span>

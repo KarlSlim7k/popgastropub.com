@@ -47,7 +47,7 @@ export default function StaffConfiguracionPage() {
 
       {message && <div className="mb-6 p-4 rounded-xl text-sm font-bold bg-green-500/10 text-green-400">{message}</div>}
 
-      <section className="flex gap-2 mb-8 lg:bg-[#1C1B1B] lg:rounded-xl lg:p-1.5 lg:border lg:border-white/5 lg:w-fit">
+      <section className="flex gap-2 mb-8 lg:bg-pop-cardGreen lg:rounded-xl lg:p-1.5 lg:border lg:border-white/5 lg:w-fit">
         {tabs.map((tab) => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 px-5 py-3 text-sm font-bold uppercase tracking-wider rounded-lg whitespace-nowrap transition-all ${activeTab === tab.id ? "bg-pop-gold text-pop-black" : "text-gray-400 hover:text-white hover:bg-white/5"}`}>
             <span className="material-symbols-outlined text-lg">{tab.icon}</span>{tab.label}
@@ -56,7 +56,7 @@ export default function StaffConfiguracionPage() {
       </section>
 
       {activeTab === "notificaciones" && (
-        <div className="bg-[#1C1B1B] rounded-xl border border-white/5 divide-y divide-gray-800/50">
+        <div className="bg-pop-cardGreen rounded-xl border border-white/5 divide-y divide-gray-800/50">
           {[
             { key: "notif_pedidos", title: "Pedidos listos", desc: "Alerta cuando un pedido está listo para servir" },
             { key: "notif_reservas", title: "Nuevas reservas", desc: "Notificar cuando se asigne una nueva reserva" },
@@ -74,7 +74,7 @@ export default function StaffConfiguracionPage() {
       )}
 
       {activeTab === "apariencia" && (
-        <div className="bg-[#1C1B1B] rounded-xl border border-white/5 p-6">
+        <div className="bg-pop-cardGreen rounded-xl border border-white/5 p-6">
           <label className="text-[10px] uppercase font-bold text-gray-500 block mb-4">Tema</label>
           <div className="flex gap-3">
             {["dark", "light"].map((t) => (

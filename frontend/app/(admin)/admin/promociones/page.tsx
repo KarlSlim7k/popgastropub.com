@@ -159,7 +159,7 @@ export default function AdminPromocionesPage() {
         ].map((stat, index) => (
           <article
             key={index}
-            className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-6 border-l-4 border-pop-gold hover:border-pop-orange transition-all duration-500 hover:shadow-[0_0_30px_rgba(217,103,37,0.05)] group"
+            className="bg-pop-cardGreen backdrop-blur-sm rounded-xl p-6 border-l-4 border-pop-gold hover:border-pop-orange transition-all duration-500 hover:shadow-[0_0_30px_rgba(217,103,37,0.05)] group"
           >
             <div className="flex justify-between items-start mb-4">
               <div className="p-3 rounded-lg bg-white/5 group-hover:bg-pop-gold/10 transition-colors">
@@ -173,7 +173,7 @@ export default function AdminPromocionesPage() {
         ))}
       </section>
 
-      <section className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl p-6 lg:p-8 border border-white/5 mb-8">
+      <section className="bg-pop-cardGreen backdrop-blur-sm rounded-xl p-6 lg:p-8 border border-white/5 mb-8">
         <h2 className="text-xl font-black uppercase font-epilogue tracking-tighter text-white mb-6">Calendario Semanal de Promociones</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           {[
@@ -216,7 +216,7 @@ export default function AdminPromocionesPage() {
         ))}
       </section>
 
-      <section className="bg-[#1C1B1B] backdrop-blur-sm rounded-xl border border-white/5 overflow-hidden">
+      <section className="bg-pop-cardGreen backdrop-blur-sm rounded-xl border border-white/5 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full" role="table">
             <thead>
@@ -297,7 +297,7 @@ export default function AdminPromocionesPage() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeModal}>
-          <div className="bg-[#1C1B1B] border border-white/10 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-pop-cardGreen border border-white/10 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-white/5 flex justify-between items-center">
               <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white">
                 {editingPromo ? "Editar Promoción" : "Crear Promoción"}

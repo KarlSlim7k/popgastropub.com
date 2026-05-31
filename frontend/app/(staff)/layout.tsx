@@ -12,7 +12,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
     <RequireRole roles={['mesero', 'admin']}>
       <div className="min-h-screen bg-pop-black">
         {/* Mobile Header */}
-        <header className="lg:hidden fixed top-0 w-full bg-[#0D0D0D] border-b border-white/5 z-40 px-6 py-4 flex justify-between items-center">
+        <header className="lg:hidden fixed top-0 w-full bg-pop-darkGreen border-b border-white/10 z-40 px-6 py-4 flex justify-between items-center">
           <div className="flex flex-col">
             <span className="text-lg font-black text-pop-gold font-epilogue tracking-tighter leading-none">
               POP PEROTE
@@ -43,7 +43,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
             {children}
           </div>
           
-          <footer className="bg-[#1C1B1B] py-10 px-6 lg:px-10 border-t border-white/5 mt-10 hidden lg:block">
+          <footer className="bg-pop-darkGreen py-10 px-6 lg:px-10 border-t border-white/10 mt-10 hidden lg:block">
             <div className="flex flex-col md:flex-row justify-between items-center gap-8">
               <div className="text-center md:text-left">
                 <span className="text-pop-gold font-black text-2xl font-epilogue tracking-tighter">POP PEROTE</span>

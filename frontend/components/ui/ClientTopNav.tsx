@@ -23,7 +23,7 @@ export default function ClientTopNav() {
   }, []);
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-[#0D0D0D]/80 backdrop-blur-xl border-b border-white/5 z-50 px-6 lg:px-12 py-4 flex justify-between items-center">
+    <nav className="fixed top-0 left-0 w-full bg-pop-darkGreen/90 backdrop-blur-xl border-b border-white/10 z-50 px-6 lg:px-12 py-4 flex justify-between items-center">
       <Link href="/puntos" className="flex flex-col">
         <span className="text-xl font-black text-pop-gold font-epilogue tracking-tighter leading-none">
           POP PEROTE
@@ -60,7 +60,7 @@ export default function ClientTopNav() {
           </button>
 
           {showUserMenu && (
-            <div className="absolute top-12 right-0 w-56 bg-[#1C1B1B] border border-white/10 rounded-2xl shadow-2xl overflow-hidden py-3 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="absolute top-12 right-0 w-56 bg-pop-cardGreen border border-white/10 rounded-2xl shadow-2xl overflow-hidden py-3 animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="px-5 py-3 border-b border-white/5 mb-2">
                 <p className="text-xs font-black text-white uppercase">{userName}</p>
                 <p className="text-[10px] text-pop-orange font-bold uppercase mt-0.5">Membresía VIP</p>

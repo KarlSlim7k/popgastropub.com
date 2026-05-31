@@ -163,14 +163,14 @@ export default function RankingPage() {
               key={mesero.id}
               className={`${
                 isFirst
-                  ? 'order-1 lg:order-2 bg-[#1C1B1B] p-10 rounded-2xl border-t-8 border-pop-gold relative lg:-translate-y-8 ring-4 ring-pop-gold/10 scale-105 shadow-2xl shadow-pop-gold/5 group hover:bg-[#252424] transition-all'
-                  : `order-${visualRank} lg:order-${visualRank === 2 ? 1 : 3} bg-[#1C1B1B]/80 backdrop-blur-md p-8 rounded-2xl border-t-4 relative group hover:bg-[#252424] transition-all`
+                  ? 'order-1 lg:order-2 bg-pop-cardGreen p-10 rounded-2xl border-t-8 border-pop-gold relative lg:-translate-y-8 ring-4 ring-pop-gold/10 scale-105 shadow-2xl shadow-pop-gold/5 group hover:bg-[#252424] transition-all'
+                  : `order-${visualRank} lg:order-${visualRank === 2 ? 1 : 3} bg-pop-cardGreen/80 backdrop-blur-md p-8 rounded-2xl border-t-4 relative group hover:bg-[#252424] transition-all`
               }`}
               style={!isFirst ? { borderTopColor: style.border } : undefined}
             >
               <div
                 className={`absolute ${isFirst ? '-top-10 left-1/2 -translate-x-1/2 w-16 h-16 text-3xl shadow-[0_0_30px_rgba(242,199,119,0.3)]' : '-top-6 w-12 h-12 text-xl shadow-lg'} ${visualRank === 2 ? 'left-8' : visualRank === 3 ? 'right-8' : ''} rounded-full flex items-center justify-center font-black`}
-                style={{ backgroundColor: style.bg, color: style.text === 'pop-black' ? '#0D0D0D' : '#fff' }}
+                style={{ backgroundColor: style.bg, color: style.text === 'pop-black' ? '#234032' : '#fff' }}
               >
                 {visualRank}
               </div>
@@ -200,7 +200,7 @@ export default function RankingPage() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
         {/* Full Leaderboard */}
         <section className="xl:col-span-2">
-          <div className="bg-[#1C1B1B] overflow-hidden rounded-2xl border border-white/5">
+          <div className="bg-pop-cardGreen overflow-hidden rounded-2xl border border-white/5">
             <div className="p-8 border-b border-white/5">
               <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white">Tabla General</h2>
             </div>
@@ -262,7 +262,7 @@ export default function RankingPage() {
           </article>
 
           {/* Insignias Activas */}
-          <article className="bg-[#1C1B1B] p-8 rounded-2xl border border-white/5">
+          <article className="bg-pop-cardGreen p-8 rounded-2xl border border-white/5">
             <h3 className="text-lg font-black uppercase font-epilogue tracking-tighter text-white mb-8">Insignias del Mes</h3>
             <div className="grid grid-cols-2 gap-6">
               {[

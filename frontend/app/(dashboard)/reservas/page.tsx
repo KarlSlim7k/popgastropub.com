@@ -192,19 +192,19 @@ export default function ReservasPage() {
         <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest px-1">Próximas Visitas</h2>
 
         {loading ? (
-          <div className="bg-[#1C1B1B] p-12 rounded-3xl border border-dashed border-white/5 text-center">
+          <div className="bg-pop-cardGreen p-12 rounded-3xl border border-dashed border-white/5 text-center">
             <div className="w-8 h-8 border-2 border-pop-gold border-t-transparent rounded-full animate-spin mx-auto" />
             <p className="text-gray-500 font-black uppercase text-[10px] tracking-widest mt-4">Cargando reservas...</p>
           </div>
         ) : error ? (
-          <div className="bg-[#1C1B1B] p-12 rounded-3xl border border-dashed border-white/5 text-center space-y-4">
+          <div className="bg-pop-cardGreen p-12 rounded-3xl border border-dashed border-white/5 text-center space-y-4">
             <span className="material-symbols-outlined text-red-500 text-5xl">error</span>
             <p className="text-gray-500 font-black uppercase text-[10px] tracking-widest">{error}</p>
           </div>
         ) : activeReservations.length > 0 ? (
           <div className="grid grid-cols-1 gap-6">
             {activeReservations.map((res) => (
-              <article key={res.id} className="bg-[#1C1B1B] rounded-3xl overflow-hidden border border-white/5 group">
+              <article key={res.id} className="bg-pop-cardGreen rounded-3xl overflow-hidden border border-white/5 group">
                 <div className="flex flex-col lg:flex-row">
                   {/* Visual Context */}
                   <div className="lg:w-1/3 h-48 lg:h-auto overflow-hidden">
@@ -267,7 +267,7 @@ export default function ReservasPage() {
             ))}
           </div>
         ) : (
-          <div className="bg-[#1C1B1B] p-12 rounded-3xl border border-dashed border-white/5 text-center space-y-4">
+          <div className="bg-pop-cardGreen p-12 rounded-3xl border border-dashed border-white/5 text-center space-y-4">
             <span className="material-symbols-outlined text-gray-700 text-5xl">event_busy</span>
             <p className="text-gray-500 font-black uppercase text-[10px] tracking-widest">No tienes reservaciones activas</p>
           </div>
@@ -275,7 +275,7 @@ export default function ReservasPage() {
       </div>
 
       {/* Past Bookings Summary */}
-      <section className="bg-[#1C1B1B] p-8 lg:p-10 rounded-3xl border border-white/5">
+      <section className="bg-pop-cardGreen p-8 lg:p-10 rounded-3xl border border-white/5">
         <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-8">Historial de Visitas</h2>
         {pastReservations.length > 0 ? (
           <div className="space-y-4">
@@ -302,7 +302,7 @@ export default function ReservasPage() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-pop-black/80 backdrop-blur-sm">
-          <div className="bg-[#1C1B1B] rounded-3xl border border-white/10 w-full max-w-lg p-8 space-y-6 shadow-2xl">
+          <div className="bg-pop-cardGreen rounded-3xl border border-white/10 w-full max-w-lg p-8 space-y-6 shadow-2xl">
             <div className="flex justify-between items-start">
               <div>
                 <h2 className="text-2xl font-black text-white font-epilogue uppercase tracking-tighter">Nueva Reservación</h2>
