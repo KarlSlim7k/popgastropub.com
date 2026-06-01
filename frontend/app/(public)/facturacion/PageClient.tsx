@@ -435,7 +435,7 @@ export default function FacturacionPage() {
                 </div>
                 <div className="flex items-start gap-3">
                   <span className="material-symbols-outlined text-[#F2C166] text-base mt-0.5">mail</span>
-                  <p className="text-white/60 text-xs">facturacion@pop-perote.com</p>
+                  <p className="text-white/60 text-xs">facturacion@popgastropub.com</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <span className="material-symbols-outlined text-[#F2C166] text-base mt-0.5">schedule</span>
@@ -493,7 +493,7 @@ export default function FacturacionPage() {
           </div>
           <div className="flex gap-3 flex-shrink-0">
             <a
-              href="mailto:facturacion@pop-perote.com"
+              href="mailto:facturacion@popgastropub.com"
               className="flex items-center gap-2 border border-[#F2C166]/30 text-[#F2C166] hover:bg-[#F2C166]/10 font-black text-xs px-4 py-2.5 transition-colors"
             >
               <span className="material-symbols-outlined text-sm">mail</span>

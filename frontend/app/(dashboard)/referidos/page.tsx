@@ -17,10 +17,14 @@ export default function ReferidosPage() {
   const token = session?.token || "";
   const [data, setData] = useState<ReferralData | null>(null);
   const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!token) return;
-    fetchWithAuth<ReferralData>("/referidos", token).then(setData).catch(() => {});
+    fetchWithAuth<ReferralData>("/referidos", token)
+      .then(setData)
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [token]);
 
   const referralCode = data?.referral_code || "...";
@@ -43,6 +47,14 @@ export default function ReferidosPage() {
     setTimeout(() => setCopied(false), 2000);
     window.open("https://www.instagram.com/pop_perote/", "_blank");
   };
+
+  if (loading) {
+    return (
+      <main className="pt-24 lg:pt-32 p-4 lg:p-12 max-w-5xl mx-auto flex items-center justify-center min-h-[60vh]">
+        <div className="w-8 h-8 border-2 border-pop-gold border-t-transparent rounded-full animate-spin" />
+      </main>
+    );
+  }
 
   return (
     <main className="pt-24 lg:pt-32 p-4 lg:p-12 max-w-5xl mx-auto space-y-12">

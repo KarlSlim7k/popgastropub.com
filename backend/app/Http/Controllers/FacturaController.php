@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Factura;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -24,7 +25,7 @@ class FacturaController extends Controller
             'regimen_fiscal' => 'required|string',
             'codigo_postal' => 'required|string|max:5',
             'uso_cfdi' => 'required|string',
-            'email' => 'nullable|email|max:255',
+            'email' => 'required|email|max:255',
             'ticket' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
@@ -45,6 +46,9 @@ class FacturaController extends Controller
             'email' => $request->email,
             'estado' => 'recibida',
         ]);
+
+        // Send email to contadores with ticket and fiscal data
+        $this->sendToContadores($factura, $path);
 
         return response()->json($factura, 201);
     }
@@ -72,5 +76,33 @@ class FacturaController extends Controller
         return $download
             ? $disk->download($factura->ticket_path)
             : response()->file($disk->path($factura->ticket_path));
+    }
+
+    private function sendToContadores(Factura $factura, string $ticketPath): void
+    {
+        $disk = Storage::disk('public');
+        $fullPath = $disk->path($ticketPath);
+
+        Mail::raw($this->buildEmailBody($factura), function ($message) use ($factura, $fullPath) {
+            $message->to('facturacion@popgastropub.com')
+                ->subject("Solicitud de Factura - {$factura->rfc} - #{$factura->id}")
+                ->replyTo($factura->email, $factura->razon_social)
+                ->attach($fullPath);
+        });
+    }
+
+    private function buildEmailBody(Factura $factura): string
+    {
+        return "SOLICITUD DE FACTURA #{$factura->id}\n"
+            . "Fecha: " . now()->format('d/m/Y H:i') . "\n\n"
+            . "DATOS FISCALES:\n"
+            . "RFC: {$factura->rfc}\n"
+            . "Razón Social: {$factura->razon_social}\n"
+            . "Régimen Fiscal: {$factura->regimen_fiscal}\n"
+            . "Código Postal: {$factura->codigo_postal}\n"
+            . "Uso CFDI: {$factura->uso_cfdi}\n"
+            . "Email cliente: {$factura->email}\n\n"
+            . "El ticket de compra se adjunta a este correo.\n"
+            . "---\nEnviado desde POP Perote - Sistema de Facturación";
     }
 }

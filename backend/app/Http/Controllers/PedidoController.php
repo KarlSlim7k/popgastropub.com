@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LoyaltyTransaction;
 use App\Models\Pedido;
+use App\Models\Referral;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PedidoController extends Controller
 {
@@ -23,14 +27,60 @@ class PedidoController extends Controller
             'notas' => 'nullable|string',
         ]);
 
-        $puntosGanados = floor($validated['total'] / 10);
+        $puntosGanados = (int) floor($validated['total'] / 10);
 
-        $validated['puntos_ganados'] = $puntosGanados;
-        $validated['estado'] = 'pendiente';
-        $validated['user_id'] = $request->user()->id;
+        $pedido = DB::transaction(function () use ($request, $validated, $puntosGanados) {
+            $pedido = Pedido::create([
+                ...$validated,
+                'puntos_ganados' => $puntosGanados,
+                'estado' => 'pendiente',
+                'user_id' => $request->user()->id,
+            ]);
 
-        $pedido = Pedido::create($validated);
+            $user = User::whereKey($request->user()->id)->lockForUpdate()->firstOrFail();
+
+            if ($puntosGanados > 0) {
+                $user->increment('points', $puntosGanados);
+                LoyaltyTransaction::create([
+                    'user_id' => $user->id,
+                    'points' => $puntosGanados,
+                    'concept' => "Pedido #{$pedido->id} - \${$validated['total']} MXN",
+                ]);
+            }
+
+            $user->increment('orders_count');
+            $user->increment('total_spent', $validated['total']);
+
+            // Convert referral on first order
+            if ($user->orders_count <= 1) {
+                $this->convertReferral($user);
+            }
+
+            return $pedido;
+        });
 
         return response()->json($pedido, 201);
+    }
+
+    private function convertReferral(User $referredUser): void
+    {
+        $referral = Referral::where('referred_id', $referredUser->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if (!$referral) return;
+
+        $referral->update(['status' => 'converted', 'converted_at' => now()]);
+
+        // Award 200 pts to referrer
+        $referrer = User::whereKey($referral->referrer_id)->lockForUpdate()->first();
+        if ($referrer) {
+            $referrer->increment('points', 200);
+            LoyaltyTransaction::create([
+                'user_id' => $referrer->id,
+                'points' => 200,
+                'concept' => "Referido convertido: {$referredUser->name}",
+            ]);
+        }
     }
 }
