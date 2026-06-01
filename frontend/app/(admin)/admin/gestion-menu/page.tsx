@@ -54,8 +54,8 @@ export default function AdminGestionMenuPage() {
     if (!session) return;
     setLoading(true);
     try {
-      const data = await fetchWithAuth<MenuItem[]>("/admin/menu", session.token);
-      setMenuItems(data);
+      const data = await fetchWithAuth<any>("/admin/menu?all=true", session.token);
+      setMenuItems(Array.isArray(data) ? data : data.data ?? []);
     } catch {
       // error
     } finally {

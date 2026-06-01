@@ -47,8 +47,8 @@ export default function AdminPromocionesPage() {
     if (!session) return;
     setLoading(true);
     try {
-      const data = await fetchWithAuth<Promo[]>("/admin/promociones", session.token);
-      setPromos(data);
+      const data = await fetchWithAuth<any>("/admin/promociones?all=true", session.token);
+      setPromos(Array.isArray(data) ? data : data.data ?? []);
     } catch {
       // error
     } finally {
