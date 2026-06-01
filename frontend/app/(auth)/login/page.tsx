@@ -4,7 +4,7 @@ import React, { FormEvent, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { fetchAPI, fetchWithAuth } from '@/lib/api';
+import { fetchAPI, fetchWithAuth, APIError } from '@/lib/api';
 import { getRoleDashboard, saveAuthSession } from '@/lib/auth-session';
 import { useAuth } from '@/lib/auth-provider';
 
@@ -131,6 +131,7 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState<AuthTab | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
   const [statusSuccess, setStatusSuccess] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [socialAvailability, setSocialAvailability] = useState<Record<SocialProvider, boolean>>({
     google: true,
     facebook: true,
@@ -238,6 +239,7 @@ export default function Login() {
     event.preventDefault();
     setStatusError(null);
     setStatusSuccess(null);
+    setFieldErrors({});
     setIsSubmitting('login');
 
     try {
@@ -254,7 +256,16 @@ export default function Login() {
       refreshSession();
       redirectAfterAuth(response.user.role);
     } catch (error) {
-      setStatusError(getErrorMessage(error));
+      if (error instanceof APIError && error.status === 422) {
+        const mapped: Record<string, string> = {};
+        for (const [key, messages] of Object.entries(error.errors)) {
+          mapped[key] = messages[0];
+        }
+        setFieldErrors(mapped);
+        setStatusError(error.getAllMessages());
+      } else {
+        setStatusError(getErrorMessage(error));
+      }
     } finally {
       setIsSubmitting(null);
     }
@@ -264,6 +275,7 @@ export default function Login() {
     event.preventDefault();
     setStatusError(null);
     setStatusSuccess(null);
+    setFieldErrors({});
 
     if (!registerForm.termsAccepted) {
       setStatusError('Debes aceptar términos y política de privacidad para continuar.');
@@ -297,7 +309,16 @@ export default function Login() {
       refreshSession();
       redirectAfterAuth(response.user.role);
     } catch (error) {
-      setStatusError(getErrorMessage(error));
+      if (error instanceof APIError && error.status === 422) {
+        const mapped: Record<string, string> = {};
+        for (const [key, messages] of Object.entries(error.errors)) {
+          mapped[key] = messages[0];
+        }
+        setFieldErrors(mapped);
+        setStatusError(error.getAllMessages());
+      } else {
+        setStatusError(getErrorMessage(error));
+      }
     } finally {
       setIsSubmitting(null);
     }
@@ -396,6 +417,7 @@ export default function Login() {
                 onClick={() => {
                   setStatusError(null);
                   setStatusSuccess(null);
+                  setFieldErrors({});
                   setActiveTab('login');
                 }}
                 className={`font-headline font-bold text-sm uppercase tracking-widest pb-3 border-b-2 transition-all duration-300 ${activeTab === 'login' ? 'border-primary-container text-primary-container' : 'border-transparent text-on-surface/50 hover:text-on-surface'}`}
@@ -407,6 +429,7 @@ export default function Login() {
                 onClick={() => {
                   setStatusError(null);
                   setStatusSuccess(null);
+                  setFieldErrors({});
                   setActiveTab('register');
                 }}
                 className={`font-headline font-bold text-sm uppercase tracking-widest pb-3 border-b-2 transition-all duration-300 ${activeTab === 'register' ? 'border-primary-container text-primary-container' : 'border-transparent text-on-surface/50 hover:text-on-surface'}`}
@@ -503,7 +526,7 @@ export default function Login() {
                         Nombre Completo
                       </label>
                       <input
-                        className="w-full bg-transparent border-0 border-b border-outline-variant py-2 px-0 focus:ring-0 focus:border-secondary transition-colors duration-300 text-on-surface"
+                        className={`w-full bg-transparent border-0 border-b py-2 px-0 focus:ring-0 transition-colors duration-300 text-on-surface ${fieldErrors.name ? 'border-red-400 focus:border-red-400' : 'border-outline-variant focus:border-secondary'}`}
                         type="text"
                         required
                         maxLength={100}
@@ -518,13 +541,14 @@ export default function Login() {
                           }))
                         }
                       />
+                      {fieldErrors.name && <p className="text-[10px] text-red-400 mt-1">{fieldErrors.name}</p>}
                     </div>
                     <div>
                       <label className="block font-headline text-[10px] uppercase tracking-widest text-primary mb-1">
                         Teléfono
                       </label>
                       <input
-                        className="w-full bg-transparent border-0 border-b border-outline-variant py-2 px-0 focus:ring-0 focus:border-secondary transition-colors duration-300 text-on-surface"
+                        className={`w-full bg-transparent border-0 border-b py-2 px-0 focus:ring-0 transition-colors duration-300 text-on-surface ${fieldErrors.phone ? 'border-red-400 focus:border-red-400' : 'border-outline-variant focus:border-secondary'}`}
                         type="tel"
                         required
                         autoComplete="tel"
@@ -539,13 +563,14 @@ export default function Login() {
                           }))
                         }
                       />
+                      {fieldErrors.phone && <p className="text-[10px] text-red-400 mt-1">{fieldErrors.phone}</p>}
                     </div>
                   </div>
 
                   <div>
                     <label className="block font-headline text-[10px] uppercase tracking-widest text-primary mb-1">Email</label>
                     <input
-                      className="w-full bg-transparent border-0 border-b border-outline-variant py-2 px-0 focus:ring-0 focus:border-secondary transition-colors duration-300 text-on-surface"
+                      className={`w-full bg-transparent border-0 border-b py-2 px-0 focus:ring-0 transition-colors duration-300 text-on-surface ${fieldErrors.email ? 'border-red-400 focus:border-red-400' : 'border-outline-variant focus:border-secondary'}`}
                       type="email"
                       required
                       autoComplete="email"
@@ -558,6 +583,7 @@ export default function Login() {
                         }))
                       }
                     />
+                    {fieldErrors.email && <p className="text-[10px] text-red-400 mt-1">{fieldErrors.email}</p>}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -566,7 +592,7 @@ export default function Login() {
                         Fecha Nacimiento
                       </label>
                       <input
-                        className="w-full bg-transparent border-0 border-b border-outline-variant py-2 px-0 focus:ring-0 focus:border-secondary transition-colors duration-300 text-on-surface"
+                        className={`w-full bg-transparent border-0 border-b py-2 px-0 focus:ring-0 transition-colors duration-300 text-on-surface ${fieldErrors.birth_date ? 'border-red-400 focus:border-red-400' : 'border-outline-variant focus:border-secondary'}`}
                         type="date"
                         max={new Date().toISOString().split('T')[0]}
                         value={registerForm.birthDate}
@@ -577,13 +603,14 @@ export default function Login() {
                           }))
                         }
                       />
+                      {fieldErrors.birth_date && <p className="text-[10px] text-red-400 mt-1">{fieldErrors.birth_date}</p>}
                     </div>
                     <div>
                       <label className="block font-headline text-[10px] uppercase tracking-widest text-primary mb-1">
                         Contraseña
                       </label>
                       <input
-                        className="w-full bg-transparent border-0 border-b border-outline-variant py-2 px-0 focus:ring-0 focus:border-secondary transition-colors duration-300 text-on-surface"
+                        className={`w-full bg-transparent border-0 border-b py-2 px-0 focus:ring-0 transition-colors duration-300 text-on-surface ${fieldErrors.password ? 'border-red-400 focus:border-red-400' : 'border-outline-variant focus:border-secondary'}`}
                         type="password"
                         required
                         autoComplete="new-password"
@@ -598,6 +625,7 @@ export default function Login() {
                           }))
                         }
                       />
+                      {fieldErrors.password && <p className="text-[10px] text-red-400 mt-1">{fieldErrors.password}</p>}
                     </div>
                   </div>
 
@@ -606,7 +634,7 @@ export default function Login() {
                       Confirmar Contraseña
                     </label>
                     <input
-                      className="w-full bg-transparent border-0 border-b border-outline-variant py-2 px-0 focus:ring-0 focus:border-secondary transition-colors duration-300 text-on-surface"
+                      className={`w-full bg-transparent border-0 border-b py-2 px-0 focus:ring-0 transition-colors duration-300 text-on-surface ${fieldErrors.password_confirmation ? 'border-red-400 focus:border-red-400' : 'border-outline-variant focus:border-secondary'}`}
                       type="password"
                       required
                       autoComplete="new-password"
@@ -620,6 +648,7 @@ export default function Login() {
                         }))
                       }
                     />
+                    {fieldErrors.password_confirmation && <p className="text-[10px] text-red-400 mt-1">{fieldErrors.password_confirmation}</p>}
                   </div>
 
                   <div>

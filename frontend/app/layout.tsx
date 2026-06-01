@@ -10,6 +10,11 @@ export const metadata: Metadata = {
   title: 'POP Perote | Sushi, Wings & Más',
   description: 'El mejor sushi en Perote, Veracruz. Justo Sierra No. 11, Col. Amado Nervo. Ordena ahora.',
   keywords: 'sushi, perote, veracruz, wings, restaurante, pop perote',
+  icons: {
+    icon: '/images/logopop.png',
+    shortcut: '/images/logopop.png',
+    apple: '/images/logopop.png',
+  },
 }
 
 export default function RootLayout({

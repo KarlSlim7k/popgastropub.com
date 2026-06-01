@@ -23,7 +23,7 @@ class AuthController extends Controller
             'email' => Str::lower(trim((string) $request->input('email'))),
             'password' => (string) $request->input('password'),
             'password_confirmation' => (string) $request->input('password_confirmation'),
-            'phone' => preg_replace('/\D+/', '', (string) $request->input('phone', '')),
+            'phone' => preg_replace('/\D+/', '', (string) $request->input('phone', '')) ?: null,
             'birth_date' => $request->input('birth_date'),
             'terms_accepted' => $request->boolean('terms_accepted'),
         ];

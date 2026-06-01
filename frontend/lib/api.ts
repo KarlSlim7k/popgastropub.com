@@ -4,6 +4,30 @@ interface FetchOptions extends RequestInit {
   params?: Record<string, string>
 }
 
+export class APIError extends Error {
+  status: number
+  errors: Record<string, string[]>
+
+  constructor(message: string, status: number, errors: Record<string, string[]> = {}) {
+    super(message)
+    this.name = 'APIError'
+    this.status = status
+    this.errors = errors
+  }
+
+  getFieldError(field: string): string | undefined {
+    return this.errors[field]?.[0]
+  }
+
+  getAllMessages(): string {
+    const fieldMessages = Object.values(this.errors).flat()
+    if (fieldMessages.length > 0) {
+      return fieldMessages.join('. ')
+    }
+    return this.message
+  }
+}
+
 export async function fetchAPI<T>(
   endpoint: string,
   options: FetchOptions = {}
@@ -31,8 +55,12 @@ export async function fetchAPI<T>(
   })
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Error desconocido' }))
-    throw new Error(error.message || `Error ${response.status}: ${response.statusText}`)
+    const body = await response.json().catch(() => ({ message: 'Error desconocido' }))
+    throw new APIError(
+      body.message || `Error ${response.status}: ${response.statusText}`,
+      response.status,
+      body.errors ?? {}
+    )
   }
 
   return response.json()
