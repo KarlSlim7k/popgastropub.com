@@ -31,6 +31,12 @@ export default function StaffConfiguracionPage() {
 
   const toggle = (key: string) => setSettings((prev) => ({ ...prev, [key]: prev[key] === "true" ? "false" : "true" }));
 
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', settings.tema);
+    document.documentElement.classList.toggle('dark', settings.tema === 'dark');
+  }, [settings.tema]);
+
   const tabs = [
     { id: "notificaciones" as const, label: "Notificaciones", icon: "notifications" },
     { id: "apariencia" as const, label: "Apariencia", icon: "palette" },

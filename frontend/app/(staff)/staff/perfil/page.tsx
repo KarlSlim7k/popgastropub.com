@@ -38,7 +38,8 @@ export default function StaffPerfilPage() {
 
   const handlePassword = async () => {
     if (!session?.token) return;
-    if (pwForm.password !== pwForm.password_confirmation) { setMessage("Las contraseñas no coinciden"); return; }
+    if (pwForm.password.length < 8) { setMessage("La contraseña debe tener al menos 8 caracteres"); setTimeout(() => setMessage(""), 3000); return; }
+    if (pwForm.password !== pwForm.password_confirmation) { setMessage("Las contraseñas no coinciden"); setTimeout(() => setMessage(""), 3000); return; }
     setSaving(true);
     try {
       await fetchWithAuth("/auth/password", session.token, { method: "PUT", body: JSON.stringify(pwForm) });
@@ -77,7 +78,7 @@ export default function StaffPerfilPage() {
           <div className="text-center sm:text-left">
             <h2 className="text-2xl font-black text-white font-epilogue">{userName}</h2>
             <p className="text-sm text-gray-400 mt-1">{form.email}</p>
-            <span className="inline-block mt-2 bg-pop-gold/10 text-pop-gold text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Staff</span>
+            <span className="inline-block mt-2 bg-pop-gold/10 text-pop-gold text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">{session?.user?.role === 'admin' ? 'Admin' : 'Staff'}</span>
           </div>
         </div>
         <div className="p-6 lg:p-8">

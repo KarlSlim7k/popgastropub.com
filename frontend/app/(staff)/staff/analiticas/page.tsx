@@ -24,11 +24,15 @@ export default function StaffAnalyticsPage() {
   const { session } = useAuth();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [tickets, setTickets] = useState<TicketItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!session?.token) return;
-    fetchWithAuth<AnalyticsData>('/staff/analytics', session.token).then(setData).catch(() => {});
-    fetchWithAuth<TicketItem[]>('/staff/tickets', session.token).then(setTickets).catch(() => {});
+    setLoading(true);
+    Promise.all([
+      fetchWithAuth<AnalyticsData>('/staff/analytics', session.token).then(setData).catch(() => {}),
+      fetchWithAuth<TicketItem[]>('/staff/tickets', session.token).then(setTickets).catch(() => {}),
+    ]).finally(() => setLoading(false));
   }, [session?.token]);
 
   const categorias = data?.categorias || [];
@@ -46,6 +50,12 @@ export default function StaffAnalyticsPage() {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
+        {loading ? (
+          <div className="lg:col-span-4 flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-2 border-pop-gold border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : (
+        <>
         <section className="lg:col-span-3 space-y-8">
           {/* Points by Category Chart */}
           <article className="bg-pop-cardGreen p-8 rounded-xl border border-white/5 min-h-[400px] flex flex-col">
@@ -169,6 +179,8 @@ export default function StaffAnalyticsPage() {
             </div>
           </article>
         </aside>
+        </>
+        )}
       </div>
     </main>
   );
