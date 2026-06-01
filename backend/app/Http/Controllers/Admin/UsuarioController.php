@@ -46,6 +46,9 @@ class UsuarioController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8',
             'role' => 'required|in:cliente,mesero,admin',
+            'phone' => 'nullable|string|max:20',
+            'rfc' => 'nullable|string|max:13',
+            'status' => 'nullable|in:activo,inactivo,pendiente',
         ]);
 
         $user = DB::transaction(function () use ($request) {
@@ -77,8 +80,14 @@ class UsuarioController extends Controller
         $user = User::findOrFail($id);
 
         $request->validate([
+            'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|unique:users,email,' . $id,
             'role' => 'sometimes|in:cliente,mesero,admin',
+            'phone' => 'nullable|string|max:20',
+            'rfc' => 'nullable|string|max:13',
+            'status' => 'sometimes|in:activo,inactivo,pendiente',
+            'points' => 'sometimes|integer|min:0',
+            'password' => 'nullable|string|min:8',
         ]);
 
         $data = [];

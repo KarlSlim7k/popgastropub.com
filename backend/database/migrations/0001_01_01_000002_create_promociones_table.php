@@ -12,10 +12,10 @@ return new class extends Migration
             $table->id();
             $table->string('titulo');
             $table->text('descripcion')->nullable();
-            $table->decimal('precio_original', 10, 2);
-            $table->decimal('precio_promo', 10, 2);
-            $table->string('dia_inicio');
-            $table->string('dia_fin');
+            $table->decimal('precio_original', 10, 2)->nullable();
+            $table->decimal('precio_promo', 10, 2)->nullable();
+            $table->string('dia_inicio')->nullable();
+            $table->string('dia_fin')->nullable();
             $table->string('imagen')->nullable();
             $table->boolean('activa')->default(true);
             $table->timestamps();

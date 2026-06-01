@@ -27,7 +27,10 @@ class RankingPeriodController extends Controller
 
     public function rotate(Request $request)
     {
-        $type = $request->input('type', 'monthly');
+        $validated = $request->validate([
+            'type' => 'nullable|in:weekly,monthly',
+        ]);
+        $type = $validated['type'] ?? 'monthly';
         Artisan::call('ranking:rotate', ['type' => $type]);
 
         return response()->json(['message' => 'Periodo rotado exitosamente']);
@@ -40,7 +43,7 @@ class RankingPeriodController extends Controller
             'multiplier' => 'required|numeric|min:1|max:3',
         ]);
 
-        if ($validated['mesero_id']) {
+        if (! empty($validated['mesero_id'])) {
             Mesero::where('id', $validated['mesero_id'])->update(['point_multiplier' => $validated['multiplier']]);
         } else {
             // Apply to all active meseros (e.g., "drink of the month" 2x for everyone)

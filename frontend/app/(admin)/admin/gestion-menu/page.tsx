@@ -8,12 +8,14 @@ import { ImageUpload } from "@/components/ui/ImageUpload";
 interface MenuItem {
   id: string | number;
   name: string;
+  description: string;
   category: string;
   price: number;
   cost: number;
   stock: number;
   status: "available" | "low" | "out";
   active: boolean;
+  featured: boolean;
   image: string;
   orders: number;
   rating: number;
@@ -35,12 +37,14 @@ export default function AdminGestionMenuPage() {
 
   const [form, setForm] = useState<Partial<MenuItem>>({
     name: "",
+    description: "",
     category: "Sushi",
     price: 0,
     cost: 0,
     stock: 100,
     status: "available",
     active: true,
+    featured: false,
     image: "",
     orders: 0,
     rating: 0,
@@ -77,12 +81,14 @@ export default function AdminGestionMenuPage() {
     setEditingItem(null);
     setForm({
       name: "",
+      description: "",
       category: "Sushi",
       price: 0,
       cost: 0,
       stock: 100,
       status: "available",
       active: true,
+      featured: false,
       image: "",
       orders: 0,
       rating: 0,
@@ -113,8 +119,8 @@ export default function AdminGestionMenuPage() {
       }
       closeModal();
       fetchMenu();
-    } catch {
-      alert("Error al guardar");
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Error al guardar");
     }
   };
 
@@ -181,7 +187,7 @@ export default function AdminGestionMenuPage() {
           <p className="text-2xl font-black text-green-400">
             {menuItems.length
               ? Math.round(
-                  menuItems.reduce((acc, i) => acc + ((i.price - i.cost) / i.price) * 100, 0) / menuItems.length
+                  menuItems.reduce((acc, i) => acc + (i.price > 0 ? ((i.price - i.cost) / i.price) * 100 : 0), 0) / menuItems.length
                 )
               : 0}
             %
@@ -360,6 +366,16 @@ export default function AdminGestionMenuPage() {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Descripción</label>
+                <textarea
+                  rows={3}
+                  value={form.description || ""}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none resize-none"
+                />
+              </div>
+
               <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 <div className="space-y-2 col-span-1">
                   <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Precio ($)</label>
@@ -458,6 +474,18 @@ export default function AdminGestionMenuPage() {
                   checked={!!form.hasPromo}
                   onChange={(e) => setForm({ ...form, hasPromo: e.target.checked })}
                   className="w-6 h-6 accent-pop-orange"
+                />
+              </div>
+              <div className="p-5 bg-pop-gold/5 border border-pop-gold/10 rounded-2xl flex items-center justify-between">
+                <div>
+                  <h4 className="text-white font-bold text-sm">Mostrar como destacado</h4>
+                  <p className="text-[8px] text-pop-gold uppercase tracking-widest font-black">Visible en la portada pública</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={!!form.featured}
+                  onChange={(e) => setForm({ ...form, featured: e.target.checked })}
+                  className="w-6 h-6 accent-pop-gold"
                 />
               </div>
               {form.hasPromo && (

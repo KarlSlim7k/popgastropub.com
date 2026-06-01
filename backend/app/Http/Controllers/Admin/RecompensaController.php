@@ -18,8 +18,8 @@ class RecompensaController extends Controller
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
-            'puntos_requeridos' => 'required|integer|min:0',
-            'imagen' => 'nullable|string|max:255',
+            'puntos_requeridos' => 'required|integer|min:1',
+            'imagen' => 'nullable|string|max:500',
             'disponible' => 'boolean',
             'categoria' => 'nullable|string|max:100',
             'tier' => 'nullable|in:fan,lover,vip,elite',
@@ -44,8 +44,8 @@ class RecompensaController extends Controller
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
-            'puntos_requeridos' => 'required|integer|min:0',
-            'imagen' => 'nullable|string|max:255',
+            'puntos_requeridos' => 'required|integer|min:1',
+            'imagen' => 'nullable|string|max:500',
             'disponible' => 'boolean',
             'categoria' => 'nullable|string|max:100',
             'tier' => 'nullable|in:fan,lover,vip,elite',

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Promocion;
-use Illuminate\Http\Request;
 
 class PromocionController extends Controller
 {
@@ -11,8 +10,17 @@ class PromocionController extends Controller
     {
         $promociones = Promocion::where('activa', true)
             ->orderBy('dia_inicio')
-            ->get();
+            ->get()
+            ->filter(fn(Promocion $promo) => $promo->isWithinDateWindow(today()))
+            ->values()
+            ->map(function (Promocion $promo) {
+                $data = $promo->toArray();
+                $data['dias_activos'] = $promo->activeDays();
+                $data['disponible_hoy'] = $promo->isAvailableOn(today());
 
-        return response()->json($promociones);
+                return $data;
+            });
+
+        return response()->json(['data' => $promociones]);
     }
 }

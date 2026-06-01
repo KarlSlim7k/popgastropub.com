@@ -12,6 +12,7 @@ use App\Http\Controllers\UbicacionController;
 use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\PedidoController;
 use App\Http\Controllers\RecompensaController;
+use App\Http\Controllers\PublicImageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +23,7 @@ use App\Http\Controllers\RecompensaController;
 Route::get('/menu', [MenuController::class, 'index']);
 Route::get('/menu/{id}', [MenuController::class, 'show']);
 Route::get('/promociones', [PromocionController::class, 'index']);
+Route::get('/storage/{path}', [PublicImageController::class, 'show'])->where('path', '.*');
 Route::get('/ubicacion', [UbicacionController::class, 'show']);
 Route::get('/tickets/validate', [\App\Http\Controllers\TicketRedeemController::class, 'validate']);
 

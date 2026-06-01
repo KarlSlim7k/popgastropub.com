@@ -9,18 +9,40 @@ interface Promo {
   id: string;
   name: string;
   description: string;
-  type: "descuento" | "2x1" | "combo" | "happy_hour" | "evento";
+  type: "descuento" | "2x1" | "combo" | "happy_hour" | "evento" | "puntos" | "regalo" | "especial";
   discount: string;
   startDate: string;
   endDate: string;
-  daysActive: string;
-  status: "activa" | "proxima" | "expirada" | "pausada";
+  daysActive: string[];
+  indefinite: boolean;
+  status: "activa" | "pausada" | "finalizada";
   redemptions: number;
   target: number;
   revenue: string;
   image: string;
   imageAlt: string;
 }
+
+const DAYS = [
+  { value: "lunes", label: "Lun" },
+  { value: "martes", label: "Mar" },
+  { value: "miercoles", label: "Mié" },
+  { value: "jueves", label: "Jue" },
+  { value: "viernes", label: "Vie" },
+  { value: "sabado", label: "Sáb" },
+  { value: "domingo", label: "Dom" },
+];
+const ALL_DAYS = DAYS.map((day) => day.value);
+const TYPE_LABELS: Record<Promo["type"], string> = {
+  descuento: "Descuento",
+  "2x1": "2x1",
+  combo: "Combo",
+  happy_hour: "Happy Hour",
+  evento: "Evento Especial",
+  puntos: "Puntos",
+  regalo: "Regalo",
+  especial: "Especial",
+};
 
 export default function AdminPromocionesPage() {
   const [filterStatus, setFilterStatus] = useState("todas");
@@ -36,7 +58,8 @@ export default function AdminPromocionesPage() {
     discount: "",
     startDate: "",
     endDate: "",
-    daysActive: "",
+    daysActive: ALL_DAYS,
+    indefinite: false,
     status: "activa",
     target: 0,
     image: "",
@@ -62,7 +85,7 @@ export default function AdminPromocionesPage() {
 
   const openCreate = () => {
     setEditingPromo(null);
-    setForm({ name: "", description: "", type: "descuento", discount: "", startDate: "", endDate: "", daysActive: "", status: "activa", target: 0, image: "" });
+    setForm({ name: "", description: "", type: "descuento", discount: "", startDate: "", endDate: "", daysActive: ALL_DAYS, indefinite: false, status: "activa", target: 0, image: "" });
     setShowModal(true);
   };
 
@@ -86,8 +109,8 @@ export default function AdminPromocionesPage() {
       }
       closeModal();
       fetchPromos();
-    } catch {
-      alert("Error al guardar promoción");
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Error al guardar promoción");
     }
   };
 
@@ -111,11 +134,10 @@ export default function AdminPromocionesPage() {
   const getStatusBadge = (status: Promo["status"]) => {
     const styles = {
       activa: "bg-pop-gold/10 text-pop-gold",
-      proxima: "bg-blue-500/10 text-blue-400",
-      expirada: "bg-red-500/10 text-red-500",
       pausada: "bg-gray-600/10 text-gray-400",
+      finalizada: "bg-red-500/10 text-red-500",
     };
-    const labels = { activa: "Activa", proxima: "Próxima", expirada: "Expirada", pausada: "Pausada" };
+    const labels = { activa: "Activa", pausada: "Pausada", finalizada: "Finalizada" };
     return (
       <span className={`text-[10px] font-bold px-2.5 py-1 rounded uppercase tracking-wider ${styles[status]}`}>
         {labels[status]}
@@ -124,19 +146,17 @@ export default function AdminPromocionesPage() {
   };
 
   const getTypeBadge = (type: Promo["type"]) => {
-    const labels = { descuento: "Descuento", "2x1": "2x1", combo: "Combo", happy_hour: "Happy Hour", evento: "Evento" };
-    return <span className="bg-gray-800 px-2.5 py-1 text-xs font-medium text-gray-300 rounded-md">{labels[type]}</span>;
+    return <span className="bg-gray-800 px-2.5 py-1 text-xs font-medium text-gray-300 rounded-md">{TYPE_LABELS[type]}</span>;
   };
 
   const activeCount = promos.filter((p) => p.status === "activa").length;
   const totalRedemptions = promos.reduce((acc, p) => acc + (p.redemptions || 0), 0);
 
   // Build weekly calendar from real promo data
-  const DAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
   const calendarDays = DAYS.map((day) => ({
     day,
     promos: promos
-      .filter((p) => p.status === "activa" && p.daysActive && p.daysActive.toLowerCase().includes(day.toLowerCase()))
+      .filter((p) => p.status === "activa" && p.daysActive.includes(day.value))
       .map((p) => p.name),
   }));
 
@@ -165,7 +185,7 @@ export default function AdminPromocionesPage() {
           { label: "Promociones Activas", value: String(activeCount), icon: "local_offer", color: "pop-gold", sublabel: `De ${promos.length} totales` },
           { label: "Redenciones del Mes", value: totalRedemptions.toLocaleString(), icon: "redeem", color: "pop-orange", sublabel: "Acumulado" },
           { label: "Ingreso por Promos", value: `${totalRedemptions} canjes`, icon: "payments", color: "pop-light-gold", sublabel: "Total acumulado" },
-          { label: "Próximas a Expirar", value: String(promos.filter((p) => p.status === "proxima").length), icon: "schedule", color: "error", sublabel: "Esta semana" },
+          { label: "Recurrentes Indefinidas", value: String(promos.filter((p) => p.indefinite).length), icon: "event_repeat", color: "error", sublabel: "Sin fecha límite" },
         ].map((stat, index) => (
           <article
             key={index}
@@ -193,7 +213,7 @@ export default function AdminPromocionesPage() {
                 day.promos.length > 0 ? "bg-pop-gold/5 border-pop-gold/20 hover:bg-pop-gold/10" : "bg-gray-800/30 border-gray-700/30 opacity-60"
               }`}
             >
-              <p className="text-xs font-bold text-pop-gold uppercase tracking-wider mb-3">{day.day}</p>
+              <p className="text-xs font-bold text-pop-gold uppercase tracking-wider mb-3">{day.day.label}</p>
               <div className="space-y-1.5">
                 {day.promos.length > 0 ? day.promos.map((name, pIdx) => (
                   <span key={pIdx} className="block text-[10px] bg-pop-orange/10 text-pop-orange px-2 py-1 rounded font-medium truncate">{name}</span>
@@ -207,7 +227,7 @@ export default function AdminPromocionesPage() {
       </section>
 
       <section className="flex flex-wrap gap-2 mb-6">
-        {["todas", "activa", "proxima", "pausada", "expirada"].map((status) => (
+        {["todas", "activa", "pausada", "finalizada"].map((status) => (
           <button
             key={status}
             onClick={() => setFilterStatus(status)}
@@ -243,7 +263,7 @@ export default function AdminPromocionesPage() {
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-4">
                         <div className="w-16 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800">
-                          <img className="w-full h-full object-cover" src={promo.image} alt={promo.imageAlt || promo.name} loading="lazy" />
+                          {promo.image ? <img className="w-full h-full object-cover" src={promo.image} alt={promo.imageAlt || promo.name} loading="lazy" /> : <div className="w-full h-full bg-pop-gold/10" />}
                         </div>
                         <div>
                           <p className="font-semibold text-white text-sm">{promo.name}</p>
@@ -254,10 +274,9 @@ export default function AdminPromocionesPage() {
                     <td className="py-4">{getTypeBadge(promo.type)}</td>
                     <td className="py-4 font-mono font-bold text-pop-gold text-sm">{promo.discount}</td>
                     <td className="py-4 text-xs text-gray-400">
-                      <p>{promo.startDate}</p>
-                      <p className="text-gray-600">{promo.endDate}</p>
+                      {promo.indefinite ? <p>Indefinida</p> : <><p>{promo.startDate}</p><p className="text-gray-600">{promo.endDate}</p></>}
                     </td>
-                    <td className="py-4 text-xs text-gray-300 font-medium">{promo.daysActive}</td>
+                    <td className="py-4 text-xs text-gray-300 font-medium">{promo.daysActive.map((day) => DAYS.find((option) => option.value === day)?.label || day).join(", ")}</td>
                     <td className="py-4">
                       <div className="w-24">
                         <div className="flex justify-between text-[10px] text-gray-500 mb-1">
@@ -334,6 +353,9 @@ export default function AdminPromocionesPage() {
                     <option value="combo">Combo</option>
                     <option value="happy_hour">Happy Hour</option>
                     <option value="evento">Evento Especial</option>
+                    <option value="puntos">Puntos</option>
+                    <option value="regalo">Regalo</option>
+                    <option value="especial">Especial</option>
                   </select>
                 </div>
                 <div>
@@ -357,35 +379,57 @@ export default function AdminPromocionesPage() {
                   className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all resize-none"
                 />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Fecha de Inicio</label>
-                  <input
-                    type="date"
-                    value={form.startDate || ""}
-                    onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                    className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-pop-gold/50 transition-all"
-                  />
+              <label className="flex items-start gap-3 rounded-lg border border-pop-gold/20 bg-pop-gold/5 p-4 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={!!form.indefinite}
+                  onChange={(e) => setForm({ ...form, indefinite: e.target.checked, startDate: e.target.checked ? "" : form.startDate, endDate: e.target.checked ? "" : form.endDate })}
+                  className="mt-0.5 w-4 h-4 accent-pop-gold"
+                />
+                <span>
+                  <span className="block text-sm font-bold text-white">Promoción recurrente indefinida</span>
+                  <span className="block text-xs text-gray-400 mt-1">Se activa cada semana en los días seleccionados sin solicitar un rango de fechas.</span>
+                </span>
+              </label>
+              {!form.indefinite && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Fecha de Inicio</label>
+                    <input
+                      type="date"
+                      value={form.startDate || ""}
+                      onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                      className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-pop-gold/50 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Fecha de Fin</label>
+                    <input
+                      type="date"
+                      value={form.endDate || ""}
+                      onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                      className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-pop-gold/50 transition-all"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Fecha de Fin</label>
-                  <input
-                    type="date"
-                    value={form.endDate || ""}
-                    onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-                    className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-pop-gold/50 transition-all"
-                  />
-                </div>
-              </div>
+              )}
               <div>
                 <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Días Activos</label>
-                <input
-                  type="text"
-                  value={form.daysActive || ""}
-                  onChange={(e) => setForm({ ...form, daysActive: e.target.value })}
-                  placeholder="Ej: Lun-Vie, Todos"
-                  className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all"
-                />
+                <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
+                  {DAYS.map((day) => {
+                    const selected = (form.daysActive || []).includes(day.value);
+                    return (
+                      <button
+                        key={day.value}
+                        type="button"
+                        onClick={() => setForm({ ...form, daysActive: selected ? (form.daysActive || []).filter((value) => value !== day.value) : [...(form.daysActive || []), day.value] })}
+                        className={`rounded-lg border px-2 py-3 text-xs font-bold transition-all ${selected ? "bg-pop-gold text-pop-black border-pop-gold" : "bg-gray-800/50 text-gray-400 border-white/10"}`}
+                      >
+                        {day.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -397,6 +441,18 @@ export default function AdminPromocionesPage() {
                     placeholder="Ej: 500"
                     className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all"
                   />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Estado</label>
+                  <select
+                    value={form.status || "activa"}
+                    onChange={(e) => setForm({ ...form, status: e.target.value as Promo["status"] })}
+                    className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-pop-gold/50 transition-all"
+                  >
+                    <option value="activa">Activa</option>
+                    <option value="pausada">Pausada</option>
+                    <option value="finalizada">Finalizada</option>
+                  </select>
                 </div>
                 <div>
                   <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Imagen (opcional)</label>

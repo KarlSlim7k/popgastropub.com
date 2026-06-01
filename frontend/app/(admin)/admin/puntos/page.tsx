@@ -54,8 +54,9 @@ export default function AdminPuntosPage() {
     const session = getAuthSession();
     if (!session) return;
     try {
-      const users = await fetchWithAuth<any[]>("/admin/usuarios", session.token);
-      setSearchResults(users.filter((u: any) => u.name.toLowerCase().includes(q.toLowerCase()) || u.email.includes(q)).slice(0, 5).map((u: any) => ({ id: Number(u.id), name: u.name, points: u.points })));
+      const params = new URLSearchParams({ search: q, role: "cliente", per_page: "5" });
+      const response = await fetchWithAuth<{ data: { id: string; name: string; points: number }[] }>(`/admin/usuarios?${params}`, session.token);
+      setSearchResults(response.data.map((u) => ({ id: Number(u.id), name: u.name, points: u.points })));
     } catch {}
   };
 
@@ -240,7 +241,7 @@ export default function AdminPuntosPage() {
               </div>
               <div>
                 <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Puntos a Descontar</label>
-                <input type="number" value={redeemForm.points} onChange={(e) => setRedeemForm({ ...redeemForm, points: e.target.value })} placeholder="Ej: 200" className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50" />
+                <input type="number" min="1" value={redeemForm.points} onChange={(e) => setRedeemForm({ ...redeemForm, points: e.target.value })} placeholder="Ej: 200" className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50" />
               </div>
               <div>
                 <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Descripción (opcional)</label>

@@ -170,7 +170,7 @@ export default function AdminUsuariosPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="text-xs font-bold text-gray-500 uppercase self-center mr-1">Estado:</span>
-            {["todos", "activo", "inactivo"].map((s) => (
+            {["todos", "activo", "inactivo", "pendiente"].map((s) => (
               <button key={s} onClick={() => setFilterStatus(s)} className={`px-3 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${filterStatus === s ? "bg-pop-gold text-pop-black" : "bg-gray-800/50 text-gray-400 hover:text-white"}`}>{s === "todos" ? "Todos" : s.charAt(0).toUpperCase() + s.slice(1)}</button>
             ))}
           </div>

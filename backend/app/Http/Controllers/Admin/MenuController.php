@@ -32,16 +32,19 @@ class MenuController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
             'category' => 'required|string|max:100',
             'price' => 'required|numeric|min:0',
             'cost' => 'nullable|numeric|min:0',
-            'stock' => 'nullable|integer|min:0',
-            'status' => 'nullable|string|in:disponible,pausado,agotado',
+            'stock' => 'nullable|integer|min:0|max:100',
+            'status' => 'nullable|string|in:available,low,out',
             'active' => 'nullable|boolean',
+            'featured' => 'nullable|boolean',
             'image' => 'nullable|string|max:500',
             'allergens' => 'nullable|array',
+            'allergens.*' => 'string|max:100',
             'hasPromo' => 'nullable|boolean',
-            'promoPrice' => 'nullable|numeric|min:0',
+            'promoPrice' => 'nullable|required_if:hasPromo,true|numeric|min:0',
         ]);
 
         $producto = Producto::create($this->fromFrontend($request));
@@ -58,16 +61,19 @@ class MenuController extends Controller
     {
         $request->validate([
             'name' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
             'category' => 'sometimes|string|max:100',
             'price' => 'sometimes|numeric|min:0',
             'cost' => 'nullable|numeric|min:0',
-            'stock' => 'nullable|integer|min:0',
-            'status' => 'nullable|string|in:disponible,pausado,agotado',
+            'stock' => 'nullable|integer|min:0|max:100',
+            'status' => 'nullable|string|in:available,low,out',
             'active' => 'nullable|boolean',
+            'featured' => 'nullable|boolean',
             'image' => 'nullable|string|max:500',
             'allergens' => 'nullable|array',
+            'allergens.*' => 'string|max:100',
             'hasPromo' => 'nullable|boolean',
-            'promoPrice' => 'nullable|numeric|min:0',
+            'promoPrice' => 'nullable|required_if:hasPromo,true|numeric|min:0',
         ]);
 
         $producto = Producto::findOrFail($id);
@@ -88,12 +94,14 @@ class MenuController extends Controller
         return [
             'id' => $p->id,
             'name' => $p->nombre,
+            'description' => $p->descripcion ?? '',
             'category' => $p->categoria,
             'price' => (float) $p->precio,
             'cost' => (float) $p->costo,
             'stock' => $p->stock,
             'status' => $p->status,
             'active' => $p->disponible,
+            'featured' => $p->destacado,
             'image' => $p->imagen ?? '',
             'orders' => $p->pedidos_count,
             'rating' => (float) $p->rating,
@@ -108,14 +116,19 @@ class MenuController extends Controller
         $map = [];
 
         if ($request->has('name')) $map['nombre'] = $request->input('name');
+        if ($request->has('description')) $map['descripcion'] = $request->input('description');
         if ($request->has('category')) $map['categoria'] = $request->input('category');
         if ($request->has('price')) $map['precio'] = $request->input('price');
         if ($request->has('cost')) $map['costo'] = $request->input('cost');
         if ($request->has('stock')) $map['stock'] = $request->input('stock');
         if ($request->has('status')) $map['status'] = $request->input('status');
         if ($request->has('active')) $map['disponible'] = $request->input('active');
+        if ($request->has('featured')) $map['destacado'] = $request->input('featured');
         if ($request->has('image')) $map['imagen'] = $request->input('image');
-        if ($request->has('hasPromo')) $map['tiene_promo'] = $request->input('hasPromo');
+        if ($request->has('hasPromo')) {
+            $map['tiene_promo'] = $request->boolean('hasPromo');
+            if (! $map['tiene_promo']) $map['precio_promo'] = null;
+        }
         if ($request->has('promoPrice')) $map['precio_promo'] = $request->input('promoPrice');
         if ($request->has('allergens')) $map['alergenos'] = $request->input('allergens');
         if ($request->has('rating')) $map['rating'] = $request->input('rating');

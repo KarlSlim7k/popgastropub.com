@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 
 interface Recompensa {
   id: number;
@@ -91,12 +92,12 @@ export default function AdminRecompensasPage() {
             <input value={form.nombre} onChange={(event) => setForm({ ...form, nombre: event.target.value })} placeholder="Nombre" className="w-full bg-pop-black border border-white/10 rounded-lg p-3 text-white" />
             <textarea value={form.descripcion} onChange={(event) => setForm({ ...form, descripcion: event.target.value })} placeholder="Descripción" className="w-full bg-pop-black border border-white/10 rounded-lg p-3 text-white" />
             <div className="grid grid-cols-2 gap-4">
-              <input type="number" min="0" value={form.puntos_requeridos} onChange={(event) => setForm({ ...form, puntos_requeridos: Number(event.target.value) })} className="bg-pop-black border border-white/10 rounded-lg p-3 text-white" />
+              <input type="number" min="1" value={form.puntos_requeridos} onChange={(event) => setForm({ ...form, puntos_requeridos: Number(event.target.value) })} className="bg-pop-black border border-white/10 rounded-lg p-3 text-white" />
               <input value={form.categoria} onChange={(event) => setForm({ ...form, categoria: event.target.value })} placeholder="Categoría" className="bg-pop-black border border-white/10 rounded-lg p-3 text-white" />
               <select value={form.tier} onChange={(event) => setForm({ ...form, tier: event.target.value as Recompensa["tier"] })} className="bg-pop-black border border-white/10 rounded-lg p-3 text-white"><option value="fan">Fan</option><option value="lover">Lover</option><option value="vip">VIP</option><option value="elite">Elite</option></select>
               <label className="flex items-center gap-3 text-xs uppercase tracking-widest text-white"><input type="checkbox" checked={form.disponible} onChange={(event) => setForm({ ...form, disponible: event.target.checked })} /> Disponible</label>
             </div>
-            <input value={form.imagen} onChange={(event) => setForm({ ...form, imagen: event.target.value })} placeholder="URL de imagen (opcional)" className="w-full bg-pop-black border border-white/10 rounded-lg p-3 text-white" />
+            <ImageUpload value={form.imagen || ""} onChange={(url) => setForm({ ...form, imagen: url })} folder="recompensas" />
             <div className="flex justify-end gap-3 pt-3"><button onClick={() => setShowModal(false)} className="px-5 py-3 text-xs font-black uppercase text-gray-400">Cancelar</button><button onClick={save} className="px-5 py-3 rounded-lg bg-pop-gold text-pop-black text-xs font-black uppercase">Guardar</button></div>
           </div>
         </div>
