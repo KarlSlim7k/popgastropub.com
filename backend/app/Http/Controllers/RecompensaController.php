@@ -15,6 +15,14 @@ class RecompensaController extends Controller
         return Recompensa::where('disponible', true)->get();
     }
 
+    public function history(Request $request)
+    {
+        return $request->user()->redemptions()
+            ->with('recompensa:id,nombre,imagen,puntos_requeridos')
+            ->orderByDesc('created_at')
+            ->get();
+    }
+
     public function redeem(Request $request, $id)
     {
         abort_unless($request->user()->role === 'cliente', 403, 'Solo los clientes pueden canjear recompensas.');

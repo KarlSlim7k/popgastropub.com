@@ -84,6 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Recompensas
     Route::get('/recompensas', [RecompensaController::class, 'index']);
+    Route::get('/recompensas/historial', [RecompensaController::class, 'history']);
     Route::post('/recompensas/{id}/canjear', [RecompensaController::class, 'redeem']);
 
     // Tickets — canje de puntos por QR

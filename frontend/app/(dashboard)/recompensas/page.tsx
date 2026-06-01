@@ -15,6 +15,14 @@ interface Recompensa {
   tier?: string;
 }
 
+interface Redemption {
+  id: number;
+  puntos_usados: number;
+  estado: string;
+  created_at: string;
+  recompensa?: { id: number; nombre: string; imagen?: string; puntos_requeridos: number };
+}
+
 export default function RecompensasPage() {
   const { session } = useAuth();
   const [rewards, setRewards] = useState<Recompensa[]>([]);
@@ -24,6 +32,9 @@ export default function RecompensasPage() {
   const [filter, setFilter] = useState<string>("todos");
   const [toast, setToast] = useState<string | null>(null);
   const [redeemingId, setRedeemingId] = useState<number | string | null>(null);
+  const [tab, setTab] = useState<"catalogo" | "historial">("catalogo");
+  const [history, setHistory] = useState<Redemption[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const token = session?.token ?? "";
 
@@ -68,6 +79,21 @@ export default function RecompensasPage() {
     return () => clearTimeout(t);
   }, [toast]);
 
+  const fetchHistory = useCallback(async () => {
+    if (!token) return;
+    setHistoryLoading(true);
+    try {
+      const data = await fetchWithAuth<Redemption[]>("/recompensas/historial", token);
+      setHistory(Array.isArray(data) ? data : []);
+    } catch {} finally {
+      setHistoryLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (tab === "historial") fetchHistory();
+  }, [tab, fetchHistory]);
+
   const handleRedeem = async (id: number | string) => {
     if (!token) {
       setToast("Inicia sesión para canjear recompensas");
@@ -78,6 +104,7 @@ export default function RecompensasPage() {
       await fetchWithAuth(`/recompensas/${id}/canjear`, token, { method: "POST" });
       setToast("Canje exitoso");
       await fetchPoints();
+      if (tab === "historial") fetchHistory();
     } catch (err: any) {
       const msg = err?.message || "";
       if (msg.toLowerCase().includes("insuficiente") || msg.toLowerCase().includes("puntos")) {
@@ -126,6 +153,56 @@ export default function RecompensasPage() {
         </div>
       </header>
 
+      {/* Tabs */}
+      <nav className="flex gap-8 border-b border-white/5">
+        {([["catalogo", "Catálogo"], ["historial", "Mis Canjes"]] as const).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className={`pb-4 text-[10px] font-black uppercase tracking-widest transition-all relative ${tab === key ? "text-white" : "text-gray-500 hover:text-gray-300"}`}
+          >
+            {label}
+            {tab === key && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-pop-gold" />}
+          </button>
+        ))}
+      </nav>
+
+      {tab === "historial" ? (
+        /* Redemption History */
+        <section className="space-y-4">
+          {historyLoading ? (
+            <div className="bg-pop-cardGreen p-12 rounded-3xl border border-white/5 text-center">
+              <div className="w-8 h-8 border-2 border-pop-gold border-t-transparent rounded-full animate-spin mx-auto" />
+            </div>
+          ) : history.length === 0 ? (
+            <div className="bg-pop-cardGreen p-12 rounded-3xl border border-dashed border-white/5 text-center space-y-4">
+              <span className="material-symbols-outlined text-gray-700 text-5xl">history</span>
+              <p className="text-gray-500 font-black uppercase text-[10px] tracking-widest">Aún no has canjeado recompensas</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {history.map((r) => (
+                <article key={r.id} className="bg-pop-cardGreen p-6 rounded-2xl border border-white/5 flex items-center gap-5">
+                  <div className="w-14 h-14 rounded-xl bg-pop-gold/10 flex items-center justify-center flex-shrink-0">
+                    <span className="material-symbols-outlined text-pop-gold text-2xl">redeem</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-black text-white uppercase truncate">{r.recompensa?.nombre || "Recompensa"}</p>
+                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
+                      {new Date(r.created_at).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })}
+                    </p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-sm font-black text-pop-orange">-{r.puntos_usados} pts</p>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-green-400">{r.estado}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      ) : (
+      <>
       {/* Categories & Navigation */}
       {categories.length > 1 && (
         <nav className="flex flex-wrap justify-center lg:justify-start gap-4 lg:gap-8">
@@ -235,6 +312,9 @@ export default function RecompensasPage() {
           <span className="material-symbols-outlined text-gray-700 text-5xl">card_giftcard</span>
           <p className="text-gray-500 font-black uppercase text-[10px] tracking-widest">No hay recompensas disponibles</p>
         </div>
+      )}
+
+      </>
       )}
 
       {/* Why Loyalty? Info */}
