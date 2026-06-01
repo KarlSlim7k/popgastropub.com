@@ -3,6 +3,8 @@
 import { useAuth } from "@/lib/auth-provider";
 import { fetchWithAuth } from "@/lib/api";
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
+import { isClosed, getCloseTime, SCHEDULE_TEXT } from "@/lib/business-hours";
 
 interface Reserva {
   id: number | string;
@@ -87,16 +89,15 @@ export default function ReservasPage() {
 
     // Validate: not Tuesday
     const selectedDate = new Date(form.fecha + "T12:00:00");
-    if (selectedDate.getDay() === 2) {
+    if (isClosed(selectedDate.getDay())) {
       setToast("El restaurante está cerrado los martes");
       return;
     }
 
     // Validate: within operating hours
-    const day = selectedDate.getDay();
-    const closeTime = (day === 5 || day === 6) ? "22:00" : day === 0 ? "21:00" : "21:30";
-    if (form.hora < "14:00" || form.hora > closeTime) {
-      setToast(`Horario no disponible. Operamos de 14:00 a ${closeTime}`);
+    const closeTime = getCloseTime(selectedDate.getDay());
+    if (!closeTime || form.hora < "14:00" || form.hora > closeTime) {
+      setToast(`Horario no disponible. Operamos de 14:00 a ${closeTime || "—"}`);
       return;
     }
 
@@ -223,11 +224,12 @@ export default function ReservasPage() {
               <article key={res.id} className="bg-pop-cardGreen rounded-3xl overflow-hidden border border-white/5 group">
                 <div className="flex flex-col lg:flex-row">
                   {/* Visual Context */}
-                  <div className="lg:w-1/3 h-48 lg:h-auto overflow-hidden">
-                    <img
+                  <div className="lg:w-1/3 h-48 lg:h-auto overflow-hidden relative">
+                    <Image
                       src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuJxJQ8Yov3h-rdfOh-roeN8Dr0XdASO8zeHu0GW4xfjKjjskW7777abibu0ipYE_K8YdM1H2vw8OC-gQ8IAbr-3MFjlXgmUKc0_jSMBHLMfjUj_cUcizUEUevg9XGWs-Jys5nJzBSrTqKISNwz8BR-yrbGzJ41pg-mYoHWl9r3Zl5W0RBuIBUho_pptkY3fX1UPiTegonwOl8osxZI7Xju7afX4rpA1_flW2-GbC4PNNRHwpCw_brDqYQbgXQTioe-BjVlbWal7AG"
                       alt="POP Ambiance"
-                      className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000"
+                      fill
+                      className="object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000"
                     />
                   </div>
 
@@ -385,7 +387,7 @@ export default function ReservasPage() {
                   />
                 </div>
               </div>
-              <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest">Lun/Mié-Jue 14:00-21:30 · Vie-Sáb 14:00-22:00 · Dom 14:00-21:00 · Martes cerrado</p>
+              <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest">{SCHEDULE_TEXT}</p>
 
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Personas</label>

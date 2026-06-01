@@ -3,6 +3,7 @@
 import { useAuth } from "@/lib/auth-provider";
 import { fetchWithAuth } from "@/lib/api";
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 
 interface Recompensa {
   id: number | string;
@@ -167,10 +168,11 @@ export default function RecompensasPage() {
                 }`}
               >
                 <div className="relative h-48 overflow-hidden">
-                  <img
+                  <Image
                     src={reward.imagen || "/images/logopop.png"}
                     alt={reward.nombre}
-                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                    fill
+                    className="object-cover transition-transform duration-1000 group-hover:scale-110"
                   />
                   <div className="absolute top-4 right-4 bg-pop-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 flex items-center gap-2">
                     <span className="material-symbols-outlined text-pop-gold text-sm">stars</span>

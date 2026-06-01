@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth-provider";
 import { fetchWithAuth } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
+import Image from "next/image";
 
 interface Tier {
   name: string;
@@ -273,10 +274,11 @@ export default function PuntosPage() {
         <aside className="lg:col-span-4 space-y-10">
            {/* Current Promo Banner */}
            <article className="relative h-64 rounded-3xl overflow-hidden group">
-              <img 
-                src="https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=600&fit=crop" 
-                alt="Sushi" 
-                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+              <Image
+                src="https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=600&fit=crop"
+                alt="Sushi"
+                fill
+                className="object-cover transition-transform duration-1000 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent p-6 flex flex-col justify-end">
                  <span className="text-[9px] font-black text-pop-gold uppercase tracking-widest mb-1">Membresía VIP</span>

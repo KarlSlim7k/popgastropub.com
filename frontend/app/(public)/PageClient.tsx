@@ -20,7 +20,7 @@ interface Producto {
   destacado: boolean;
 }
 
-const DIAS_SEMANA = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+import { getOpenStatus as getOpenStatusBase, DIAS_SEMANA } from '@/lib/business-hours';
 
 const HERO_SLIDES = [
   {
@@ -36,33 +36,10 @@ const HERO_SLIDES = [
 const WHATSAPP_PHONE = '522821278014';
 
 function getOpenStatus(): { isOpen: boolean; label: string; colorClass: string; dotClass: string } {
-  const now = new Date();
-  const day = now.getDay();
-  const hour = now.getHours();
-  const minute = now.getMinutes();
-  const time = hour + minute / 60;
-
-  let openTime: number;
-  let closeTime: number;
-
-  if (day === 2) {
-    return { isOpen: false, label: 'CERRADO', colorClass: 'text-red-500', dotClass: 'bg-red-500' };
-  } else if (day === 1 || day === 3 || day === 4) {
-    openTime = 14;
-    closeTime = 21.5;
-  } else if (day === 5 || day === 6) {
-    openTime = 14;
-    closeTime = 22;
-  } else {
-    // Sunday
-    openTime = 14;
-    closeTime = 21;
-  }
-
-  const isOpen = time >= openTime && time < closeTime;
+  const { isOpen, label } = getOpenStatusBase();
   return {
     isOpen,
-    label: isOpen ? 'ABIERTO AHORA' : 'CERRADO',
+    label: isOpen ? 'ABIERTO AHORA' : label.toUpperCase(),
     colorClass: isOpen ? 'text-[#4CAF50]' : 'text-red-500',
     dotClass: isOpen ? 'bg-[#4CAF50]' : 'bg-red-500',
   };

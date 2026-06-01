@@ -20,8 +20,20 @@ export default function PedidosPage() {
   const [orders, setOrders] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [promoText, setPromoText] = useState<string>("Explora nuestra carta completa y descubre nuevos sabores para tu próxima visita.");
 
   const token = session?.token ?? "";
+
+  useEffect(() => {
+    fetchAPI<any[]>("/promociones")
+      .then((promos) => {
+        if (promos?.length > 0) {
+          const p = promos[0];
+          setPromoText(p.descripcion || p.nombre || promoText);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const fetchPedidos = useCallback(async () => {
     if (!token) return;
@@ -173,7 +185,7 @@ export default function PedidosPage() {
         <span className="material-symbols-outlined text-pop-gold text-4xl">restaurant_menu</span>
         <h2 className="text-2xl font-black text-white uppercase tracking-tighter">¿Listo para repetir?</h2>
         <p className="text-gray-400 text-sm max-w-md mx-auto font-manrope">
-          Explora nuestra carta completa y descubre nuevos sabores para tu próxima visita. Recuerda que los martes tenemos 2x1 en Rolls.
+          {promoText}
         </p>
         <div className="pt-4">
           <a href="/menu" className="inline-block px-10 py-4 bg-pop-gold text-pop-black font-black uppercase text-xs tracking-widest rounded-xl hover:bg-pop-lightGold transition-all">
