@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { downloadAuthenticatedFile, fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
+import { Pagination } from "@/components/ui/Pagination";
 
 interface User {
   id: string;
@@ -31,19 +32,28 @@ export default function AdminUsuariosPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "", rfc: "", role: "cliente", status: "activo", password: "" });
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ current_page: 1, last_page: 1, total: 0 });
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (p = page) => {
     const session = getAuthSession();
     if (!session) return;
     setLoading(true);
     try {
-      const data = await fetchWithAuth<User[]>("/admin/usuarios", session.token);
-      setUsers(data);
+      const params = new URLSearchParams({ page: String(p), per_page: "20" });
+      if (searchTerm) params.set("search", searchTerm);
+      if (filterRole !== "todos") params.set("role", filterRole);
+      if (filterStatus !== "todos") params.set("status", filterStatus);
+      const data = await fetchWithAuth<any>(`/admin/usuarios?${params}`, session.token);
+      const list = Array.isArray(data) ? data : data.data ?? [];
+      setUsers(list);
+      if (data.meta) setMeta(data.meta);
     } catch {}
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => { fetchUsers(1); setPage(1); }, [searchTerm, filterRole, filterStatus]);
+  useEffect(() => { fetchUsers(page); }, [page]);
 
   const openCreate = () => {
     setEditingUser(null);
@@ -94,12 +104,7 @@ export default function AdminUsuariosPage() {
     }
   };
 
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = filterRole === "todos" || user.role === filterRole;
-    const matchesStatus = filterStatus === "todos" || user.status === filterStatus;
-    return matchesSearch && matchesRole && matchesStatus;
-  });
+  const filteredUsers = users; // Filtering is now server-side
 
   const getRoleBadge = (role: User["role"]) => {
     const styles = { admin: "bg-pop-gold/10 text-pop-gold", mesero: "bg-pop-orange/10 text-pop-orange", cliente: "bg-gray-700/50 text-gray-300" };
@@ -233,6 +238,9 @@ export default function AdminUsuariosPage() {
               )}
             </tbody>
           </table>
+        </div>
+        <div className="p-6">
+          <Pagination currentPage={meta.current_page} lastPage={meta.last_page} total={meta.total} onPageChange={setPage} />
         </div>
       </section>
 

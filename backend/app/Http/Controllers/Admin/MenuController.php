@@ -8,11 +8,24 @@ use Illuminate\Http\Request;
 
 class MenuController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $productos = Producto::orderBy('categoria')->get();
+        $perPage = min((int) $request->input('per_page', 50), 200);
+        $query = Producto::orderBy('categoria')->orderBy('nombre');
 
-        return response()->json($productos->map(fn($p) => $this->toFrontend($p)));
+        if ($request->input('categoria')) $query->where('categoria', $request->input('categoria'));
+        if ($request->input('search')) $query->where('nombre', 'like', '%' . $request->input('search') . '%');
+
+        if ($request->boolean('all')) {
+            return response()->json(Producto::orderBy('categoria')->get()->map(fn($p) => $this->toFrontend($p)));
+        }
+
+        $paginated = $query->paginate($perPage);
+
+        return response()->json([
+            'data' => $paginated->map(fn($p) => $this->toFrontend($p)),
+            'meta' => ['current_page' => $paginated->currentPage(), 'last_page' => $paginated->lastPage(), 'total' => $paginated->total()],
+        ]);
     }
 
     public function store(Request $request)

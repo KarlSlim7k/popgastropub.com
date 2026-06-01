@@ -11,11 +11,32 @@ use Illuminate\Support\Facades\Hash;
 
 class UsuarioController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderBy('name')->get();
+        $perPage = min((int) $request->input('per_page', 20), 100);
+        $search = $request->input('search');
+        $role = $request->input('role');
+        $status = $request->input('status');
 
-        return response()->json($users->map(fn($u) => $this->toFrontend($u)));
+        $query = User::orderBy('name');
+
+        if ($search) {
+            $query->where(fn($q) => $q->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"));
+        }
+        if ($role) $query->where('role', $role);
+        if ($status) $query->where('status', $status);
+
+        $paginated = $query->paginate($perPage);
+
+        return response()->json([
+            'data' => $paginated->map(fn($u) => $this->toFrontend($u)),
+            'meta' => [
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+            ],
+        ]);
     }
 
     public function store(Request $request)

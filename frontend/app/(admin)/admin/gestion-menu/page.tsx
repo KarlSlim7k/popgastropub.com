@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 
 interface MenuItem {
   id: string | number;
@@ -413,13 +414,11 @@ export default function AdminGestionMenuPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Imagen URL</label>
-                <input
-                  type="text"
+                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Imagen</label>
+                <ImageUpload
                   value={form.image || ""}
-                  onChange={(e) => setForm({ ...form, image: e.target.value })}
-                  className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none"
-                  placeholder="https://..."
+                  onChange={(url) => setForm({ ...form, image: url })}
+                  folder="menu"
                 />
               </div>
 

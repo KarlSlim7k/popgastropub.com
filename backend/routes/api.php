@@ -132,6 +132,9 @@ Route::middleware(['auth:sanctum', 'role:mesero,admin'])->prefix('staff')->group
 */
 
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
+    // Upload
+    Route::post('/upload', [App\Http\Controllers\Admin\UploadController::class, 'store']);
+
     // Dashboard
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index']);
     Route::get('/dashboard/chart-data', [App\Http\Controllers\Admin\DashboardController::class, 'chartData']);

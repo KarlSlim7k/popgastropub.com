@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 
 interface Promo {
   id: string;
@@ -398,13 +399,11 @@ export default function AdminPromocionesPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">URL de Imagen (opcional)</label>
-                  <input
-                    type="text"
+                  <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Imagen (opcional)</label>
+                  <ImageUpload
                     value={form.image || ""}
-                    onChange={(e) => setForm({ ...form, image: e.target.value })}
-                    placeholder="https://..."
-                    className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all"
+                    onChange={(url) => setForm({ ...form, image: url })}
+                    folder="promociones"
                   />
                 </div>
               </div>

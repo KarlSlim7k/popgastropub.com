@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { downloadAuthenticatedFile, fetchWithAuth, openAuthenticatedFile } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
+import { Pagination } from "@/components/ui/Pagination";
 
 interface Factura {
   id: number;
@@ -25,20 +26,21 @@ export default function AdminFacturacionPage() {
   const [detailItem, setDetailItem] = useState<Factura | null>(null);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ current_page: 1, last_page: 1, total: 0 });
 
-  const fetchFacturas = async () => {
+  const fetchFacturas = async (p = page) => {
     const session = getAuthSession();
     if (!session) return;
     setLoading(true);
     try {
-      let endpoint = "/admin/facturas";
-      const params = new URLSearchParams();
+      const params = new URLSearchParams({ page: String(p), per_page: "20" });
       if (dateFrom) params.append("from", dateFrom);
       if (dateTo) params.append("to", dateTo);
-      const qs = params.toString();
-      if (qs) endpoint += `?${qs}`;
-      const data = await fetchWithAuth<Factura[]>(endpoint, session.token);
-      setRequests(data);
+      if (selectedStatus !== "todos") params.append("estado", selectedStatus);
+      const data = await fetchWithAuth<any>(`/admin/facturas?${params}`, session.token);
+      setRequests(Array.isArray(data) ? data : data.data ?? []);
+      if (data.meta) setMeta(data.meta);
     } catch {
       // error
     } finally {
@@ -46,9 +48,8 @@ export default function AdminFacturacionPage() {
     }
   };
 
-  useEffect(() => {
-    fetchFacturas();
-  }, [dateFrom, dateTo]);
+  useEffect(() => { fetchFacturas(1); setPage(1); }, [dateFrom, dateTo, selectedStatus]);
+  useEffect(() => { fetchFacturas(page); }, [page]);
 
   const updateStatus = async (id: number, newStatus: string) => {
     const session = getAuthSession();
@@ -86,7 +87,7 @@ export default function AdminFacturacionPage() {
     return map[status] || status;
   };
 
-  const filteredRequests = selectedStatus === "todos" ? requests : requests.filter((r) => r.estado === selectedStatus);
+  const filteredRequests = requests; // Filtering is now server-side
 
   const pendientes = requests.filter((r) => r.estado === "recibida" || r.estado === "en_proceso").length;
   const completadas = requests.filter((r) => r.estado === "completada").length;
@@ -324,6 +325,9 @@ export default function AdminFacturacionPage() {
               <div className="py-10 text-center text-gray-500 text-xs uppercase tracking-widest">Sin solicitudes</div>
             )}
           </div>
+        </div>
+        <div className="p-6">
+          <Pagination currentPage={meta.current_page} lastPage={meta.last_page} total={meta.total} onPageChange={setPage} />
         </div>
       </section>
 

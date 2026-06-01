@@ -12,9 +12,18 @@ use Illuminate\Support\Facades\DB;
 
 class PedidoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Pedido::with('user')->orderBy('created_at', 'desc')->get();
+        $perPage = min((int) $request->input('per_page', 20), 100);
+        $paginated = Pedido::with('user')
+            ->when($request->input('estado'), fn($q, $v) => $q->where('estado', $v))
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+
+        return response()->json([
+            'data' => $paginated->items(),
+            'meta' => ['current_page' => $paginated->currentPage(), 'last_page' => $paginated->lastPage(), 'total' => $paginated->total()],
+        ]);
     }
 
     public function updateStatus(Request $request, $id)

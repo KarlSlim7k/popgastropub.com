@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
+import { Pagination } from "@/components/ui/Pagination";
 
 interface Pedido {
   id: number;
@@ -22,13 +23,19 @@ export default function AdminPedidosPage() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [filter, setFilter] = useState<(typeof STATUSES)[number]>("todos");
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ current_page: 1, last_page: 1, total: 0 });
 
-  const load = async () => {
+  const load = async (p = page) => {
     const session = getAuthSession();
     if (!session) return;
     setLoading(true);
     try {
-      setPedidos(await fetchWithAuth<Pedido[]>("/admin/pedidos", session.token));
+      const params = new URLSearchParams({ page: String(p), per_page: "20" });
+      if (filter !== "todos") params.set("estado", filter);
+      const data = await fetchWithAuth<any>(`/admin/pedidos?${params}`, session.token);
+      setPedidos(Array.isArray(data) ? data : data.data ?? []);
+      if (data.meta) setMeta(data.meta);
     } catch {
       alert("No se pudieron cargar los pedidos");
     } finally {
@@ -36,7 +43,8 @@ export default function AdminPedidosPage() {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(1); setPage(1); }, [filter]);
+  useEffect(() => { load(page); }, [page]);
 
   const updateStatus = async (id: number, estado: Pedido["estado"]) => {
     const session = getAuthSession();
@@ -68,7 +76,7 @@ export default function AdminPedidosPage() {
     return items.map((item) => `${item.cantidad || item.quantity || 1}x ${item.nombre || item.name || "Item"}`).join(", ");
   };
 
-  const visible = filter === "todos" ? pedidos : pedidos.filter((pedido) => pedido.estado === filter);
+  const visible = pedidos; // Filtering is now server-side
 
   return (
     <main className="pt-24 lg:pt-20 p-4 lg:p-10 min-h-screen bg-pop-black">
@@ -102,6 +110,9 @@ export default function AdminPedidosPage() {
           </tbody>
         </table>
       </section>
+      <div className="mt-4">
+        <Pagination currentPage={meta.current_page} lastPage={meta.last_page} total={meta.total} onPageChange={setPage} />
+      </div>
     </main>
   );
 }

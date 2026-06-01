@@ -8,11 +8,23 @@ use Illuminate\Http\Request;
 
 class PromocionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $promos = Promocion::orderBy('created_at', 'desc')->get();
+        $perPage = min((int) $request->input('per_page', 20), 100);
 
-        return response()->json($promos->map(fn($p) => $this->toFrontend($p)));
+        if ($request->boolean('all')) {
+            return response()->json(Promocion::orderBy('created_at', 'desc')->get()->map(fn($p) => $this->toFrontend($p)));
+        }
+
+        $query = Promocion::orderBy('created_at', 'desc');
+        if ($request->input('estado')) $query->where('estado', $request->input('estado'));
+
+        $paginated = $query->paginate($perPage);
+
+        return response()->json([
+            'data' => $paginated->map(fn($p) => $this->toFrontend($p)),
+            'meta' => ['current_page' => $paginated->currentPage(), 'last_page' => $paginated->lastPage(), 'total' => $paginated->total()],
+        ]);
     }
 
     public function store(Request $request)

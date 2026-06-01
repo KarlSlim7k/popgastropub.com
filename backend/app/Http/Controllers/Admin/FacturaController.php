@@ -12,16 +12,19 @@ class FacturaController extends Controller
 {
     public function index(Request $request)
     {
+        $perPage = min((int) $request->input('per_page', 20), 100);
         $query = Factura::with('user')->orderBy('created_at', 'desc');
 
-        if ($request->has('from') && $request->input('from')) {
-            $query->whereDate('created_at', '>=', $request->input('from'));
-        }
-        if ($request->has('to') && $request->input('to')) {
-            $query->whereDate('created_at', '<=', $request->input('to'));
-        }
+        if ($request->input('from')) $query->whereDate('created_at', '>=', $request->input('from'));
+        if ($request->input('to')) $query->whereDate('created_at', '<=', $request->input('to'));
+        if ($request->input('estado')) $query->where('estado', $request->input('estado'));
 
-        return response()->json($query->get());
+        $paginated = $query->paginate($perPage);
+
+        return response()->json([
+            'data' => $paginated->items(),
+            'meta' => ['current_page' => $paginated->currentPage(), 'last_page' => $paginated->lastPage(), 'total' => $paginated->total()],
+        ]);
     }
 
     public function show($id)
