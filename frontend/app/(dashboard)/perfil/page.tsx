@@ -3,6 +3,7 @@
 import { useAuth } from "@/lib/auth-provider";
 import { fetchWithAuth } from "@/lib/api";
 import { saveAuthSession } from "@/lib/auth-session";
+import { usePushNotifications } from "@/lib/usePushNotifications";
 import { useEffect, useState } from "react";
 
 interface UserProfile {
@@ -18,6 +19,7 @@ interface UserProfile {
 
 export default function PerfilPage() {
   const { session, logout, refreshSession } = useAuth();
+  const { permission, subscribed, subscribe, unsubscribe } = usePushNotifications(session?.token ?? null);
   const token = session?.token || "";
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -198,6 +200,20 @@ export default function PerfilPage() {
                   <span className="text-xs font-black text-white uppercase tracking-tight">Cambiar Contraseña</span>
                 </div>
                 <span className="material-symbols-outlined text-gray-600 group-hover:translate-x-1 transition-transform">chevron_right</span>
+              </button>
+              <button
+                onClick={subscribed ? unsubscribe : subscribe}
+                disabled={permission === "denied"}
+                className="w-full flex items-center justify-between bg-pop-cardGreen p-5 rounded-2xl border border-white/5 hover:bg-white/[0.02] transition-all"
+              >
+                <div className="flex items-center gap-4">
+                  <span className="material-symbols-outlined text-pop-gold text-xl">notifications</span>
+                  <div>
+                    <span className="text-xs font-black text-white uppercase tracking-tight">Notificaciones Push</span>
+                    <p className="text-[9px] text-gray-500 mt-0.5">{permission === "denied" ? "Bloqueadas en el navegador" : subscribed ? "Activas en este dispositivo" : "Recibe alertas en tiempo real"}</p>
+                  </div>
+                </div>
+                <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-full ${subscribed ? "bg-green-500/10 text-green-400" : "bg-white/5 text-gray-500"}`}>{subscribed ? "Activo" : "Inactivo"}</span>
               </button>
               <button onClick={() => logout()} className="w-full flex items-center justify-between bg-red-500/5 p-5 rounded-2xl border border-red-500/10 hover:bg-red-500/10 transition-all group mt-4">
                 <div className="flex items-center gap-4">

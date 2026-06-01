@@ -71,6 +71,8 @@ services:
       - X_CLIENT_ID=${X_CLIENT_ID:-}
       - X_CLIENT_SECRET=${X_CLIENT_SECRET:-}
       - X_REDIRECT_URI=${X_REDIRECT_URI:-https://api.popgastropub.com/api/auth/social/x/callback}
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY:-BHfYAkjbS1RS5qmckWS1mLShh4npH20RJzoSe7JgmymxOYzg2LvaJzC2I5UGBFTUC4DETG5V1C4JDjSk8MU7Jlc}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY:-cqQFi7rVIp4RmJdx_kGJtWfeNpBJ2Lk6ZYwjG1IwGDI}
     volumes:
       - pop_backend_storage:/var/www/html/storage
     depends_on:

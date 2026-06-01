@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
+import { TwoFactorSection } from "@/components/ui/TwoFactorSection";
 
 export default function AdminConfiguracionPage() {
   const [activeTab, setActiveTab] = useState<"general" | "notificaciones" | "apariencia" | "seguridad">("general");
@@ -207,13 +208,7 @@ export default function AdminConfiguracionPage() {
               <h2 className="text-xl font-black uppercase font-epilogue tracking-tighter text-white flex items-center gap-3"><span className="material-symbols-outlined text-pop-gold">security</span>Seguridad</h2>
             </div>
             <div className="p-6 space-y-6">
-              <div className="flex items-center justify-between bg-gray-800/30 rounded-lg p-5">
-                <div><p className="text-sm font-semibold text-white">Autenticación de Dos Factores (2FA)</p><p className="text-xs text-gray-500 mt-1">Capa extra de seguridad</p></div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" checked={settings.seguridad.two_factor === "true"} onChange={(e) => updateField("seguridad", "two_factor", e.target.checked ? "true" : "false")} className="sr-only peer" />
-                  <div className="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pop-gold"></div>
-                </label>
-              </div>
+              <TwoFactorSection />
               <div>
                 <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Tiempo de Sesión (minutos)</label>
                 <select value={settings.seguridad.session_timeout || "60"} onChange={(e) => updateField("seguridad", "session_timeout", e.target.value)} className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-pop-gold/50">

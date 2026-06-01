@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\PushNotificationController;
 use App\Models\Factura;
+use App\Models\FacturaStatusLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -46,12 +48,42 @@ class FacturaController extends Controller
         $oldStatus = $factura->estado;
         $factura->update(['estado' => $validated['estado']]);
 
+        // Log the status change
+        FacturaStatusLog::create([
+            'factura_id' => $factura->id,
+            'user_id' => $request->user()?->id,
+            'from_status' => $oldStatus,
+            'to_status' => $validated['estado'],
+            'nota' => $request->input('nota'),
+        ]);
+
         // Send email notification if factura has email
         if ($factura->email && $oldStatus !== $validated['estado']) {
             $this->sendStatusNotification($factura);
         }
 
+        // Push notification to client
+        if ($factura->user_id && $oldStatus !== $validated['estado']) {
+            $labels = ['recibida' => 'Recibida', 'en_proceso' => 'En proceso', 'enviada_contadores' => 'Con contadores', 'completada' => '✅ Completada', 'rechazada' => '❌ Rechazada'];
+            PushNotificationController::sendToUser(
+                $factura->user_id,
+                'Actualización de tu factura',
+                'Tu solicitud F-' . str_pad($factura->id, 4, '0', STR_PAD_LEFT) . ' está ahora: ' . ($labels[$validated['estado']] ?? $validated['estado'])
+            );
+        }
+
         return response()->json($factura);
+    }
+
+    public function statusLog($id)
+    {
+        $factura = Factura::findOrFail($id);
+        return response()->json(
+            FacturaStatusLog::where('factura_id', $factura->id)
+                ->with('user:id,name')
+                ->orderByDesc('created_at')
+                ->get()
+        );
     }
 
     public function ticket($id, Request $request)

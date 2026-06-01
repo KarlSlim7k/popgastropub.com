@@ -28,6 +28,9 @@ Route::get('/tickets/validate', [\App\Http\Controllers\TicketRedeemController::c
 // Public reservation (works with or without auth - controller checks $request->user())
 Route::post('/reservas/public', [ReservaController::class, 'store'])->middleware('throttle:6,1');
 
+// Public push key
+Route::get('/push/vapid-public-key', [App\Http\Controllers\PushNotificationController::class, 'vapidPublicKey']);
+
 /*
 |--------------------------------------------------------------------------
 | Auth Routes (Sanctum)
@@ -49,6 +52,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
     Route::put('/auth/password', [AuthController::class, 'changePassword']);
+
+    // 2FA
+    Route::get('/auth/2fa/status', [App\Http\Controllers\TwoFactorController::class, 'status']);
+    Route::post('/auth/2fa/setup', [App\Http\Controllers\TwoFactorController::class, 'setup']);
+    Route::post('/auth/2fa/enable', [App\Http\Controllers\TwoFactorController::class, 'enable']);
+    Route::post('/auth/2fa/disable', [App\Http\Controllers\TwoFactorController::class, 'disable']);
+    Route::post('/auth/2fa/verify', [App\Http\Controllers\TwoFactorController::class, 'verify']);
 });
 
 /*
@@ -93,6 +103,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Mesero ratings (client → waiter)
     Route::get('/meseros/para-calificar', [\App\Http\Controllers\MeseroRatingController::class, 'meseros']);
     Route::post('/meseros/calificar', [\App\Http\Controllers\MeseroRatingController::class, 'store']);
+
+    // Push notifications
+    Route::post('/push/subscribe', [App\Http\Controllers\PushNotificationController::class, 'subscribe']);
+    Route::post('/push/unsubscribe', [App\Http\Controllers\PushNotificationController::class, 'unsubscribe']);
 });
 
 /*
@@ -183,6 +197,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::get('/facturas/{id}', [App\Http\Controllers\Admin\FacturaController::class, 'show']);
     Route::get('/facturas/{id}/ticket', [App\Http\Controllers\Admin\FacturaController::class, 'ticket']);
     Route::patch('/facturas/{id}/status', [App\Http\Controllers\Admin\FacturaController::class, 'updateStatus']);
+    Route::get('/facturas/{id}/log', [App\Http\Controllers\Admin\FacturaController::class, 'statusLog']);
 
     // Usuarios CRUD
     Route::apiResource('usuarios', App\Http\Controllers\Admin\UsuarioController::class);

@@ -7,6 +7,8 @@ return [
     'url' => env('APP_URL', 'https://popgastropub.com'),
     'frontend_url' => env('FRONTEND_URL', 'https://popgastropub.com'),
     'qr_secret' => env('QR_SECRET', ''),
+    'vapid_public_key' => env('VAPID_PUBLIC_KEY', ''),
+    'vapid_private_key' => env('VAPID_PRIVATE_KEY', ''),
     'asset_url' => env('ASSET_URL'),
     'timezone' => 'America/Mexico_City',
     'locale' => 'es',

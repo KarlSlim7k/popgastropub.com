@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\PushNotificationController;
 use App\Models\Reserva;
 use Illuminate\Http\Request;
 
@@ -31,6 +32,17 @@ class ReservaController extends Controller
 
         $reserva = Reserva::findOrFail($id);
         $reserva->update(['estado' => $validated['estado']]);
+
+        if ($reserva->user_id) {
+            $labels = ['confirmada' => '✅ Confirmada', 'cancelada' => '❌ Cancelada', 'completada' => 'Completada'];
+            if (isset($labels[$validated['estado']])) {
+                PushNotificationController::sendToUser(
+                    $reserva->user_id,
+                    'Tu reservación en POP Perote',
+                    'Tu reserva del ' . $reserva->fecha . ' a las ' . $reserva->hora . ' está: ' . $labels[$validated['estado']]
+                );
+            }
+        }
 
         return response()->json($reserva);
     }

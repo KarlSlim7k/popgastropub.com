@@ -28,11 +28,14 @@ class User extends Authenticatable
         'oauth_provider',
         'oauth_provider_id',
         'avatar_url',
+        'two_factor_secret',
+        'two_factor_enabled',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
     ];
 
     protected $casts = [

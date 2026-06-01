@@ -24,6 +24,7 @@ export default function AdminFacturacionPage() {
   const [requests, setRequests] = useState<Factura[]>([]);
   const [loading, setLoading] = useState(true);
   const [detailItem, setDetailItem] = useState<Factura | null>(null);
+  const [statusLog, setStatusLog] = useState<{ id: number; from_status: string; to_status: string; nota?: string; created_at: string; user?: { name: string } }[]>([]);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
@@ -50,6 +51,15 @@ export default function AdminFacturacionPage() {
 
   useEffect(() => { fetchFacturas(1); setPage(1); }, [dateFrom, dateTo, selectedStatus]);
   useEffect(() => { fetchFacturas(page); }, [page]);
+
+  useEffect(() => {
+    if (!detailItem) { setStatusLog([]); return; }
+    const session = getAuthSession();
+    if (!session) return;
+    fetchWithAuth<any[]>(`/admin/facturas/${detailItem.id}/log`, session.token)
+      .then(setStatusLog)
+      .catch(() => {});
+  }, [detailItem?.id]);
 
   const updateStatus = async (id: number, newStatus: string) => {
     const session = getAuthSession();
@@ -420,6 +430,24 @@ export default function AdminFacturacionPage() {
                   >
                     <span className="material-symbols-outlined text-sm">download</span> Descargar
                   </button>
+                </div>
+              )}
+
+              {/* Status Log */}
+              {statusLog.length > 0 && (
+                <div className="border-t border-white/5 pt-4">
+                  <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-3">Historial de Estados</p>
+                  <div className="space-y-2">
+                    {statusLog.map((log) => (
+                      <div key={log.id} className="flex items-center gap-3 text-xs">
+                        <span className="text-gray-500 font-mono text-[9px] w-28 flex-shrink-0">{new Date(log.created_at).toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+                        <span className="text-gray-400">{log.from_status}</span>
+                        <span className="material-symbols-outlined text-gray-600 text-sm">arrow_forward</span>
+                        <span className="text-pop-gold font-bold">{log.to_status}</span>
+                        {log.user && <span className="text-gray-600 text-[9px]">por {log.user.name}</span>}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

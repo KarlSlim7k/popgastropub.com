@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-provider";
 import { fetchWithAuth } from "@/lib/api";
+import { usePushNotifications } from "@/lib/usePushNotifications";
 
 export default function StaffConfiguracionPage() {
   const { session } = useAuth();
+  const { permission, subscribed, subscribe, unsubscribe } = usePushNotifications(session?.token ?? null);
   const [activeTab, setActiveTab] = useState<"notificaciones" | "apariencia">("notificaciones");
   const [settings, setSettings] = useState<Record<string, string>>({ notif_pedidos: "true", notif_reservas: "true", notif_ranking: "true", tema: "dark" });
   const [saving, setSaving] = useState(false);
@@ -76,6 +78,19 @@ export default function StaffConfiguracionPage() {
               </label>
             </div>
           ))}
+          <div className="p-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-white">Notificaciones Push</p>
+              <p className="text-xs text-gray-500 mt-1">{permission === "denied" ? "Bloqueadas en el navegador" : subscribed ? "Activas en este dispositivo" : "Recibe alertas en tiempo real"}</p>
+            </div>
+            <button
+              onClick={subscribed ? unsubscribe : subscribe}
+              disabled={permission === "denied"}
+              className={`px-4 py-2 text-xs font-black rounded-lg transition-all disabled:opacity-30 ${subscribed ? "bg-red-500/10 text-red-400 border border-red-500/20" : "bg-pop-gold/10 text-pop-gold border border-pop-gold/20 hover:bg-pop-gold/20"}`}
+            >
+              {subscribed ? "Desactivar" : "Activar"}
+            </button>
+          </div>
         </div>
       )}
 
