@@ -475,7 +475,7 @@ export default function Login() {
                     <span className="uppercase tracking-widest text-sm">
                       {isSubmitting === 'login' ? 'VALIDANDO...' : 'INICIAR SESIÓN'}
                     </span>
-                    <span className="material-symbols-outlined group-hover:translate-x-2 transition-transform">arrow_forward</span>
+                    <span className="material-symbols-outlined text-white group-hover:translate-x-2 transition-transform">arrow_forward</span>
                   </button>
                 </form>
 
@@ -589,6 +589,7 @@ export default function Login() {
                         autoComplete="new-password"
                         minLength={8}
                         maxLength={128}
+                        title="Mínimo 8 caracteres con letras y números"
                         value={registerForm.password}
                         onChange={(event) =>
                           setRegisterForm((current) => ({
@@ -671,7 +672,7 @@ export default function Login() {
                     <span className="uppercase tracking-widest text-[11px] md:text-sm">
                       {isSubmitting === 'register' ? 'CREANDO...' : 'CREAR MI CUENTA'}
                     </span>
-                    <span className="material-symbols-outlined group-hover:translate-x-2 transition-transform">celebration</span>
+                    <span className="material-symbols-outlined text-white group-hover:translate-x-2 transition-transform">celebration</span>
                   </button>
                 </form>
 
@@ -695,7 +696,7 @@ export default function Login() {
 
           <div className="mt-8 text-center flex justify-center">
             <Link href="/" className="inline-flex items-center space-x-2 text-[10px] uppercase tracking-widest font-bold text-on-surface/40 hover:text-secondary transition-colors">
-              <span className="material-symbols-outlined text-lg">arrow_back</span>
+              <span className="material-symbols-outlined text-lg text-on-surface/40">arrow_back</span>
               <span>Volver al inicio</span>
             </Link>
           </div>

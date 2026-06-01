@@ -31,7 +31,7 @@ class AuthController extends Controller
         $validator = Validator::make($payload, [
             'name' => ['required', 'string', 'max:255', 'regex:/^[\pL\s]+$/u'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
+            'password' => ['required', 'string', 'confirmed', Password::min(8)->letters()->numbers()],
             'phone' => ['nullable', 'regex:/^[0-9]{10}$/', 'unique:users,phone'],
             'birth_date' => ['nullable', 'date', 'before:today'],
             'terms_accepted' => ['accepted'],
