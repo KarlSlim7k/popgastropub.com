@@ -11,10 +11,16 @@ export default function StaffMenuPage() {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [activeCategory, setActiveCategory] = useState("Todos");
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!session?.token) return;
-    fetchWithAuth<MenuItem[]>('/staff/menu', session.token).then(setItems).catch(() => {});
+    setLoading(true);
+    fetchWithAuth<MenuItem[]>('/staff/menu', session.token)
+      .then(setItems)
+      .catch((e) => setError(e.message || 'Error al cargar menú'))
+      .finally(() => setLoading(false));
   }, [session?.token]);
 
   const toggleDisponibilidad = async (id: number) => {
@@ -39,6 +45,17 @@ export default function StaffMenuPage() {
         <p className="text-gray-400 mt-3 text-base font-manrope">Consulta precios y disponibilidad en tiempo real.</p>
       </header>
 
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-2 border-pop-gold border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : error ? (
+        <div className="text-center py-20">
+          <p className="text-red-400 text-sm mb-4">{error}</p>
+          <button onClick={() => window.location.reload()} className="px-6 py-3 bg-pop-gold text-pop-black font-black uppercase text-xs tracking-widest rounded-lg">Reintentar</button>
+        </div>
+      ) : (
+      <>
       <div className="mb-6">
         <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar platillo..." className="w-full max-w-md bg-pop-cardGreen border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50" />
       </div>
@@ -80,6 +97,8 @@ export default function StaffMenuPage() {
           </table>
         </div>
       </section>
+      </>
+      )}
     </main>
   );
 }

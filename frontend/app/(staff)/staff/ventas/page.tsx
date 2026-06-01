@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from "@/lib/auth-provider";
 import { fetchWithAuth } from "@/lib/api";
 
@@ -22,24 +22,32 @@ export default function StaffVentasPage() {
   const [todayPoints, setTodayPoints] = useState(0);
   const [todaySales, setTodaySales] = useState(0);
 
+  useEffect(() => {
+    if (!session?.token) return;
+    fetchWithAuth<{ stats: { puntos_totales: number; bebidas_vendidas: number } }>("/staff/dashboard", session.token)
+      .then((data) => {
+        if (data?.stats) {
+          setTodayPoints(data.stats.puntos_totales);
+          setTodaySales(data.stats.bebidas_vendidas);
+        }
+      })
+      .catch(() => {});
+  }, [session?.token]);
+
   const handleSubmit = async () => {
     if (!session?.token || !selected) return;
-    const cat = DRINK_CATEGORIES.find(c => c.key === selected);
-    if (!cat) return;
-
     setSubmitting(true);
     try {
-      const totalPts = cat.points * quantity;
-      await fetchWithAuth("/ranking/points", session.token, {
+      const res = await fetchWithAuth<{ message: string; mesero: { puntos: number } }>("/ranking/points", session.token, {
         method: "POST",
-        body: JSON.stringify({
-          category: selected,
-          quantity,
-        }),
+        body: JSON.stringify({ category: selected, quantity }),
       });
-      setTodayPoints(prev => prev + totalPts);
-      setTodaySales(prev => prev + quantity);
-      setToast(`+${totalPts} pts registrados`);
+      // Use actual points from API response (multiplier-aware)
+      const match = res.message.match(/\+(\d+)/);
+      const awarded = match ? parseInt(match[1], 10) : 0;
+      setTodayPoints((prev) => prev + awarded);
+      setTodaySales((prev) => prev + quantity);
+      setToast(res.message);
       setSelected(null);
       setQuantity(1);
       setTimeout(() => setToast(null), 3000);
@@ -105,7 +113,7 @@ export default function StaffVentasPage() {
                 <span className="material-symbols-outlined">remove</span>
               </button>
               <span className="text-3xl font-black text-white font-epilogue w-12 text-center">{quantity}</span>
-              <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center text-white hover:bg-white/10">
+              <button onClick={() => setQuantity(Math.min(20, quantity + 1))} className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center text-white hover:bg-white/10">
                 <span className="material-symbols-outlined">add</span>
               </button>
             </div>

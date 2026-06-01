@@ -12,14 +12,22 @@ export default function StaffReservationsPage() {
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [salon, setSalon] = useState<SalonData | null>(null);
   const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
     if (!session?.token) return;
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetchWithAuth<{ reservas: Reserva[]; salon: SalonData }>(`/staff/reservas?fecha=${fecha}`, session.token);
       setReservas(res.reservas || []);
       setSalon(res.salon || null);
-    } catch {}
+    } catch (e: any) {
+      setError(e.message || 'Error al cargar reservas');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchData(); }, [session?.token, fecha]);
@@ -29,7 +37,9 @@ export default function StaffReservationsPage() {
     try {
       await fetchWithAuth(`/staff/reservas/${id}/status`, session.token, { method: "PATCH", body: JSON.stringify({ estado }) });
       fetchData();
-    } catch {}
+    } catch (e: any) {
+      alert(e.message || 'Error al actualizar estado');
+    }
   };
 
   const statusBadge = (s: string) => {
@@ -48,6 +58,17 @@ export default function StaffReservationsPage() {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {loading ? (
+          <div className="lg:col-span-3 flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-2 border-pop-gold border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : error ? (
+          <div className="lg:col-span-3 text-center py-20">
+            <p className="text-red-400 text-sm mb-4">{error}</p>
+            <button onClick={fetchData} className="px-6 py-3 bg-pop-gold text-pop-black font-black uppercase text-xs tracking-widest rounded-lg">Reintentar</button>
+          </div>
+        ) : (
+        <>
         <section className="lg:col-span-2">
           <div className="bg-pop-cardGreen p-8 rounded-xl border border-white/5">
             <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white mb-8 flex items-center gap-3">
@@ -105,6 +126,8 @@ export default function StaffReservationsPage() {
             </div>
           </article>
         </aside>
+        </>
+        )}
       </div>
     </main>
   );

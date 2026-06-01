@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Models\Reserva;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 
 class StaffReservaController extends Controller
@@ -14,7 +15,8 @@ class StaffReservaController extends Controller
 
         $reservas = Reserva::whereDate('fecha', $fecha)->orderBy('hora')->get();
 
-        $totalMesas = 12;
+        $settings = Setting::getGroup('restaurant');
+        $totalMesas = (int) ($settings['total_mesas'] ?? 12);
         $ocupadas = $reservas->whereIn('estado', ['confirmada', 'sentada'])->count();
 
         return response()->json([
