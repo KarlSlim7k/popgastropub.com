@@ -3,6 +3,7 @@
 import { useAuth } from "@/lib/auth-provider";
 import { fetchWithAuth } from "@/lib/api";
 import { useEffect, useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 
 interface Tier {
   name: string;
@@ -22,6 +23,29 @@ interface HistoryItem {
   created_at: string;
 }
 
+const TIER_BENEFITS: Record<string, { icon: string; title: string; status: string }[]> = {
+  fan: [
+    { icon: "loyalty", title: "Promos básicas", status: "Activo" },
+    { icon: "token", title: "1 pt por cada $10 MXN", status: "Activo" },
+    { icon: "location_on", title: "Check-in +25 pts", status: "Activo" },
+  ],
+  lover: [
+    { icon: "stars", title: "+10% puntos por compra", status: "Activo" },
+    { icon: "celebration", title: "Bebida cumpleañera gratis", status: "Disponible" },
+    { icon: "campaign", title: "Promo exclusiva mensual", status: "Activo" },
+  ],
+  vip: [
+    { icon: "stars", title: "+25% puntos por compra", status: "Activo" },
+    { icon: "restaurant", title: "Roll gratis cada 5 visitas", status: "Activo" },
+    { icon: "bolt", title: "Acceso anticipado a promos", status: "Activo" },
+  ],
+  elite: [
+    { icon: "stars", title: "+50% puntos por compra", status: "Activo" },
+    { icon: "event_seat", title: "Reserva prioritaria", status: "Activo" },
+    { icon: "confirmation_number", title: "1 buffet gratis/mes", status: "Disponible" },
+  ],
+};
+
 export default function PuntosPage() {
   const { session, logout } = useAuth();
   const userName = session?.user?.name || "Cliente";
@@ -33,6 +57,8 @@ export default function PuntosPage() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [memberSince, setMemberSince] = useState<string | null>(null);
+  const [userTierKey, setUserTierKey] = useState<string>("fan");
 
   const [activeTab, setActiveTab] = useState<"beneficios" | "historial">("beneficios");
   const [checkinDone, setCheckinDone] = useState(false);
@@ -58,6 +84,8 @@ export default function PuntosPage() {
           fetchWithAuth<any>("/loyalty/history", token),
         ]);
         setPoints(pointsRes.user?.points ?? pointsRes.points ?? 0);
+        setMemberSince(pointsRes.user?.created_at ?? null);
+        setUserTierKey(pointsRes.user?.tier ?? tierRes.user?.tier ?? "fan");
         setTier(tierRes.current_tier ? { name: tierRes.current_tier.name, min_points: tierRes.current_tier.min, max_points: tierRes.current_tier.max } : null);
         setNextTier(tierRes.next_tier ? { name: tierRes.next_tier.name, min_points: tierRes.next_tier.min, max_points: tierRes.next_tier.max } : null);
         const hist = Array.isArray(historyRes) ? historyRes : historyRes.data ?? [];
@@ -76,11 +104,7 @@ export default function PuntosPage() {
   const nextTierPoints = nextTier?.min_points ?? (tier?.max_points ? tier.max_points + 1 : userPoints + 1);
   const progress = nextTier ? ((userPoints - (tier?.min_points ?? 0)) / ((nextTier.min_points - (tier?.min_points ?? 0)) || 1)) * 100 : 100;
 
-  const benefits = [
-    { icon: "celebration", title: "Bebida cumpleañera", status: "Disponible" },
-    { icon: "stars", title: "+25% puntos por compra", status: "Activo" },
-    { icon: "confirmation_number", title: "Acceso VIP a eventos", status: "Activo" },
-  ];
+  const benefits = TIER_BENEFITS[userTierKey] || TIER_BENEFITS.fan;
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -97,7 +121,7 @@ export default function PuntosPage() {
           </h1>
           <div className="flex items-center gap-3 mt-4">
              <span className="bg-pop-gold text-pop-black text-[10px] font-black uppercase px-3 py-1 rounded-full tracking-widest">{tier?.name?.toUpperCase() || "POP FAN"}</span>
-             <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">Miembro desde {session?.user ? new Date(Date.now() - 30*24*60*60*1000).toLocaleDateString("es-MX", { month: "long", year: "numeric" }) : "—"}</p>
+             <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">Miembro desde {memberSince ? new Date(memberSince).toLocaleDateString("es-MX", { month: "long", year: "numeric" }) : "—"}</p>
           </div>
         </div>
         <div className="text-left lg:text-right space-y-3">
@@ -127,7 +151,7 @@ export default function PuntosPage() {
                       <div className="flex-1 space-y-8">
                          <div>
                             <span className="text-xs font-black text-pop-gold uppercase tracking-[0.4em]">Digital Membership</span>
-                            <h2 className="text-3xl font-black text-white uppercase mt-1">{tier?.name || "Obsidian Elite"} Card</h2>
+                            <h2 className="text-3xl font-black text-white uppercase mt-1">{tier?.name || "POP Fan"} Card</h2>
                          </div>
                          <div className="space-y-1">
                             <p className="text-xs text-gray-500 font-bold uppercase mt-1">ID Socio</p>
@@ -136,21 +160,24 @@ export default function PuntosPage() {
                          <div className="flex gap-10">
                             <div>
                                <p className="text-[10px] text-gray-500 font-bold uppercase">Nivel</p>
-                               <p className="text-sm font-black text-pop-gold uppercase">{tier?.name || "VIP Member"}</p>
+                               <p className="text-sm font-black text-pop-gold uppercase">{tier?.name || "POP Fan"}</p>
                             </div>
                             <div>
                                <p className="text-[10px] text-gray-500 font-bold uppercase">Expira</p>
-                               <p className="text-sm font-black text-white">12 / 2026</p>
+                               <p className="text-sm font-black text-white">{String(new Date().getMonth() + 1).padStart(2, "0")} / {new Date().getFullYear() + 1}</p>
                             </div>
                          </div>
                       </div>
 
                       {/* QR Code Section */}
-                      <div className="bg-white p-6 rounded-2xl flex flex-col items-center gap-3 w-fit mx-auto lg:mx-0 shadow-[0_0_30px_rgba(255,255,255,0.05)]">
-                         <div className="w-32 h-32 bg-black flex items-center justify-center">
-                            {/* Placeholder for QR - In real app use qrcode.react */}
-                            <span className="material-symbols-outlined text-white text-6xl">qr_code_2</span>
-                         </div>
+                      <div className="bg-white p-4 rounded-2xl flex flex-col items-center gap-2 w-fit mx-auto lg:mx-0 shadow-[0_0_30px_rgba(255,255,255,0.05)]">
+                         <QRCodeSVG
+                           value={`pop-checkin:${session?.user?.id || 0}`}
+                           size={128}
+                           bgColor="#ffffff"
+                           fgColor="#0D0D0D"
+                           level="M"
+                         />
                          <p className="text-[8px] font-black uppercase text-black tracking-[0.2em] leading-none">Check-in at Bar</p>
                       </div>
                    </div>

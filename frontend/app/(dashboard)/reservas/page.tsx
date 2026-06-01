@@ -84,6 +84,22 @@ export default function ReservasPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) return;
+
+    // Validate: not Tuesday
+    const selectedDate = new Date(form.fecha + "T12:00:00");
+    if (selectedDate.getDay() === 2) {
+      setToast("El restaurante está cerrado los martes");
+      return;
+    }
+
+    // Validate: within operating hours
+    const day = selectedDate.getDay();
+    const closeTime = (day === 5 || day === 6) ? "22:00" : day === 0 ? "21:00" : "21:30";
+    if (form.hora < "14:00" || form.hora > closeTime) {
+      setToast(`Horario no disponible. Operamos de 14:00 a ${closeTime}`);
+      return;
+    }
+
     setSubmitting(true);
     try {
       await fetchWithAuth("/reservas", token, {
@@ -349,6 +365,7 @@ export default function ReservasPage() {
                     name="fecha"
                     type="date"
                     required
+                    min={new Date().toISOString().split("T")[0]}
                     value={form.fecha}
                     onChange={handleChange}
                     className="w-full bg-pop-black border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-pop-gold transition-all"
@@ -360,12 +377,15 @@ export default function ReservasPage() {
                     name="hora"
                     type="time"
                     required
+                    min="14:00"
+                    max="22:00"
                     value={form.hora}
                     onChange={handleChange}
                     className="w-full bg-pop-black border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-pop-gold transition-all"
                   />
                 </div>
               </div>
+              <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest">Lun/Mié-Jue 14:00-21:30 · Vie-Sáb 14:00-22:00 · Dom 14:00-21:00 · Martes cerrado</p>
 
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Personas</label>

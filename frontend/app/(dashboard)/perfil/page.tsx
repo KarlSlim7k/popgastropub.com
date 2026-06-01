@@ -78,12 +78,33 @@ export default function PerfilPage() {
   const userName = form.name || session?.user?.name || "Cliente";
   const currentTier = profile?.tier ? `POP ${profile.tier.charAt(0).toUpperCase() + profile.tier.slice(1)}` : "POP Fan";
 
-  const tierBenefits = [
-    { benefit: "Acumulación de puntos", value: "+25% extra", icon: "trending_up" },
-    { benefit: "Regalo Cumpleaños", value: "Bebida + 150 pts", icon: "cake" },
-    { benefit: "Visitas", value: "Roll gratis cada 5", icon: "restaurant" },
-    { benefit: "Eventos", value: "Acceso Anticipado", icon: "event_available" },
-  ];
+  const tierBenefitsMap: Record<string, { benefit: string; value: string; icon: string }[]> = {
+    fan: [
+      { benefit: "Acumulación", value: "1 pt / $10 MXN", icon: "token" },
+      { benefit: "Check-in", value: "+25 pts/visita", icon: "location_on" },
+      { benefit: "Promos", value: "Básicas", icon: "campaign" },
+      { benefit: "Referidos", value: "+200 pts", icon: "group_add" },
+    ],
+    lover: [
+      { benefit: "Acumulación", value: "+10% extra", icon: "trending_up" },
+      { benefit: "Cumpleaños", value: "Bebida gratis", icon: "cake" },
+      { benefit: "Promo mensual", value: "Exclusiva", icon: "campaign" },
+      { benefit: "Referidos", value: "+200 pts", icon: "group_add" },
+    ],
+    vip: [
+      { benefit: "Acumulación", value: "+25% extra", icon: "trending_up" },
+      { benefit: "Cumpleaños", value: "Bebida + 150 pts", icon: "cake" },
+      { benefit: "Visitas", value: "Roll gratis cada 5", icon: "restaurant" },
+      { benefit: "Promos", value: "Acceso anticipado", icon: "bolt" },
+    ],
+    elite: [
+      { benefit: "Acumulación", value: "+50% extra", icon: "trending_up" },
+      { benefit: "Reserva", value: "Mesa prioritaria", icon: "event_seat" },
+      { benefit: "Eventos", value: "Invitación VIP", icon: "confirmation_number" },
+      { benefit: "Buffet", value: "1 gratis/mes", icon: "restaurant" },
+    ],
+  };
+  const tierBenefits = tierBenefitsMap[profile?.tier || "fan"] || tierBenefitsMap.fan;
 
   return (
     <main className="pt-24 lg:pt-32 p-4 lg:p-12 max-w-5xl mx-auto space-y-12">
