@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-provider";
-import { fetchWithAuth } from "@/lib/api";
+import { fetchWithAuth, fetchAPI } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import Image from "next/image";
@@ -63,6 +63,8 @@ export default function PuntosPage() {
 
   const [activeTab, setActiveTab] = useState<"beneficios" | "historial">("beneficios");
   const [checkinDone, setCheckinDone] = useState(false);
+  const [historyVisible, setHistoryVisible] = useState(10);
+  const [promo, setPromo] = useState<{ nombre: string; descripcion?: string; imagen?: string } | null>(null);
 
   const handleCheckin = async () => {
     if (!token || checkinDone) return;
@@ -72,6 +74,12 @@ export default function PuntosPage() {
       setCheckinDone(true);
     } catch {}
   };
+
+  useEffect(() => {
+    fetchAPI<any[]>("/promociones")
+      .then((data) => { if (data?.length) setPromo(data[0]); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!token) return;
@@ -252,7 +260,8 @@ export default function PuntosPage() {
                             <p className="text-xs font-bold text-gray-500 uppercase tracking-widest leading-relaxed">Aún no tienes actividad en tu cuenta.<br/>¡Haz tu primera compra para empezar a acumular puntos!</p>
                          </div>
                        ) : (
-                         history.map((a) => (
+                         <>
+                         {history.slice(0, historyVisible).map((a) => (
                            <div key={a.id} className="bg-pop-cardGreen p-5 rounded-2xl border border-white/5 flex items-center justify-between">
                               <div className="flex items-center gap-4">
                                  <span className="text-[10px] font-black text-gray-500 w-12">{formatDate(a.created_at)}</span>
@@ -262,7 +271,13 @@ export default function PuntosPage() {
                                  {a.type === 'earn' ? '+' : ''}{a.points}
                               </span>
                            </div>
-                         ))
+                         ))}
+                         {history.length > historyVisible && (
+                           <button onClick={() => setHistoryVisible((v) => v + 10)} className="w-full py-3 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-pop-gold transition-all">
+                             Ver más ({history.length - historyVisible} restantes)
+                           </button>
+                         )}
+                         </>
                        )}
                     </div>
                  )}
@@ -275,15 +290,15 @@ export default function PuntosPage() {
            {/* Current Promo Banner */}
            <article className="relative h-64 rounded-3xl overflow-hidden group">
               <Image
-                src="https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=600&fit=crop"
-                alt="Sushi"
+                src={promo?.imagen || "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=600&fit=crop"}
+                alt={promo?.nombre || "Promoción"}
                 fill
                 className="object-cover transition-transform duration-1000 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent p-6 flex flex-col justify-end">
-                 <span className="text-[9px] font-black text-pop-gold uppercase tracking-widest mb-1">Membresía VIP</span>
-                 <h3 className="text-2xl font-black text-white uppercase leading-none">Promo 2x1 en Rolls Acevichados</h3>
-                 <p className="text-[10px] text-gray-400 mt-2 font-bold uppercase tracking-widest">Disponible cada Martes</p>
+                 <span className="text-[9px] font-black text-pop-gold uppercase tracking-widest mb-1">Promo Activa</span>
+                 <h3 className="text-2xl font-black text-white uppercase leading-none">{promo?.nombre || "Descubre nuestras promos"}</h3>
+                 {promo?.descripcion && <p className="text-[10px] text-gray-400 mt-2 font-bold uppercase tracking-widest line-clamp-2">{promo.descripcion}</p>}
               </div>
            </article>
 
@@ -323,7 +338,7 @@ export default function PuntosPage() {
            <article className="bg-pop-cardGreen p-8 rounded-3xl border-2 border-white/5 border-dashed text-center">
               <span className="material-symbols-outlined text-gray-600 text-4xl mb-4">support_agent</span>
               <p className="text-xs font-bold text-gray-500 uppercase tracking-widest leading-relaxed">¿Necesitas ayuda con tus puntos?</p>
-              <button className="text-pop-gold text-[10px] font-black uppercase mt-4 underline underline-offset-4 decoration-pop-gold/30">Contactar Soporte VIP</button>
+              <a href="https://wa.me/522821278014?text=Hola%2C%20necesito%20ayuda%20con%20mis%20POP%20Points" target="_blank" rel="noopener noreferrer" className="text-pop-gold text-[10px] font-black uppercase mt-4 underline underline-offset-4 decoration-pop-gold/30 inline-block">Contactar Soporte VIP</a>
            </article>
         </aside>
       </div>

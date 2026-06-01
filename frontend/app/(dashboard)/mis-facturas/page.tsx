@@ -29,6 +29,7 @@ export default function MisFacturasPage() {
   const [facturas, setFacturas] = useState<Factura[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(10);
 
   useEffect(() => {
     if (!token) return;
@@ -103,7 +104,7 @@ export default function MisFacturasPage() {
              </div>
            ) : (
              <div className="space-y-4">
-                {facturas.map((inv) => (
+                {facturas.slice(0, visibleCount).map((inv) => (
                   <article key={inv.id} className="bg-pop-cardGreen p-6 rounded-2xl border border-white/5 hover:border-pop-gold/10 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6">
                      <div className="flex items-start gap-5">
                         <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-500">
@@ -133,6 +134,11 @@ export default function MisFacturasPage() {
                      </div>
                   </article>
                 ))}
+                {facturas.length > visibleCount && (
+                  <button onClick={() => setVisibleCount((v) => v + 10)} className="w-full py-4 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-pop-gold hover:border-pop-gold/20 transition-all">
+                    Ver más ({facturas.length - visibleCount} restantes)
+                  </button>
+                )}
              </div>
            )}
         </div>

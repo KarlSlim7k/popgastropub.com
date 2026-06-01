@@ -21,6 +21,7 @@ export default function PedidosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [promoText, setPromoText] = useState<string>("Explora nuestra carta completa y descubre nuevos sabores para tu próxima visita.");
+  const [visibleCount, setVisibleCount] = useState(10);
 
   const token = session?.token ?? "";
 
@@ -141,7 +142,7 @@ export default function PedidosPage() {
           </div>
         ) : orders.length > 0 ? (
           <div className="grid grid-cols-1 gap-4">
-            {orders.map((order) => (
+            {orders.slice(0, visibleCount).map((order) => (
               <article key={order.id} className="bg-pop-cardGreen p-6 lg:p-8 rounded-3xl border border-white/5 hover:border-pop-gold/10 transition-all group">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div className="space-y-4 flex-1">
@@ -171,6 +172,11 @@ export default function PedidosPage() {
                 </div>
               </article>
             ))}
+            {orders.length > visibleCount && (
+              <button onClick={() => setVisibleCount((v) => v + 10)} className="w-full py-4 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-pop-gold hover:border-pop-gold/20 transition-all">
+                Ver más ({orders.length - visibleCount} restantes)
+              </button>
+            )}
           </div>
         ) : (
           <div className="bg-pop-cardGreen p-12 rounded-3xl border border-dashed border-white/5 text-center space-y-4">
