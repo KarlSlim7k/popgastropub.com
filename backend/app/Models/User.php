@@ -52,9 +52,9 @@ class User extends Authenticatable
     {
         $points = $this->points ?? 0;
 
-        if ($points >= 3000) return 'elite';
-        if ($points >= 1500) return 'vip';
-        if ($points >= 500) return 'lover';
+        if ($points >= \App\Services\LoyaltyConfig::tierMin('elite')) return 'elite';
+        if ($points >= \App\Services\LoyaltyConfig::tierMin('vip'))   return 'vip';
+        if ($points >= \App\Services\LoyaltyConfig::tierMin('lover')) return 'lover';
         return 'fan';
     }
 

@@ -104,6 +104,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware(['auth:sanctum', 'role:mesero,admin'])->group(function () {
     Route::get('/ranking', [RankingController::class, 'index']);
     Route::post('/ranking/points', [RankingController::class, 'addPoints']);
+    Route::get('/ranking/history', [RankingController::class, 'history']);
 });
 
 Route::middleware(['auth:sanctum', 'role:mesero,admin'])->prefix('staff')->group(function () {
@@ -153,6 +154,24 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::get('/configuracion', [App\Http\Controllers\Admin\ConfiguracionController::class, 'index']);
     Route::put('/configuracion', [App\Http\Controllers\Admin\ConfiguracionController::class, 'update']);
 
+    // Loyalty config (business constants)
+    Route::get('/loyalty-config', fn() => response()->json(\App\Models\Setting::getGroup('loyalty')));
+    Route::put('/loyalty-config', function (\Illuminate\Http\Request $request) {
+        $request->validate([
+            'data' => 'required|array',
+            'data.points_per_peso' => 'sometimes|numeric|min:0',
+            'data.referral_bonus' => 'sometimes|integer|min:0',
+            'data.welcome_bonus' => 'sometimes|integer|min:0',
+            'data.checkin_bonus' => 'sometimes|integer|min:0',
+            'data.tier_lover_min' => 'sometimes|integer|min:1',
+            'data.tier_vip_min' => 'sometimes|integer|min:1',
+            'data.tier_elite_min' => 'sometimes|integer|min:1',
+        ]);
+        \App\Models\Setting::setGroup('loyalty', $request->input('data'));
+        \Illuminate\Support\Facades\Cache::forget('loyalty_settings');
+        return response()->json(['message' => 'Configuración de lealtad actualizada']);
+    });
+
     // Menu CRUD
     Route::apiResource('menu', App\Http\Controllers\Admin\MenuController::class);
 
@@ -171,6 +190,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 
     // Meseros CRUD
     Route::apiResource('meseros', App\Http\Controllers\Admin\MeseroController::class);
+    Route::get('/meseros/{id}/points-log', fn($id) => response()->json(
+        \App\Models\MeseroPointsLog::where('mesero_id', $id)->orderByDesc('created_at')->limit(100)->get()
+    ));
 
     // Ranking Periods
     Route::get('/ranking/periodos', [App\Http\Controllers\Admin\RankingPeriodController::class, 'index']);

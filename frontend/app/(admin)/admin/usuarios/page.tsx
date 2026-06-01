@@ -19,7 +19,7 @@ interface User {
   joinDate: string;
   lastVisit: string;
   orders: number;
-  totalSpent: string;
+  totalSpent: number | string;
   avatar: string;
 }
 
@@ -216,10 +216,10 @@ export default function AdminUsuariosPage() {
                     <p className="text-[10px] text-gray-500">{user.phone}</p>
                   </td>
                   <td className="py-4">{getRoleBadge(user.role)}</td>
-                  <td className="py-4"><span className={`text-xs font-bold ${user.tierColor}`}>{user.tier}</span></td>
+                  <td className="py-4"><span className={`text-xs font-bold ${{ fan: "text-gray-400", lover: "text-pop-gold", vip: "text-pop-orange", elite: "text-purple-400" }[user.tier] ?? "text-gray-400"}`}>{user.tier.charAt(0).toUpperCase() + user.tier.slice(1)}</span></td>
                   <td className="py-4 font-mono font-bold text-pop-gold text-sm">{user.points?.toLocaleString()}</td>
                   <td className="py-4 text-gray-300 font-mono text-sm">{user.orders}</td>
-                  <td className="py-4 font-mono font-semibold text-white text-sm">{user.totalSpent}</td>
+                  <td className="py-4 font-mono font-semibold text-white text-sm">${typeof user.totalSpent === "number" ? user.totalSpent.toLocaleString("es-MX") : user.totalSpent}</td>
                   <td className="py-4">{getStatusBadge(user.status)}</td>
                   <td className="py-4 text-right">
                     <div className="flex justify-end gap-1">

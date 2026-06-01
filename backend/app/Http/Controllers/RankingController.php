@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mesero;
+use App\Models\MeseroPointsLog;
 use Illuminate\Http\Request;
 
 class RankingController extends Controller
@@ -40,15 +41,40 @@ class RankingController extends Controller
         }
 
         $category = $validated['category'];
+        $multiplier = (float) ($mesero->point_multiplier ?? 1.0);
         $basePoints = $categories[$category]['points'] * $validated['quantity'];
-        $points = (int) round($basePoints * ($mesero->point_multiplier ?? 1.0));
+        $points = (int) round($basePoints * $multiplier);
+
         $mesero->increment($category . '_points', $points);
         $mesero->increment('puntos', $points);
+
+        MeseroPointsLog::create([
+            'mesero_id' => $mesero->id,
+            'category' => $category,
+            'points' => $points,
+            'multiplier' => $multiplier,
+        ]);
+
         $mesero->refresh();
 
         return response()->json([
             'message' => "Puntos añadidos: +{$points}",
             'mesero' => $mesero,
         ]);
+    }
+
+    public function history(Request $request)
+    {
+        $mesero = Mesero::where('user_id', $request->user()->id)->first();
+        if (!$mesero) {
+            return response()->json([]);
+        }
+
+        return response()->json(
+            MeseroPointsLog::where('mesero_id', $mesero->id)
+                ->orderByDesc('created_at')
+                ->limit(50)
+                ->get()
+        );
     }
 }

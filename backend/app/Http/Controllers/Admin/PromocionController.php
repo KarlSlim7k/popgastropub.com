@@ -94,7 +94,7 @@ class PromocionController extends Controller
             'status' => $p->estado ?? ($p->activa ? 'activa' : 'pausada'),
             'redemptions' => $p->redenciones ?? 0,
             'target' => $p->meta ?? 0,
-            'revenue' => '$' . number_format((float) ($p->ingresos ?? 0), 0),
+            'revenue' => (float) ($p->ingresos ?? 0),
             'image' => $p->imagen ?? '',
             'imageAlt' => $p->titulo,
         ];

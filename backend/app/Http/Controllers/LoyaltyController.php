@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LoyaltyTransaction;
 use App\Models\User;
+use App\Services\LoyaltyConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -24,10 +25,10 @@ class LoyaltyController extends Controller
         $user = $request->user();
 
         $tiers = [
-            'fan' => ['min' => 0, 'max' => 499, 'name' => 'POP Fan'],
-            'lover' => ['min' => 500, 'max' => 1499, 'name' => 'POP Lover'],
-            'vip' => ['min' => 1500, 'max' => 2999, 'name' => 'POP VIP'],
-            'elite' => ['min' => 3000, 'max' => null, 'name' => 'POP Elite'],
+            'fan'   => ['min' => 0,                                          'max' => LoyaltyConfig::tierMin('lover') - 1, 'name' => 'POP Fan'],
+            'lover' => ['min' => LoyaltyConfig::tierMin('lover'),            'max' => LoyaltyConfig::tierMin('vip') - 1,   'name' => 'POP Lover'],
+            'vip'   => ['min' => LoyaltyConfig::tierMin('vip'),              'max' => LoyaltyConfig::tierMin('elite') - 1, 'name' => 'POP VIP'],
+            'elite' => ['min' => LoyaltyConfig::tierMin('elite'),            'max' => null,                                 'name' => 'POP Elite'],
         ];
 
         $nextTier = $this->getNextTier($user->tier, $tiers);
@@ -62,12 +63,12 @@ class LoyaltyController extends Controller
                 abort(422, 'Ya registraste tu check-in de hoy.');
             }
 
-            $user->increment('points', 25);
+            $user->increment('points', (int) LoyaltyConfig::get('checkin_bonus'));
             $user->update(['last_visit' => now()]);
 
             LoyaltyTransaction::create([
                 'user_id' => $user->id,
-                'points' => 25,
+                'points' => (int) LoyaltyConfig::get('checkin_bonus'),
                 'concept' => 'Check-in restaurante',
             ]);
 
@@ -75,7 +76,7 @@ class LoyaltyController extends Controller
         });
 
         return response()->json([
-            'message' => 'Check-in exitoso. +25 pts',
+            'message' => 'Check-in exitoso. +' . (int) LoyaltyConfig::get('checkin_bonus') . ' pts',
             'points' => $user->points,
             'tier' => $user->tier,
         ]);

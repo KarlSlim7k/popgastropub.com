@@ -6,6 +6,7 @@ use App\Models\LoyaltyTransaction;
 use App\Models\Pedido;
 use App\Models\Referral;
 use App\Models\User;
+use App\Services\LoyaltyConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -27,7 +28,7 @@ class PedidoController extends Controller
             'notas' => 'nullable|string',
         ]);
 
-        $puntosGanados = (int) floor($validated['total'] / 10);
+        $puntosGanados = LoyaltyConfig::pointsForAmount((float) $validated['total']);
 
         $pedido = DB::transaction(function () use ($request, $validated, $puntosGanados) {
             $pedido = Pedido::create([
@@ -72,13 +73,14 @@ class PedidoController extends Controller
 
         $referral->update(['status' => 'converted', 'converted_at' => now()]);
 
-        // Award 200 pts to referrer
+        // Award referral bonus to referrer
         $referrer = User::whereKey($referral->referrer_id)->lockForUpdate()->first();
         if ($referrer) {
-            $referrer->increment('points', 200);
+            $bonus = (int) LoyaltyConfig::get('referral_bonus');
+            $referrer->increment('points', $bonus);
             LoyaltyTransaction::create([
                 'user_id' => $referrer->id,
-                'points' => 200,
+                'points' => $bonus,
                 'concept' => "Referido convertido: {$referredUser->name}",
             ]);
         }

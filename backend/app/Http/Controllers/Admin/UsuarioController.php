@@ -148,13 +148,6 @@ class UsuarioController extends Controller
 
     private function toFrontend(User $u): array
     {
-        $tierColors = [
-            'fan' => 'text-gray-400',
-            'lover' => 'text-pop-gold',
-            'vip' => 'text-pop-orange',
-            'elite' => 'text-purple-400',
-        ];
-
         return [
             'id' => (string) $u->id,
             'name' => $u->name,
@@ -164,12 +157,11 @@ class UsuarioController extends Controller
             'role' => $u->role,
             'status' => $u->status ?? 'activo',
             'points' => $u->points ?? 0,
-            'tier' => ucfirst($u->tier),
-            'tierColor' => $tierColors[$u->tier] ?? 'text-gray-400',
+            'tier' => $u->tier,
             'joinDate' => $u->created_at?->toISOString() ?? '',
             'lastVisit' => $u->last_visit?->diffForHumans() ?? 'Nunca',
             'orders' => $u->orders_count ?? 0,
-            'totalSpent' => '$' . number_format((float) ($u->total_spent ?? 0), 0, '.', ','),
+            'totalSpent' => (float) ($u->total_spent ?? 0),
             'avatar' => $u->name ? strtoupper(substr($u->name, 0, 1)) : '?',
         ];
     }

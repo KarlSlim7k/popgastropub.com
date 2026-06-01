@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\LoyaltyTransaction;
+use App\Services\LoyaltyConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -13,7 +14,7 @@ use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
-    private const WELCOME_POINTS = 50;
+    private const WELCOME_POINTS = 50; // fallback; actual value from LoyaltyConfig
 
     public function register(Request $request)
     {
@@ -49,13 +50,13 @@ class AuthController extends Controller
                 'email' => $payload['email'],
                 'password' => Hash::make($payload['password']),
                 'phone' => $payload['phone'] ?: null,
-                'points' => self::WELCOME_POINTS,
+                'points' => (int) LoyaltyConfig::get('welcome_bonus'),
                 'role' => 'cliente',
             ]);
 
             LoyaltyTransaction::create([
                 'user_id' => $user->id,
-                'points' => self::WELCOME_POINTS,
+                'points' => (int) LoyaltyConfig::get('welcome_bonus'),
                 'concept' => 'Bono de bienvenida',
             ]);
 
