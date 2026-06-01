@@ -43,10 +43,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-6 lg:gap-8 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
-                <a className="hover:text-pop-gold transition-colors" href="#">Estado del Servidor</a>
-                <a className="hover:text-pop-gold transition-colors" href="#">Logs de Respaldo</a>
-                <a className="hover:text-pop-gold transition-colors" href="#">Portal de Soporte</a>
-                <a className="hover:text-pop-gold transition-colors" href="#">Privacidad</a>
+                <a className="hover:text-pop-gold transition-colors" href="/admin/configuracion">Configuración</a>
+                <a className="hover:text-pop-gold transition-colors" href="/admin/perfil">Mi Perfil</a>
+                <a className="hover:text-pop-gold transition-colors" href={`https://wa.me/522821278014?text=Soporte%20Admin%20POP%20Perote`} target="_blank" rel="noopener noreferrer">Soporte</a>
+                <a className="hover:text-pop-gold transition-colors" href="/terminos">Privacidad</a>
               </div>
             </div>
           </footer>

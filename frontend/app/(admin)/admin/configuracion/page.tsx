@@ -28,6 +28,21 @@ export default function AdminConfiguracionPage() {
     setSettings((prev) => ({ ...prev, [group]: { ...prev[group], [key]: value } }));
   };
 
+  // Apply theme and density visually
+  useEffect(() => {
+    const tema = settings.apariencia.tema || "dark";
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = tema === "dark" || (tema === "auto" && prefersDark);
+    document.documentElement.classList.toggle("dark", isDark);
+    document.documentElement.setAttribute("data-theme", tema);
+  }, [settings.apariencia.tema]);
+
+  useEffect(() => {
+    const densidad = settings.apariencia.densidad || "Normal";
+    const map: Record<string, string> = { Compacta: "compact", Normal: "normal", Cómoda: "comfortable" };
+    document.documentElement.setAttribute("data-density", map[densidad] || "normal");
+  }, [settings.apariencia.densidad]);
+
   const saveGroup = async (group: string) => {
     const session = getAuthSession();
     if (!session) return;

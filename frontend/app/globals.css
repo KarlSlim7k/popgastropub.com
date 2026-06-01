@@ -14,6 +14,12 @@ body {
   color: #ffffff;
 }
 
+/* Table density */
+[data-density="compact"] table td,
+[data-density="compact"] table th { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+[data-density="comfortable"] table td,
+[data-density="comfortable"] table th { padding-top: 1.25rem; padding-bottom: 1.25rem; }
+
 @layer components {
   .btn-primary {
     @apply bg-pop-gold text-pop-black font-semibold px-6 py-3 rounded-lg hover:bg-pop-lightGold transition-colors duration-200;

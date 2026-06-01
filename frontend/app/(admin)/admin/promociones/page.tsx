@@ -130,6 +130,15 @@ export default function AdminPromocionesPage() {
   const activeCount = promos.filter((p) => p.status === "activa").length;
   const totalRedemptions = promos.reduce((acc, p) => acc + (p.redemptions || 0), 0);
 
+  // Build weekly calendar from real promo data
+  const DAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+  const calendarDays = DAYS.map((day) => ({
+    day,
+    promos: promos
+      .filter((p) => p.status === "activa" && p.daysActive && p.daysActive.toLowerCase().includes(day.toLowerCase()))
+      .map((p) => p.name),
+  }));
+
   return (
     <main className="pt-24 lg:pt-20 p-4 lg:p-10 min-h-screen bg-pop-black">
       <header className="mb-8 lg:mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
@@ -154,7 +163,7 @@ export default function AdminPromocionesPage() {
         {[
           { label: "Promociones Activas", value: String(activeCount), icon: "local_offer", color: "pop-gold", sublabel: `De ${promos.length} totales` },
           { label: "Redenciones del Mes", value: totalRedemptions.toLocaleString(), icon: "redeem", color: "pop-orange", sublabel: "Acumulado" },
-          { label: "Ingreso por Promos", value: "$0", icon: "payments", color: "pop-light-gold", sublabel: "ROI: -" },
+          { label: "Ingreso por Promos", value: `${totalRedemptions} canjes`, icon: "payments", color: "pop-light-gold", sublabel: "Total acumulado" },
           { label: "Próximas a Expirar", value: String(promos.filter((p) => p.status === "proxima").length), icon: "schedule", color: "error", sublabel: "Esta semana" },
         ].map((stat, index) => (
           <article
@@ -176,26 +185,20 @@ export default function AdminPromocionesPage() {
       <section className="bg-pop-cardGreen backdrop-blur-sm rounded-xl p-6 lg:p-8 border border-white/5 mb-8">
         <h2 className="text-xl font-black uppercase font-epilogue tracking-tighter text-white mb-6">Calendario Semanal de Promociones</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-          {[
-            { day: "Lun", promos: ["Happy Hour"], active: true },
-            { day: "Mar", promos: ["Sushi -30%"], active: true },
-            { day: "Mié", promos: ["Happy Hour"], active: true },
-            { day: "Jue", promos: ["Wings 2x1"], active: false },
-            { day: "Vie", promos: ["Happy Hour", "Combo"], active: true },
-            { day: "Sáb", promos: ["Combo", "Crepe"], active: true },
-            { day: "Dom", promos: ["Cumpleañero"], active: true },
-          ].map((day, idx) => (
+          {calendarDays.map((day, idx) => (
             <div
               key={idx}
               className={`rounded-xl p-4 border transition-all ${
-                day.active ? "bg-pop-gold/5 border-pop-gold/20 hover:bg-pop-gold/10" : "bg-gray-800/30 border-gray-700/30 opacity-60"
+                day.promos.length > 0 ? "bg-pop-gold/5 border-pop-gold/20 hover:bg-pop-gold/10" : "bg-gray-800/30 border-gray-700/30 opacity-60"
               }`}
             >
               <p className="text-xs font-bold text-pop-gold uppercase tracking-wider mb-3">{day.day}</p>
               <div className="space-y-1.5">
-                {day.promos.map((promo, pIdx) => (
-                  <span key={pIdx} className="block text-[10px] bg-pop-orange/10 text-pop-orange px-2 py-1 rounded font-medium truncate">{promo}</span>
-                ))}
+                {day.promos.length > 0 ? day.promos.map((name, pIdx) => (
+                  <span key={pIdx} className="block text-[10px] bg-pop-orange/10 text-pop-orange px-2 py-1 rounded font-medium truncate">{name}</span>
+                )) : (
+                  <span className="block text-[10px] text-gray-600 px-2 py-1">Sin promos</span>
+                )}
               </div>
             </div>
           ))}

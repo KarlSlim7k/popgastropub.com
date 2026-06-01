@@ -21,8 +21,8 @@ interface MenuItem {
   allergens: string[];
 }
 
-const ALLERGENS = ["Pescado", "Mariscos", "Sésamo", "Gluten", "Lácteos"];
-const CATEGORIES = ["Sushi", "Wings", "Bebidas", "Postres", "Snacks"];
+const ALLERGENS = ["Pescado", "Mariscos", "Sésamo", "Gluten", "Lácteos", "Huevo", "Soya", "Cacahuate"];
+// Categories are derived dynamically from loaded products (see below)
 
 export default function AdminGestionMenuPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -65,6 +65,12 @@ export default function AdminGestionMenuPage() {
   useEffect(() => {
     fetchMenu();
   }, []);
+
+  // Derive categories from loaded products, with fallback defaults
+  const CATEGORIES = Array.from(new Set([
+    ...menuItems.map((i) => i.category).filter(Boolean),
+    "Sushi", "Wings", "Bebidas", "Postres", "Snacks",
+  ]));
 
   const openCreate = () => {
     setEditingItem(null);

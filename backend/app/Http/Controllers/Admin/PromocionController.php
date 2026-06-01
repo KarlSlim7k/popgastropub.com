@@ -17,8 +17,20 @@ class PromocionController extends Controller
 
     public function store(Request $request)
     {
-        $data = $this->fromFrontend($request);
-        $promo = Promocion::create($data);
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'type' => 'nullable|string|in:descuento,2x1,regalo,especial',
+            'discount' => 'nullable|string|max:50',
+            'startDate' => 'nullable|string|max:20',
+            'endDate' => 'nullable|string|max:20',
+            'daysActive' => 'nullable|string|max:100',
+            'status' => 'nullable|string|in:activa,pausada,finalizada',
+            'target' => 'nullable|integer|min:0',
+            'image' => 'nullable|string|max:500',
+        ]);
+
+        $promo = Promocion::create($this->fromFrontend($request));
 
         return response()->json($this->toFrontend($promo), 201);
     }
@@ -30,9 +42,21 @@ class PromocionController extends Controller
 
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'type' => 'nullable|string|in:descuento,2x1,regalo,especial',
+            'discount' => 'nullable|string|max:50',
+            'startDate' => 'nullable|string|max:20',
+            'endDate' => 'nullable|string|max:20',
+            'daysActive' => 'nullable|string|max:100',
+            'status' => 'nullable|string|in:activa,pausada,finalizada',
+            'target' => 'nullable|integer|min:0',
+            'image' => 'nullable|string|max:500',
+        ]);
+
         $promo = Promocion::findOrFail($id);
-        $data = $this->fromFrontend($request);
-        $promo->update($data);
+        $promo->update($this->fromFrontend($request));
 
         return response()->json($this->toFrontend($promo->fresh()));
     }
