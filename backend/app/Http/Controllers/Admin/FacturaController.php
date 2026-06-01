@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\PushNotificationController;
 use App\Models\Factura;
 use App\Models\FacturaStatusLog;
+use App\Services\FacturaAccountantMailer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -96,6 +97,17 @@ class FacturaController extends Controller
         return $request->boolean('download')
             ? $disk->download($factura->ticket_path)
             : response()->file($disk->path($factura->ticket_path));
+    }
+
+    public function retryAccountantEmail($id, FacturaAccountantMailer $mailer)
+    {
+        $factura = Factura::findOrFail($id);
+        $sent = $mailer->deliver($factura);
+
+        return response()->json([
+            'factura' => $factura->fresh(),
+            'message' => $sent ? 'Correo enviado a contadores.' : 'No se pudo enviar. Se reintentará automáticamente.',
+        ], $sent ? 200 : 202);
     }
 
     private function sendStatusNotification(Factura $factura): void

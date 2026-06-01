@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from "@/lib/auth-provider";
 import { fetchWithAuth } from "@/lib/api";
 
@@ -15,22 +15,30 @@ export default function StaffReservationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async (silent = false) => {
     if (!session?.token) return;
-    setLoading(true);
-    setError(null);
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
     try {
       const res = await fetchWithAuth<{ reservas: Reserva[]; salon: SalonData }>(`/staff/reservas?fecha=${fecha}`, session.token);
       setReservas(res.reservas || []);
       setSalon(res.salon || null);
     } catch (e: any) {
-      setError(e.message || 'Error al cargar reservas');
+      if (!silent) setError(e.message || 'Error al cargar reservas');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
-  };
+  }, [session?.token, fecha]);
 
-  useEffect(() => { fetchData(); }, [session?.token, fecha]);
+  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") fetchData(true);
+    }, 60_000);
+    return () => window.clearInterval(timer);
+  }, [fetchData]);
 
   const updateStatus = async (id: number, estado: string) => {
     if (!session?.token) return;
@@ -53,6 +61,7 @@ export default function StaffReservationsPage() {
         <div>
           <h1 className="text-4xl lg:text-5xl font-black tracking-tighter text-white font-epilogue uppercase">Reservaciones</h1>
           <p className="text-pop-orange mt-2 text-xs font-bold uppercase tracking-[0.3em]">Gestión de mesas</p>
+          <p className="text-gray-500 mt-2 text-[10px] font-bold uppercase tracking-widest">Actualización automática cada 60 segundos</p>
         </div>
         <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="bg-pop-cardGreen border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-pop-gold outline-none" />
       </header>
@@ -65,7 +74,7 @@ export default function StaffReservationsPage() {
         ) : error ? (
           <div className="lg:col-span-3 text-center py-20">
             <p className="text-red-400 text-sm mb-4">{error}</p>
-            <button onClick={fetchData} className="px-6 py-3 bg-pop-gold text-pop-black font-black uppercase text-xs tracking-widest rounded-lg">Reintentar</button>
+            <button onClick={() => fetchData()} className="px-6 py-3 bg-pop-gold text-pop-black font-black uppercase text-xs tracking-widest rounded-lg">Reintentar</button>
           </div>
         ) : (
         <>

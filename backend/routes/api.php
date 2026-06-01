@@ -199,6 +199,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::get('/facturas/{id}', [App\Http\Controllers\Admin\FacturaController::class, 'show']);
     Route::get('/facturas/{id}/ticket', [App\Http\Controllers\Admin\FacturaController::class, 'ticket']);
     Route::patch('/facturas/{id}/status', [App\Http\Controllers\Admin\FacturaController::class, 'updateStatus']);
+    Route::post('/facturas/{id}/retry-accountant-email', [App\Http\Controllers\Admin\FacturaController::class, 'retryAccountantEmail']);
     Route::get('/facturas/{id}/log', [App\Http\Controllers\Admin\FacturaController::class, 'statusLog']);
 
     // Usuarios CRUD

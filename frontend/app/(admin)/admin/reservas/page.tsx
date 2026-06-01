@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
 import { Pagination } from "@/components/ui/Pagination";
@@ -26,10 +26,10 @@ export default function AdminReservasPage() {
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState({ current_page: 1, last_page: 1, total: 0 });
 
-  const load = async (p = page) => {
+  const load = useCallback(async (p: number, silent = false) => {
     const session = getAuthSession();
     if (!session) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(p), per_page: "20" });
       if (filter !== "todos") params.set("estado", filter);
@@ -37,14 +37,20 @@ export default function AdminReservasPage() {
       setReservas(Array.isArray(data) ? data : data.data ?? []);
       if (data.meta) setMeta(data.meta);
     } catch {
-      alert("No se pudieron cargar las reservas");
+      if (!silent) alert("No se pudieron cargar las reservas");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
-  };
+  }, [filter]);
 
-  useEffect(() => { load(1); setPage(1); }, [filter]);
-  useEffect(() => { load(page); }, [page]);
+  useEffect(() => { setPage(1); }, [filter]);
+  useEffect(() => { load(page); }, [load, page]);
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") load(page, true);
+    }, 60_000);
+    return () => window.clearInterval(timer);
+  }, [load, page]);
 
   const updateStatus = async (id: number, estado: Reserva["estado"]) => {
     const session = getAuthSession();
@@ -78,6 +84,7 @@ export default function AdminReservasPage() {
       <header className="mb-8">
         <h1 className="text-4xl lg:text-6xl font-black tracking-tighter text-white font-epilogue uppercase">Reservas</h1>
         <p className="text-pop-orange mt-2 text-xs font-bold uppercase tracking-[0.3em]">Control de mesas y visitas</p>
+        <p className="text-gray-500 mt-2 text-[10px] font-bold uppercase tracking-widest">Actualización automática cada 60 segundos</p>
       </header>
 
       <section className="flex flex-wrap gap-2 mb-6">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { downloadAuthenticatedFile, fetchWithAuth, openAuthenticatedFile } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
 import { Pagination } from "@/components/ui/Pagination";
@@ -16,6 +16,11 @@ interface Factura {
   created_at: string;
   estado: "recibida" | "en_proceso" | "enviada_contadores" | "completada" | "rechazada";
   ticket_path?: string;
+  contadores_email_enviado_at?: string | null;
+  contadores_email_intentos?: number;
+  contadores_email_ultimo_intento_at?: string | null;
+  contadores_email_siguiente_intento_at?: string | null;
+  contadores_email_error?: string | null;
   user?: { name: string; email: string };
 }
 
@@ -30,10 +35,10 @@ export default function AdminFacturacionPage() {
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState({ current_page: 1, last_page: 1, total: 0 });
 
-  const fetchFacturas = async (p = page) => {
+  const fetchFacturas = useCallback(async (p: number, silent = false) => {
     const session = getAuthSession();
     if (!session) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(p), per_page: "20" });
       if (dateFrom) params.append("from", dateFrom);
@@ -45,12 +50,18 @@ export default function AdminFacturacionPage() {
     } catch {
       // error
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
-  };
+  }, [dateFrom, dateTo, selectedStatus]);
 
-  useEffect(() => { fetchFacturas(1); setPage(1); }, [dateFrom, dateTo, selectedStatus]);
-  useEffect(() => { fetchFacturas(page); }, [page]);
+  useEffect(() => { setPage(1); }, [dateFrom, dateTo, selectedStatus]);
+  useEffect(() => { fetchFacturas(page); }, [fetchFacturas, page]);
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") fetchFacturas(page, true);
+    }, 60_000);
+    return () => window.clearInterval(timer);
+  }, [fetchFacturas, page]);
 
   useEffect(() => {
     if (!detailItem) { setStatusLog([]); return; }
@@ -123,6 +134,25 @@ export default function AdminFacturacionPage() {
     }
   };
 
+  const retryAccountantEmail = async (id: number) => {
+    const session = getAuthSession();
+    if (!session) return;
+    try {
+      const response = await fetchWithAuth<{ factura: Factura; message: string }>(`/admin/facturas/${id}/retry-accountant-email`, session.token, { method: "POST" });
+      setRequests((current) => current.map((factura) => factura.id === id ? response.factura : factura));
+      setDetailItem((current) => current?.id === id ? response.factura : current);
+      alert(response.message);
+    } catch {
+      alert("No se pudo reenviar el correo a contadores");
+    }
+  };
+
+  const accountantEmailLabel = (factura: Factura) => {
+    if (factura.contadores_email_enviado_at) return "Correo entregado";
+    if (factura.contadores_email_error) return "Correo en reintento";
+    return "Correo pendiente";
+  };
+
   return (
     <main className="pt-24 lg:pt-20 p-4 lg:p-10 min-h-screen bg-pop-black">
       <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
@@ -133,6 +163,7 @@ export default function AdminFacturacionPage() {
           <p className="text-pop-orange mt-2 text-xs font-bold uppercase tracking-[0.3em]">
             Control Fiscal Interno
           </p>
+          <p className="text-gray-500 mt-2 text-[10px] font-bold uppercase tracking-widest">Actualización automática cada 60 segundos</p>
         </div>
       </header>
 
@@ -224,6 +255,7 @@ export default function AdminFacturacionPage() {
                     <p className="text-sm font-bold text-white">{r.razon_social}</p>
                     <p className="text-[10px] text-gray-500 uppercase font-black tabular-nums">{r.rfc}</p>
                     {r.email && <p className="text-[10px] text-gray-600 mt-0.5">{r.email}</p>}
+                    <p className={`text-[9px] font-black uppercase mt-1 ${r.contadores_email_enviado_at ? "text-green-400" : "text-pop-orange"}`}>{accountantEmailLabel(r)}</p>
                   </td>
                   <td className="py-6 px-4">
                     <select
@@ -306,6 +338,7 @@ export default function AdminFacturacionPage() {
                   <p className="text-base font-black text-white leading-tight">{r.razon_social}</p>
                   <p className="text-[10px] text-gray-500 uppercase font-black tabular-nums mt-1">{r.rfc}</p>
                   {r.email && <p className="text-[10px] text-gray-600 mt-0.5">{r.email}</p>}
+                  <p className={`text-[9px] font-black uppercase mt-1 ${r.contadores_email_enviado_at ? "text-green-400" : "text-pop-orange"}`}>{accountantEmailLabel(r)}</p>
                 </div>
                 <div className="flex justify-between items-end pt-2">
                   <div>
@@ -415,6 +448,23 @@ export default function AdminFacturacionPage() {
                   <p className="text-[10px] text-gray-400">{detailItem.user.email}</p>
                 </div>
               )}
+
+              <div className={`rounded-xl border p-4 ${detailItem.contadores_email_enviado_at ? "bg-green-500/5 border-green-500/20" : "bg-pop-orange/5 border-pop-orange/20"}`}>
+                <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-2">Entrega a Contadores</p>
+                <p className={`text-sm font-black uppercase ${detailItem.contadores_email_enviado_at ? "text-green-400" : "text-pop-orange"}`}>
+                  {accountantEmailLabel(detailItem)}
+                </p>
+                <p className="text-[10px] text-gray-400 mt-1">Intentos: {detailItem.contadores_email_intentos || 0}</p>
+                {detailItem.contadores_email_error && <p className="text-[10px] text-red-400 mt-2 break-words">{detailItem.contadores_email_error}</p>}
+                {!detailItem.contadores_email_enviado_at && (
+                  <button
+                    onClick={() => retryAccountantEmail(detailItem.id)}
+                    className="mt-3 px-4 py-2 bg-pop-orange/10 border border-pop-orange/20 rounded-lg text-pop-orange font-black text-[10px] uppercase tracking-widest"
+                  >
+                    Reenviar Ahora
+                  </button>
+                )}
+              </div>
 
               {detailItem.ticket_path && (
                 <div className="flex gap-3">

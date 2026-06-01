@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Factura;
+use App\Services\FacturaAccountantMailer;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Throwable;
 
 class FacturaController extends Controller
 {
@@ -17,7 +18,7 @@ class FacturaController extends Controller
         return response()->json($facturas);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, FacturaAccountantMailer $mailer)
     {
         $validator = Validator::make($request->all(), [
             'rfc' => 'required|string|max:13',
@@ -35,22 +36,31 @@ class FacturaController extends Controller
 
         $path = $request->file('ticket')->store('tickets', 'public');
 
-        $factura = Factura::create([
-            'user_id' => $request->user()->id,
-            'ticket_path' => $path,
-            'rfc' => $request->rfc,
-            'razon_social' => $request->razon_social,
-            'regimen_fiscal' => $request->regimen_fiscal,
-            'codigo_postal' => $request->codigo_postal,
-            'uso_cfdi' => $request->uso_cfdi,
-            'email' => $request->email,
-            'estado' => 'recibida',
-        ]);
+        try {
+            $factura = Factura::create([
+                'user_id' => $request->user()->id,
+                'ticket_path' => $path,
+                'rfc' => $request->rfc,
+                'razon_social' => $request->razon_social,
+                'regimen_fiscal' => $request->regimen_fiscal,
+                'codigo_postal' => $request->codigo_postal,
+                'uso_cfdi' => $request->uso_cfdi,
+                'email' => $request->email,
+                'estado' => 'recibida',
+            ]);
+        } catch (Throwable $exception) {
+            Storage::disk('public')->delete($path);
+            throw $exception;
+        }
 
-        // Send email to contadores with ticket and fiscal data
-        $this->sendToContadores($factura, $path);
+        $sent = $mailer->deliver($factura);
 
-        return response()->json($factura, 201);
+        return response()->json([
+            'factura' => $factura->fresh(),
+            'message' => $sent
+                ? 'Solicitud recibida y enviada al equipo de facturación.'
+                : 'Solicitud recibida. El envío al equipo de facturación está en reintento automático.',
+        ], $sent ? 201 : 202);
     }
 
     public function show($id, Request $request)
@@ -78,31 +88,4 @@ class FacturaController extends Controller
             : response()->file($disk->path($factura->ticket_path));
     }
 
-    private function sendToContadores(Factura $factura, string $ticketPath): void
-    {
-        $disk = Storage::disk('public');
-        $fullPath = $disk->path($ticketPath);
-
-        Mail::raw($this->buildEmailBody($factura), function ($message) use ($factura, $fullPath) {
-            $message->to('facturacion@popgastropub.com')
-                ->subject("Solicitud de Factura - {$factura->rfc} - #{$factura->id}")
-                ->replyTo($factura->email, $factura->razon_social)
-                ->attach($fullPath);
-        });
-    }
-
-    private function buildEmailBody(Factura $factura): string
-    {
-        return "SOLICITUD DE FACTURA #{$factura->id}\n"
-            . "Fecha: " . now()->format('d/m/Y H:i') . "\n\n"
-            . "DATOS FISCALES:\n"
-            . "RFC: {$factura->rfc}\n"
-            . "Razón Social: {$factura->razon_social}\n"
-            . "Régimen Fiscal: {$factura->regimen_fiscal}\n"
-            . "Código Postal: {$factura->codigo_postal}\n"
-            . "Uso CFDI: {$factura->uso_cfdi}\n"
-            . "Email cliente: {$factura->email}\n\n"
-            . "El ticket de compra se adjunta a este correo.\n"
-            . "---\nEnviado desde POP Perote - Sistema de Facturación";
-    }
 }
