@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import Image from "next/image";
 import { getAuthSession } from "@/lib/auth-session";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.popgastropub.com/api";
@@ -56,9 +55,10 @@ export function ImageUpload({ value, onChange, folder = "menu" }: ImageUploadPro
         style={{ minHeight: "120px" }}
         onClick={() => inputRef.current?.click()}
       >
-        {value ? (
+        {value && value.startsWith("http") ? (
           <div className="relative h-32">
-            <Image src={value} alt="Preview" fill className="object-cover" unoptimized />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={value} alt="Preview" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
               <span className="text-white text-xs font-black uppercase tracking-widest">Cambiar imagen</span>
             </div>
