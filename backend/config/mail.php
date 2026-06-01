@@ -7,8 +7,9 @@ return [
         'smtp' => [
             'transport' => 'smtp',
             'scheme' => env('MAIL_SCHEME'),
-            'host' => env('MAIL_HOST', 'mail.popgastropub.com'),
+            'host' => env('MAIL_HOST', 'postfix-mailcow'),
             'port' => env('MAIL_PORT', 25),
+            'auto_tls' => env('MAIL_AUTO_TLS', false),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
             'timeout' => 10,

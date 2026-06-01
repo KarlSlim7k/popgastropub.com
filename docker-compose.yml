@@ -75,8 +75,9 @@ services:
       - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY:-cqQFi7rVIp4RmJdx_kGJtWfeNpBJ2Lk6ZYwjG1IwGDI}
       - MAIL_MAILER=${MAIL_MAILER:-smtp}
       - MAIL_SCHEME=${MAIL_SCHEME:-}
-      - MAIL_HOST=${MAIL_HOST:-mail.popgastropub.com}
+      - MAIL_HOST=${MAIL_HOST:-postfix-mailcow}
       - MAIL_PORT=${MAIL_PORT:-25}
+      - MAIL_AUTO_TLS=${MAIL_AUTO_TLS:-false}
       - MAIL_USERNAME=${MAIL_USERNAME:-}
       - MAIL_PASSWORD=${MAIL_PASSWORD:-}
       - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-noreply@popgastropub.com}
@@ -89,6 +90,7 @@ services:
         condition: service_healthy
     networks:
       - pop_network
+      - mailcow-network
 
   scheduler:
     build:
@@ -111,8 +113,9 @@ services:
       - CACHE_STORE=${CACHE_STORE:-file}
       - MAIL_MAILER=${MAIL_MAILER:-smtp}
       - MAIL_SCHEME=${MAIL_SCHEME:-}
-      - MAIL_HOST=${MAIL_HOST:-mail.popgastropub.com}
+      - MAIL_HOST=${MAIL_HOST:-postfix-mailcow}
       - MAIL_PORT=${MAIL_PORT:-25}
+      - MAIL_AUTO_TLS=${MAIL_AUTO_TLS:-false}
       - MAIL_USERNAME=${MAIL_USERNAME:-}
       - MAIL_PASSWORD=${MAIL_PASSWORD:-}
       - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-noreply@popgastropub.com}
@@ -127,6 +130,7 @@ services:
         condition: service_healthy
     networks:
       - pop_network
+      - mailcow-network
 
   nginx:
     build:
@@ -174,6 +178,9 @@ networks:
     driver: bridge
   dokploy-network:
     external: true
+  mailcow-network:
+    external: true
+    name: mailcowdockerized_mailcow-network
 
 volumes:
   pop_db_data:
