@@ -39,7 +39,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           >
             <span className="material-symbols-outlined text-2xl">{mobileMenuOpen ? 'close' : 'menu'}</span>
           </button>
-          <a href="https://wa.me/522828253243" target="_blank" rel="noopener noreferrer" className="bg-[#D96E30] px-6 py-2 text-on-surface font-black text-sm transition-all duration-500 cubic-bezier(0.23, 1, 0.32, 1) active:scale-95 flex items-center gap-2">
+          <a href="https://wa.me/522821278014" target="_blank" rel="noopener noreferrer" className="bg-[#D96E30] px-6 py-2 text-on-surface font-black text-sm transition-all duration-500 cubic-bezier(0.23, 1, 0.32, 1) active:scale-95 flex items-center gap-2">
             <span className="hidden md:inline">WHATSAPP</span>
             <span className="material-symbols-outlined text-lg">chat</span>
           </a>

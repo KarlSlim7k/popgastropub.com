@@ -500,7 +500,7 @@ export default function FacturacionPage() {
               Email
             </a>
             <a
-              href="https://wa.me/522828253243"
+              href="https://wa.me/522821278014"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 bg-[#D96E30] hover:bg-[#F2C166] hover:text-[#234032] text-white font-black text-xs px-4 py-2.5 transition-colors"

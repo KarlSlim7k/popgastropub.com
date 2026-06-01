@@ -33,7 +33,7 @@ const HERO_SLIDES = [
   },
 ];
 
-const WHATSAPP_PHONE = '522828253243';
+const WHATSAPP_PHONE = '522821278014';
 
 function getOpenStatus(): { isOpen: boolean; label: string; colorClass: string; dotClass: string } {
   const now = new Date();

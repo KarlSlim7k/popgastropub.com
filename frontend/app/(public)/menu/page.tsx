@@ -84,7 +84,7 @@ export default function MenuPage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
           <span className="text-white/40 text-sm">¿Prefieres ordenar por WhatsApp?</span>
           <a
-            href="https://wa.me/522828253243?text=Hola%20POP%20Perote%2C%20quiero%20hacer%20un%20pedido"
+            href="https://wa.me/522821278014?text=Hola%20POP%20Perote%2C%20quiero%20hacer%20un%20pedido"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 border border-[#F2C777]/20 text-[#F2C777] font-bold text-sm px-6 py-3 rounded-sm hover:bg-[#F2C777]/10 transition-all"

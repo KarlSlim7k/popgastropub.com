@@ -14,7 +14,7 @@ type OrderPanelProps = {
 
 type FulfillmentType = 'pickup' | 'delivery';
 
-const WHATSAPP_PHONE = '522828253243';
+const WHATSAPP_PHONE = '522821278014';
 
 function formatPrice(value: number) {
   return new Intl.NumberFormat('es-MX', {

@@ -127,7 +127,7 @@ export default function Ubicacion() {
             <span className="material-symbols-outlined text-4xl text-white">explore</span>
             <div><h4 className="font-headline text-2xl font-black text-white">CÓMO LLEGAR</h4><p className="text-white/70 text-sm font-bold uppercase tracking-widest mt-1">Abrir Maps</p></div>
           </a>
-          <a className="bg-[#1C1C1C] border border-[#F2C777]/10 p-8 rounded-lg flex flex-col justify-between h-48 transition-all duration-500 hover:-translate-y-2" href="https://wa.me/522828253243" target="_blank" rel="noopener noreferrer">
+          <a className="bg-[#1C1C1C] border border-[#F2C777]/10 p-8 rounded-lg flex flex-col justify-between h-48 transition-all duration-500 hover:-translate-y-2" href="https://wa.me/522821278014" target="_blank" rel="noopener noreferrer">
             <span className="material-symbols-outlined text-4xl text-[#F2C777]">chat_bubble</span>
             <div><h4 className="font-headline text-2xl font-black text-white">WHATSAPP</h4><p className="text-[#F2C777] text-sm font-bold uppercase tracking-widest mt-1">Chat Directo</p></div>
           </a>
