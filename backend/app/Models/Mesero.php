@@ -26,6 +26,7 @@ class Mesero extends Model
         'total_sales',
         'orders_served',
         'avg_rating',
+        'point_multiplier',
     ];
 
     protected $casts = [
@@ -33,6 +34,7 @@ class Mesero extends Model
         'activo' => 'boolean',
         'total_sales' => 'decimal:2',
         'avg_rating' => 'decimal:1',
+        'point_multiplier' => 'decimal:1',
     ];
 
     public function user()

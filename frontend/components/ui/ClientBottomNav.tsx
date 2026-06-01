@@ -6,8 +6,8 @@ import { usePathname } from "next/navigation";
 const navItems = [
   { label: "Puntos", href: "/puntos", icon: "token" },
   { label: "Reservas", href: "/reservas", icon: "calendar_month" },
+  { label: "Calificar", href: "/calificar-mesero", icon: "star" },
   { label: "Premios", href: "/recompensas", icon: "redeem" },
-  { label: "Pedidos", href: "/pedidos", icon: "receipt_long" },
   { label: "Perfil", href: "/perfil", icon: "account_circle" },
 ];
 

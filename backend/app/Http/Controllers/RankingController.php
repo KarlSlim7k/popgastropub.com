@@ -40,7 +40,8 @@ class RankingController extends Controller
         }
 
         $category = $validated['category'];
-        $points = $categories[$category]['points'] * $validated['quantity'];
+        $basePoints = $categories[$category]['points'] * $validated['quantity'];
+        $points = (int) round($basePoints * ($mesero->point_multiplier ?? 1.0));
         $mesero->increment($category . '_points', $points);
         $mesero->increment('puntos', $points);
         $mesero->refresh();

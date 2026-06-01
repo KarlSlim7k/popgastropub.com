@@ -88,6 +88,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Tickets — canje de puntos por QR
     Route::post('/tickets/redeem', [\App\Http\Controllers\TicketRedeemController::class, 'redeem']);
+
+    // Mesero ratings (client → waiter)
+    Route::get('/meseros/para-calificar', [\App\Http\Controllers\MeseroRatingController::class, 'meseros']);
+    Route::post('/meseros/calificar', [\App\Http\Controllers\MeseroRatingController::class, 'store']);
 });
 
 /*
@@ -96,12 +100,12 @@ Route::middleware('auth:sanctum')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth:sanctum', 'role:mesero'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:mesero,admin'])->group(function () {
     Route::get('/ranking', [RankingController::class, 'index']);
     Route::post('/ranking/points', [RankingController::class, 'addPoints']);
 });
 
-Route::middleware(['auth:sanctum', 'role:mesero'])->prefix('staff')->group(function () {
+Route::middleware(['auth:sanctum', 'role:mesero,admin'])->prefix('staff')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Staff\StaffDashboardController::class, 'index']);
     Route::get('/analytics', [App\Http\Controllers\Staff\StaffAnalyticsController::class, 'index']);
     Route::get('/reservas', [App\Http\Controllers\Staff\StaffReservaController::class, 'index']);
@@ -113,6 +117,11 @@ Route::middleware(['auth:sanctum', 'role:mesero'])->prefix('staff')->group(funct
     Route::put('/configuracion', [App\Http\Controllers\Staff\StaffConfigController::class, 'update']);
     Route::post('/tickets/generate', [App\Http\Controllers\Staff\TicketGeneratorController::class, 'generate']);
     Route::get('/tickets', [App\Http\Controllers\Staff\TicketGeneratorController::class, 'historial']);
+
+    // Notifications
+    Route::get('/notificaciones', [App\Http\Controllers\Staff\StaffNotificationController::class, 'index']);
+    Route::get('/notificaciones/count', [App\Http\Controllers\Staff\StaffNotificationController::class, 'unreadCount']);
+    Route::post('/notificaciones/read', [App\Http\Controllers\Staff\StaffNotificationController::class, 'markRead']);
 });
 
 /*
@@ -158,6 +167,11 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 
     // Meseros CRUD
     Route::apiResource('meseros', App\Http\Controllers\Admin\MeseroController::class);
+
+    // Ranking Periods
+    Route::get('/ranking/periodos', [App\Http\Controllers\Admin\RankingPeriodController::class, 'index']);
+    Route::post('/ranking/rotar', [App\Http\Controllers\Admin\RankingPeriodController::class, 'rotate']);
+    Route::post('/ranking/multiplicador', [App\Http\Controllers\Admin\RankingPeriodController::class, 'setMultiplier']);
 
     // Reservas
     Route::get('/reservas', [App\Http\Controllers\Admin\ReservaController::class, 'index']);
