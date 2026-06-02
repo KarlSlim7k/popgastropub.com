@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { fetchWithAuth } from "@/lib/api";
+import { downloadAuthenticatedFile, fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
 import PromoLandingContent, { type PromoLandingData } from "@/components/promociones/PromoLandingContent";
+import type { PromoFormField } from "@/components/promociones/PromoLandingInteractions";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 
 interface Promo {
@@ -32,9 +33,38 @@ interface Promo {
   ctaPrimaryUrl: string;
   ctaSecondaryText: string;
   ctaSecondaryUrl: string;
+  formEnabled: boolean;
+  formFields: PromoFormField[];
+  viewsCount: number;
+  clicksCount: number;
+  leadsCount: number;
   published: boolean;
   publishedAt: string | null;
   landingUrl: string;
+}
+
+interface PromoMetrics {
+  viewsCount: number;
+  clicksCount: number;
+  leadsCount: number;
+  clickThroughRate: number;
+  leadConversionRate: number;
+  events: {
+    views: number;
+    primaryClicks: number;
+    secondaryClicks: number;
+    leads: number;
+  };
+}
+
+interface PromoLead {
+  id: number;
+  nombre: string | null;
+  telefono: string | null;
+  email: string | null;
+  mensaje: string | null;
+  origen: string | null;
+  created_at: string;
 }
 
 const DAYS = [
@@ -65,6 +95,37 @@ const TYPE_LABELS: Record<Promo["type"], string> = {
   regalo: "Regalo",
   especial: "Especial",
 };
+const FORM_FIELD_OPTIONS: { value: PromoFormField; label: string }[] = [
+  { value: "nombre", label: "Nombre" },
+  { value: "telefono", label: "Teléfono" },
+  { value: "email", label: "Correo" },
+  { value: "mensaje", label: "Mensaje" },
+];
+const EMPTY_PROMO_FORM: Partial<Promo> = {
+  name: "",
+  description: "",
+  type: "descuento",
+  discount: "",
+  startDate: "",
+  endDate: "",
+  daysActive: ALL_DAYS,
+  indefinite: false,
+  status: "activa",
+  target: 0,
+  image: "",
+  slug: "",
+  landingEnabled: false,
+  landingTitle: "",
+  landingSubtitle: "",
+  landingContent: "",
+  landingTemplate: "editorial",
+  ctaPrimaryText: "",
+  ctaPrimaryUrl: "",
+  ctaSecondaryText: "",
+  ctaSecondaryUrl: "",
+  formEnabled: false,
+  formFields: [],
+};
 
 export default function AdminPromocionesPage() {
   const [filterStatus, setFilterStatus] = useState("todas");
@@ -73,30 +134,12 @@ export default function AdminPromocionesPage() {
   const [promos, setPromos] = useState<Promo[]>([]);
   const [loading, setLoading] = useState(true);
   const [previewPromo, setPreviewPromo] = useState<Partial<Promo> | null>(null);
+  const [insightsPromo, setInsightsPromo] = useState<Promo | null>(null);
+  const [metrics, setMetrics] = useState<PromoMetrics | null>(null);
+  const [leads, setLeads] = useState<PromoLead[]>([]);
+  const [loadingInsights, setLoadingInsights] = useState(false);
 
-  const [form, setForm] = useState<Partial<Promo>>({
-    name: "",
-    description: "",
-    type: "descuento",
-    discount: "",
-    startDate: "",
-    endDate: "",
-    daysActive: ALL_DAYS,
-    indefinite: false,
-    status: "activa",
-    target: 0,
-    image: "",
-    slug: "",
-    landingEnabled: false,
-    landingTitle: "",
-    landingSubtitle: "",
-    landingContent: "",
-    landingTemplate: "editorial",
-    ctaPrimaryText: "",
-    ctaPrimaryUrl: "",
-    ctaSecondaryText: "",
-    ctaSecondaryUrl: "",
-  });
+  const [form, setForm] = useState<Partial<Promo>>({ ...EMPTY_PROMO_FORM, daysActive: [...ALL_DAYS] });
 
   const fetchPromos = async () => {
     const session = getAuthSession();
@@ -118,7 +161,7 @@ export default function AdminPromocionesPage() {
 
   const openCreate = () => {
     setEditingPromo(null);
-    setForm({ name: "", description: "", type: "descuento", discount: "", startDate: "", endDate: "", daysActive: ALL_DAYS, indefinite: false, status: "activa", target: 0, image: "", slug: "", landingEnabled: false, landingTitle: "", landingSubtitle: "", landingContent: "", landingTemplate: "editorial", ctaPrimaryText: "", ctaPrimaryUrl: "", ctaSecondaryText: "", ctaSecondaryUrl: "" });
+    setForm({ ...EMPTY_PROMO_FORM, daysActive: [...ALL_DAYS] });
     setShowModal(true);
   };
 
@@ -180,6 +223,36 @@ export default function AdminPromocionesPage() {
     }
   };
 
+  const openInsights = async (promo: Promo) => {
+    const session = getAuthSession();
+    if (!session) return;
+    setInsightsPromo(promo);
+    setLoadingInsights(true);
+    try {
+      const [metricsResponse, leadsResponse] = await Promise.all([
+        fetchWithAuth<PromoMetrics>(`/admin/promociones/${promo.id}/metrics`, session.token),
+        fetchWithAuth<{ data: PromoLead[] }>(`/admin/promociones/${promo.id}/leads`, session.token),
+      ]);
+      setMetrics(metricsResponse);
+      setLeads(leadsResponse.data);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Error al cargar métricas");
+      setInsightsPromo(null);
+    } finally {
+      setLoadingInsights(false);
+    }
+  };
+
+  const downloadLeadsCsv = async () => {
+    const session = getAuthSession();
+    if (!session || !insightsPromo) return;
+    try {
+      await downloadAuthenticatedFile(`/admin/promociones/${insightsPromo.id}/leads.csv`, session.token, `leads-${insightsPromo.slug || insightsPromo.id}.csv`);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Error al exportar leads");
+    }
+  };
+
   const toPreviewData = (promo: Partial<Promo>): PromoLandingData => ({
     titulo: promo.name || "Título de la campaña",
     descripcion: promo.description || "",
@@ -198,6 +271,8 @@ export default function AdminPromocionesPage() {
     cta_primary_url: promo.ctaPrimaryUrl || "",
     cta_secondary_text: promo.ctaSecondaryText || "",
     cta_secondary_url: promo.ctaSecondaryUrl || "",
+    form_enabled: !!promo.formEnabled,
+    form_fields: promo.formFields || [],
   });
 
   const applyCtaPreset = (target: "primary" | "secondary", text: string, url: string) => {
@@ -230,7 +305,9 @@ export default function AdminPromocionesPage() {
   };
 
   const activeCount = promos.filter((p) => p.status === "activa").length;
-  const totalRedemptions = promos.reduce((acc, p) => acc + (p.redemptions || 0), 0);
+  const totalViews = promos.reduce((acc, p) => acc + (p.viewsCount || 0), 0);
+  const totalClicks = promos.reduce((acc, p) => acc + (p.clicksCount || 0), 0);
+  const totalLeads = promos.reduce((acc, p) => acc + (p.leadsCount || 0), 0);
 
   // Build weekly calendar from real promo data
   const calendarDays = DAYS.map((day) => ({
@@ -263,9 +340,9 @@ export default function AdminPromocionesPage() {
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-10" aria-label="Estadísticas de promociones">
         {[
           { label: "Promociones Activas", value: String(activeCount), icon: "local_offer", color: "pop-gold", sublabel: `De ${promos.length} totales` },
-          { label: "Redenciones del Mes", value: totalRedemptions.toLocaleString(), icon: "redeem", color: "pop-orange", sublabel: "Acumulado" },
-          { label: "Ingreso por Promos", value: `${totalRedemptions} canjes`, icon: "payments", color: "pop-light-gold", sublabel: "Total acumulado" },
-          { label: "Recurrentes Indefinidas", value: String(promos.filter((p) => p.indefinite).length), icon: "event_repeat", color: "error", sublabel: "Sin fecha límite" },
+          { label: "Visitas a Landings", value: totalViews.toLocaleString(), icon: "visibility", color: "pop-orange", sublabel: "Acumuladas" },
+          { label: "Clics en Botones", value: totalClicks.toLocaleString(), icon: "ads_click", color: "pop-light-gold", sublabel: "Acumulados" },
+          { label: "Leads Captados", value: totalLeads.toLocaleString(), icon: "person_add", color: "error", sublabel: "Acumulados" },
         ].map((stat, index) => (
           <article
             key={index}
@@ -397,6 +474,9 @@ export default function AdminPromocionesPage() {
                         )}
                         {promo.landingEnabled && (
                           <>
+                            <button onClick={() => openInsights(promo)} className="p-1.5 hover:bg-pop-gold/10 rounded transition-colors" title="Métricas y leads">
+                              <span className="material-symbols-outlined text-pop-gold text-lg">monitoring</span>
+                            </button>
                             <button onClick={() => setPreviewPromo(promo)} className="p-1.5 hover:bg-pop-gold/10 rounded transition-colors" title="Previsualizar">
                               <span className="material-symbols-outlined text-pop-gold text-lg">preview</span>
                             </button>
@@ -599,6 +679,47 @@ export default function AdminPromocionesPage() {
                         </div>
                       );
                     })}
+                    <div className="rounded-lg border border-white/10 bg-black/10 p-4 space-y-3">
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={!!form.formEnabled}
+                          onChange={(e) => setForm({ ...form, formEnabled: e.target.checked, formFields: e.target.checked && (form.formFields || []).length === 0 ? ["nombre", "telefono"] : form.formFields })}
+                          className="mt-0.5 w-4 h-4 accent-pop-gold"
+                        />
+                        <span>
+                          <span className="block text-sm font-bold text-white">Formulario para captar leads</span>
+                          <span className="block text-xs text-gray-400 mt-1">Muestra campos opcionales al final de la landing y almacena los envíos para consulta administrativa.</span>
+                        </span>
+                      </label>
+                      {form.formEnabled && (
+                        <div>
+                          <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-gray-500">Campos requeridos</p>
+                          <div className="flex flex-wrap gap-2">
+                            {FORM_FIELD_OPTIONS.map((field) => {
+                              const selected = (form.formFields || []).includes(field.value);
+                              return (
+                                <button
+                                  key={field.value}
+                                  type="button"
+                                  onClick={() => setForm({
+                                    ...form,
+                                    formFields: selected
+                                      ? (form.formFields || []).filter((value) => value !== field.value)
+                                      : [...(form.formFields || []), field.value],
+                                  })}
+                                  className={`rounded border px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${
+                                    selected ? "border-pop-gold bg-pop-gold text-pop-black" : "border-white/10 bg-gray-800/50 text-gray-400 hover:border-pop-gold/40"
+                                  }`}
+                                >
+                                  {field.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </>
                 )}
               </section>
@@ -717,6 +838,87 @@ export default function AdminPromocionesPage() {
             </button>
           </div>
           <PromoLandingContent promo={toPreviewData(previewPromo)} preview />
+        </div>
+      )}
+
+      {insightsPromo && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm" onClick={() => setInsightsPromo(null)}>
+          <div className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-xl border border-white/10 bg-pop-cardGreen" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-start justify-between border-b border-white/5 p-6">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-pop-gold">Métricas y leads</p>
+                <h2 className="mt-1 text-2xl font-black uppercase tracking-tight text-white font-epilogue">{insightsPromo.name}</h2>
+              </div>
+              <button onClick={() => setInsightsPromo(null)} className="text-gray-500 transition-colors hover:text-white">
+                <span className="material-symbols-outlined text-2xl">close</span>
+              </button>
+            </div>
+
+            {loadingInsights || !metrics ? (
+              <p className="p-8 text-sm text-gray-400">Cargando métricas...</p>
+            ) : (
+              <div className="space-y-7 p-6">
+                <section className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+                  {[
+                    { label: "Visitas", value: metrics.viewsCount.toLocaleString() },
+                    { label: "Clics", value: metrics.clicksCount.toLocaleString() },
+                    { label: "Leads", value: metrics.leadsCount.toLocaleString() },
+                    { label: "Clics / visita", value: `${metrics.clickThroughRate}%` },
+                    { label: "Leads / visita", value: `${metrics.leadConversionRate}%` },
+                  ].map((stat) => (
+                    <article key={stat.label} className="rounded-lg border border-white/5 bg-black/15 p-4">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{stat.label}</p>
+                      <p className="mt-2 text-2xl font-black text-pop-gold">{stat.value}</p>
+                    </article>
+                  ))}
+                </section>
+
+                <section>
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-black uppercase tracking-tight text-white font-epilogue">Leads registrados</h3>
+                      <p className="mt-1 text-xs text-gray-500">Mostrando los últimos {leads.length} registros.</p>
+                    </div>
+                    <button onClick={downloadLeadsCsv} className="flex items-center gap-2 rounded-lg border border-pop-gold/40 px-4 py-2 text-xs font-bold uppercase tracking-wider text-pop-gold transition-colors hover:bg-pop-gold/10">
+                      <span className="material-symbols-outlined text-base">download</span>
+                      Exportar CSV
+                    </button>
+                  </div>
+                  <div className="overflow-x-auto rounded-lg border border-white/5">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-black/20 uppercase tracking-wider text-gray-500">
+                        <tr>
+                          <th className="px-3 py-3">Fecha</th>
+                          <th className="px-3 py-3">Nombre</th>
+                          <th className="px-3 py-3">Teléfono</th>
+                          <th className="px-3 py-3">Correo</th>
+                          <th className="px-3 py-3">Mensaje</th>
+                          <th className="px-3 py-3">Origen</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 text-gray-300">
+                        {leads.map((lead) => (
+                          <tr key={lead.id}>
+                            <td className="whitespace-nowrap px-3 py-3">{new Date(lead.created_at).toLocaleString("es-MX")}</td>
+                            <td className="px-3 py-3">{lead.nombre || "—"}</td>
+                            <td className="px-3 py-3">{lead.telefono || "—"}</td>
+                            <td className="px-3 py-3">{lead.email || "—"}</td>
+                            <td className="max-w-[220px] truncate px-3 py-3">{lead.mensaje || "—"}</td>
+                            <td className="px-3 py-3">{lead.origen || "—"}</td>
+                          </tr>
+                        ))}
+                        {leads.length === 0 && (
+                          <tr>
+                            <td colSpan={6} className="px-3 py-8 text-center uppercase tracking-widest text-gray-600">Sin leads registrados</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </main>

@@ -13,6 +13,8 @@ class Promocion extends Model
 {
     use HasFactory;
 
+    public const FORM_FIELDS = ['nombre', 'telefono', 'email', 'mensaje'];
+
     protected $table = 'promociones';
 
     protected $fillable = [
@@ -37,6 +39,11 @@ class Promocion extends Model
         'cta_primary_url',
         'cta_secondary_text',
         'cta_secondary_url',
+        'form_enabled',
+        'form_fields',
+        'views_count',
+        'clicks_count',
+        'leads_count',
         'published_at',
         'activa',
         'estado',
@@ -52,8 +59,23 @@ class Promocion extends Model
         'activa' => 'boolean',
         'indefinida' => 'boolean',
         'landing_enabled' => 'boolean',
+        'form_enabled' => 'boolean',
+        'form_fields' => 'array',
+        'views_count' => 'integer',
+        'clicks_count' => 'integer',
+        'leads_count' => 'integer',
         'published_at' => 'datetime',
     ];
+
+    public function leads()
+    {
+        return $this->hasMany(PromoLead::class);
+    }
+
+    public function events()
+    {
+        return $this->hasMany(PromoEvent::class);
+    }
 
     public function activeDays(): array
     {

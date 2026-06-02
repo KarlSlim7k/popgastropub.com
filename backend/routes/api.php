@@ -24,6 +24,9 @@ Route::get('/menu', [MenuController::class, 'index']);
 Route::get('/menu/{id}', [MenuController::class, 'show']);
 Route::get('/promociones', [PromocionController::class, 'index']);
 Route::get('/promociones/{slug}', [PromocionController::class, 'show']);
+Route::post('/promociones/{slug}/lead', [PromocionController::class, 'lead'])->middleware('throttle:6,1');
+Route::post('/promociones/{slug}/click', [PromocionController::class, 'click'])->middleware('throttle:30,1');
+Route::post('/promociones/{slug}/view', [PromocionController::class, 'view'])->middleware('throttle:30,1');
 Route::get('/storage/{path}', [PublicImageController::class, 'show'])->where('path', '.*');
 Route::get('/ubicacion', [UbicacionController::class, 'show']);
 Route::get('/tickets/validate', [\App\Http\Controllers\TicketRedeemController::class, 'validate']);
@@ -195,6 +198,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     // Promociones CRUD
     Route::post('/promociones/{id}/publish', [App\Http\Controllers\Admin\PromocionController::class, 'publish']);
     Route::post('/promociones/{id}/unpublish', [App\Http\Controllers\Admin\PromocionController::class, 'unpublish']);
+    Route::get('/promociones/{id}/metrics', [App\Http\Controllers\Admin\PromocionController::class, 'metrics']);
+    Route::get('/promociones/{id}/leads', [App\Http\Controllers\Admin\PromocionController::class, 'leads']);
+    Route::get('/promociones/{id}/leads.csv', [App\Http\Controllers\Admin\PromocionController::class, 'leadsCsv']);
     Route::apiResource('promociones', App\Http\Controllers\Admin\PromocionController::class);
 
     // Facturas management

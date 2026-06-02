@@ -7,6 +7,7 @@ use App\Models\Promocion;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -110,6 +111,71 @@ class PromocionController extends Controller
         return response()->json($this->toFrontend($promo->fresh()));
     }
 
+    public function metrics($id)
+    {
+        $promo = Promocion::findOrFail($id);
+        $events = $promo->events()
+            ->select('event_type', DB::raw('COUNT(*) as total'))
+            ->groupBy('event_type')
+            ->pluck('total', 'event_type');
+
+        return response()->json([
+            'viewsCount' => (int) $promo->views_count,
+            'clicksCount' => (int) $promo->clicks_count,
+            'leadsCount' => (int) $promo->leads_count,
+            'clickThroughRate' => $this->percentage((int) $promo->clicks_count, (int) $promo->views_count),
+            'leadConversionRate' => $this->percentage((int) $promo->leads_count, (int) $promo->views_count),
+            'events' => [
+                'views' => (int) ($events['view'] ?? 0),
+                'primaryClicks' => (int) ($events['cta_primary_click'] ?? 0),
+                'secondaryClicks' => (int) ($events['cta_secondary_click'] ?? 0),
+                'leads' => (int) ($events['lead'] ?? 0),
+            ],
+        ]);
+    }
+
+    public function leads(Request $request, $id)
+    {
+        $promo = Promocion::findOrFail($id);
+        $perPage = min(max((int) $request->input('per_page', 25), 1), 100);
+        $leads = $promo->leads()->latest()->paginate($perPage);
+
+        return response()->json([
+            'data' => $leads->items(),
+            'meta' => [
+                'current_page' => $leads->currentPage(),
+                'last_page' => $leads->lastPage(),
+                'total' => $leads->total(),
+            ],
+        ]);
+    }
+
+    public function leadsCsv($id)
+    {
+        $promo = Promocion::findOrFail($id);
+        $filename = 'leads-' . ($promo->slug ?: $promo->id) . '.csv';
+
+        return response()->streamDownload(function () use ($promo): void {
+            $output = fopen('php://output', 'w');
+            fputcsv($output, ['Fecha', 'Nombre', 'Teléfono', 'Email', 'Mensaje', 'Origen']);
+
+            $promo->leads()->latest()->chunk(500, function ($leads) use ($output): void {
+                foreach ($leads as $lead) {
+                    fputcsv($output, array_map([$this, 'csvSafe'], [
+                        $lead->created_at?->toIso8601String(),
+                        $lead->nombre,
+                        $lead->telefono,
+                        $lead->email,
+                        $lead->mensaje,
+                        $lead->origen,
+                    ]));
+                }
+            });
+
+            fclose($output);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
     private function rules(bool $creating = true, ?int $id = null): array
     {
         return [
@@ -141,6 +207,9 @@ class PromocionController extends Controller
             'ctaPrimaryUrl' => ['nullable', 'required_with:ctaPrimaryText', 'string', 'max:500', $this->safeCtaUrl()],
             'ctaSecondaryText' => 'nullable|required_with:ctaSecondaryUrl|string|max:100',
             'ctaSecondaryUrl' => ['nullable', 'required_with:ctaSecondaryText', 'string', 'max:500', $this->safeCtaUrl()],
+            'formEnabled' => 'nullable|boolean',
+            'formFields' => 'nullable|required_if:formEnabled,true|array|min:1',
+            'formFields.*' => ['string', Rule::in(Promocion::FORM_FIELDS), 'distinct'],
         ];
     }
 
@@ -172,6 +241,11 @@ class PromocionController extends Controller
             'ctaPrimaryUrl' => $p->cta_primary_url ?? '',
             'ctaSecondaryText' => $p->cta_secondary_text ?? '',
             'ctaSecondaryUrl' => $p->cta_secondary_url ?? '',
+            'formEnabled' => (bool) $p->form_enabled,
+            'formFields' => $p->form_fields ?? [],
+            'viewsCount' => (int) ($p->views_count ?? 0),
+            'clicksCount' => (int) ($p->clicks_count ?? 0),
+            'leadsCount' => (int) ($p->leads_count ?? 0),
             'published' => $p->published_at !== null,
             'publishedAt' => $p->published_at?->toIso8601String(),
             'landingUrl' => $p->slug
@@ -215,6 +289,10 @@ class PromocionController extends Controller
         if ($request->has('ctaPrimaryUrl')) $map['cta_primary_url'] = $this->nullableString($request, 'ctaPrimaryUrl');
         if ($request->has('ctaSecondaryText')) $map['cta_secondary_text'] = $this->nullableString($request, 'ctaSecondaryText');
         if ($request->has('ctaSecondaryUrl')) $map['cta_secondary_url'] = $this->nullableString($request, 'ctaSecondaryUrl');
+        if ($request->has('formEnabled')) $map['form_enabled'] = $request->boolean('formEnabled');
+        if ($request->has('formFields')) {
+            $map['form_fields'] = array_values(array_intersect(Promocion::FORM_FIELDS, $request->input('formFields', [])));
+        }
 
         return $map;
     }
@@ -261,5 +339,17 @@ class PromocionController extends Controller
         $value = trim((string) $request->input($key, ''));
 
         return $value !== '' ? $value : null;
+    }
+
+    private function percentage(int $value, int $total): float
+    {
+        return $total > 0 ? round(($value / $total) * 100, 2) : 0;
+    }
+
+    private function csvSafe(mixed $value): string
+    {
+        $value = (string) ($value ?? '');
+
+        return preg_match('/^[=+\-@]/', $value) ? "'" . $value : $value;
     }
 }

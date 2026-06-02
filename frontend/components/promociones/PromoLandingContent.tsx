@@ -1,6 +1,13 @@
 import Image from 'next/image';
+import {
+  PromoLeadForm,
+  PromoTrackedLink,
+  PromoViewTracker,
+  type PromoFormField,
+} from '@/components/promociones/PromoLandingInteractions';
 
 export interface PromoLandingData {
+  slug?: string | null;
   titulo: string;
   descripcion?: string | null;
   descuento?: string | null;
@@ -18,6 +25,8 @@ export interface PromoLandingData {
   cta_primary_url?: string | null;
   cta_secondary_text?: string | null;
   cta_secondary_url?: string | null;
+  form_enabled?: boolean;
+  form_fields?: PromoFormField[] | null;
 }
 
 const IMAGE_HOSTS = new Set([
@@ -63,11 +72,32 @@ export default function PromoLandingContent({ promo, preview = false }: { promo:
     text: promo.cta_secondary_text || 'Ver ubicación',
     url: promo.cta_secondary_url || '/ubicacion',
   };
+  const formFields = promo.form_fields || [];
+
+  const ctaLink = (
+    cta: { text: string; url: string },
+    eventType: 'cta_primary_click' | 'cta_secondary_click',
+    className: string,
+  ) => {
+    const linkProps = {
+      href: preview ? '#' : cta.url,
+      target: !preview && isExternalUrl(cta.url) ? '_blank' : undefined,
+      rel: !preview && isExternalUrl(cta.url) ? 'noopener noreferrer' : undefined,
+      className,
+    };
+
+    return !preview && promo.slug ? (
+      <PromoTrackedLink {...linkProps} slug={promo.slug} eventType={eventType}>{cta.text}</PromoTrackedLink>
+    ) : (
+      <a {...linkProps}>{cta.text}</a>
+    );
+  };
 
   return (
-    <section className={`mx-auto grid max-w-7xl gap-10 px-6 py-12 lg:items-center lg:px-8 lg:py-20 ${
+    <section className={`mx-auto grid max-w-7xl gap-10 px-6 py-12 lg:items-start lg:px-8 lg:py-20 ${
       isClassic ? 'lg:grid-cols-[0.92fr_1.08fr]' : 'lg:grid-cols-[1.08fr_0.92fr]'
     }`}>
+      {!preview && promo.slug && <PromoViewTracker slug={promo.slug} />}
       <div className={`relative min-h-[340px] overflow-hidden rounded-2xl border border-[#F2C777]/20 bg-[#732817] sm:min-h-[480px] ${
         isClassic ? 'lg:order-2' : ''
       }`}>
@@ -120,23 +150,13 @@ export default function PromoLandingContent({ promo, preview = false }: { promo:
         </div>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <a
-            href={preview ? '#' : primaryCta.url}
-            target={!preview && isExternalUrl(primaryCta.url) ? '_blank' : undefined}
-            rel={!preview && isExternalUrl(primaryCta.url) ? 'noopener noreferrer' : undefined}
-            className="bg-[#D96725] px-7 py-4 text-center text-sm font-black uppercase tracking-widest text-white transition-colors hover:bg-[#F2C777] hover:text-[#0D0D0D]"
-          >
-            {primaryCta.text}
-          </a>
-          <a
-            href={preview ? '#' : secondaryCta.url}
-            target={!preview && isExternalUrl(secondaryCta.url) ? '_blank' : undefined}
-            rel={!preview && isExternalUrl(secondaryCta.url) ? 'noopener noreferrer' : undefined}
-            className="border border-[#F2C777] px-7 py-4 text-center text-sm font-black uppercase tracking-widest text-[#F2C777] transition-colors hover:bg-[#F2C777] hover:text-[#0D0D0D]"
-          >
-            {secondaryCta.text}
-          </a>
+          {ctaLink(primaryCta, 'cta_primary_click', 'bg-[#D96725] px-7 py-4 text-center text-sm font-black uppercase tracking-widest text-white transition-colors hover:bg-[#F2C777] hover:text-[#0D0D0D]')}
+          {ctaLink(secondaryCta, 'cta_secondary_click', 'border border-[#F2C777] px-7 py-4 text-center text-sm font-black uppercase tracking-widest text-[#F2C777] transition-colors hover:bg-[#F2C777] hover:text-[#0D0D0D]')}
         </div>
+
+        {promo.form_enabled && formFields.length > 0 && (
+          <PromoLeadForm slug={promo.slug || undefined} fields={formFields} preview={preview} />
+        )}
 
         <a href={preview ? '#' : '/promociones'} className="mt-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#F2C894] transition-colors hover:text-[#F2C777]">
           <span aria-hidden="true">←</span>
