@@ -19,7 +19,7 @@
 | **Google Rating** | 4.4 ★ |
 | **Posicionamiento** | #1 en "Otras cocinas" en Perote · #40 de 146 restaurantes |
 | **Redes Sociales** | Facebook: [@pop.perote](https://www.facebook.com/pop.perote/) (5.2K seguidores) · Instagram: [@pop_perote](https://www.instagram.com/pop_perote/) · TikTok |
-| **Web Actual** | [pop-perote.com](https://pop-perote.com/) (básica, en mantenimiento — "¡Pronta Reapertura!") |
+| **Web Actual** | [popgastropub.com](https://popgastropub.com/) |
 | **Sistema de Pedidos** | [FoodBooking](https://www.foodbooking.com/ordering/restaurant/menu?company_uid=04f4d10b-2c07-4411-895d-4437eb890919&restaurant_uid=499ca112-e4ea-46f4-8990-47d5b58748ae&facebook=true) |
 | **Métodos de Pago** | Visa, Mastercard, American Express, Débito |
 

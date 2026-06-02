@@ -37,7 +37,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     .join("")
     .toUpperCase()
     .slice(0, 2);
-  const userEmail = session?.user?.email || "admin@pop-perote.com";
+  const userEmail = session?.user?.email || "admin@popgastropub.com";
 
   // Close dropdown on outside click
   useEffect(() => {

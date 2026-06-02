@@ -27,7 +27,7 @@ export default function PrivacidadPage() {
             <p>
               <strong className="text-white">POP Perote Gastronomic Editorial</strong> (en adelante "POP Perote" o el "Responsable"), con domicilio en <strong className="text-white">Justo Sierra No. 11, Colonia Amado Nervo, Perote, Veracruz, C.P. 91270, México</strong>, es responsable del tratamiento de sus datos personales conforme a lo establecido en la <em>Ley Federal de Protección de Datos Personales en Posesión de los Particulares</em> (LFPDPPP) y su Reglamento.
             </p>
-            <p>Contacto para asuntos de privacidad: <a href="mailto:privacidad@pop-perote.com" className="text-[#F2C777] hover:underline">privacidad@pop-perote.com</a></p>
+            <p>Contacto para asuntos de privacidad: <a href="mailto:privacidad@popgastropub.com" className="text-[#F2C777] hover:underline">privacidad@popgastropub.com</a></p>
           </section>
 
           <section>
@@ -58,7 +58,7 @@ export default function PrivacidadPage() {
               <li>Encuestas de satisfacción y mejora del servicio.</li>
               <li>Análisis estadístico de uso de la plataforma.</li>
             </ul>
-            <p className="mt-3">Si no desea que sus datos sean tratados para las finalidades secundarias, puede manifestarlo enviando un correo a <a href="mailto:privacidad@pop-perote.com" className="text-[#F2C777] hover:underline">privacidad@pop-perote.com</a>.</p>
+            <p className="mt-3">Si no desea que sus datos sean tratados para las finalidades secundarias, puede manifestarlo enviando un correo a <a href="mailto:privacidad@popgastropub.com" className="text-[#F2C777] hover:underline">privacidad@popgastropub.com</a>.</p>
           </section>
 
           <section>
@@ -74,7 +74,7 @@ export default function PrivacidadPage() {
           <section>
             <h2 className="text-xl font-black text-white uppercase tracking-tight mb-3">V. Derechos ARCO</h2>
             <p>Usted tiene derecho a <strong className="text-white">Acceder, Rectificar, Cancelar u Oponerse</strong> al tratamiento de sus datos personales (derechos ARCO), así como a revocar el consentimiento otorgado.</p>
-            <p className="mt-3">Para ejercer sus derechos, envíe una solicitud a <a href="mailto:privacidad@pop-perote.com" className="text-[#F2C777] hover:underline">privacidad@pop-perote.com</a> con:</p>
+            <p className="mt-3">Para ejercer sus derechos, envíe una solicitud a <a href="mailto:privacidad@popgastropub.com" className="text-[#F2C777] hover:underline">privacidad@popgastropub.com</a> con:</p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
               <li>Nombre completo y correo electrónico registrado.</li>
               <li>Descripción clara del derecho que desea ejercer.</li>

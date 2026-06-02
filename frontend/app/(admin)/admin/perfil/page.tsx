@@ -12,7 +12,7 @@ export default function AdminPerfilPage() {
   const [message, setMessage] = useState("");
 
   const userName = session?.user?.name || "Admin User";
-  const userEmail = session?.user?.email || "admin@pop-perote.com";
+  const userEmail = session?.user?.email || "admin@popgastropub.com";
 
   const [formData, setFormData] = useState({
     name: userName,

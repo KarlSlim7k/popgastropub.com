@@ -135,7 +135,7 @@ export default function TerminosPage() {
             <h2 className="text-xl font-black text-white uppercase tracking-tight mb-3">XIII. Contacto</h2>
             <p>Para cualquier duda o aclaración sobre estos términos:</p>
             <ul className="list-none space-y-1 mt-2">
-              <li>📧 <a href="mailto:contacto@pop-perote.com" className="text-[#F2C777] hover:underline">contacto@pop-perote.com</a></li>
+              <li>📧 <a href="mailto:contacto@popgastropub.com" className="text-[#F2C777] hover:underline">contacto@popgastropub.com</a></li>
               <li>📞 <a href="tel:2828253243" className="text-[#F2C777] hover:underline">282-825-32-43</a></li>
               <li>📍 Justo Sierra No. 11, Col. Amado Nervo, Perote, Veracruz, C.P. 91270</li>
             </ul>

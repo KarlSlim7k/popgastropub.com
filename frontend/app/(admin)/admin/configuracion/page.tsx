@@ -17,7 +17,7 @@ export default function AdminConfiguracionPage() {
     fetchWithAuth<Record<string, Record<string, string>>>("/admin/configuracion", session.token)
       .then((data) => {
         setSettings({
-          general: { nombre: "POP Perote", telefono: "282-825-32-43", email: "contacto@pop-perote.com", direccion: "Justo Sierra No. 11, Col. Amado Nervo, Perote, Veracruz", timezone: "America/Mexico_City", idioma: "es", ...data.general },
+          general: { nombre: "POP Perote", telefono: "282-825-32-43", email: "contacto@popgastropub.com", direccion: "Justo Sierra No. 11, Col. Amado Nervo, Perote, Veracruz", timezone: "America/Mexico_City", idioma: "es", ...data.general },
           notificaciones: { nuevos_registros: "true", pedidos_facturacion: "true", promos_expirar: "true", ranking_meseros: "false", canjes_puntos: "true", stock_bajo: "true", resenas_google: "false", ...data.notificaciones },
           apariencia: { tema: "dark", densidad: "Normal", sidebar_colapsada: "false", ...data.apariencia },
           seguridad: { two_factor: "false", session_timeout: "60", ...data.seguridad },
