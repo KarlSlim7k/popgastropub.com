@@ -37,7 +37,8 @@ class PromocionController extends Controller
         $request->validate($this->rules());
 
         $attributes = $this->fromFrontend($request);
-        $attributes['slug'] ??= $this->uniqueSlug((string) $request->input('name'));
+        $this->validateSanitizedName($attributes);
+        $attributes['slug'] ??= $this->uniqueSlug((string) $attributes['titulo']);
 
         $promo = Promocion::create($attributes);
 
@@ -55,6 +56,7 @@ class PromocionController extends Controller
         $request->validate($this->rules(false, (int) $promo->id));
 
         $attributes = $this->fromFrontend($request);
+        $this->validateSanitizedName($attributes);
         if (($attributes['landing_enabled'] ?? $promo->landing_enabled) && ! ($attributes['slug'] ?? $promo->slug)) {
             $attributes['slug'] = $this->uniqueSlug((string) ($attributes['titulo'] ?? $promo->titulo), (int) $promo->id);
         }
@@ -190,7 +192,7 @@ class PromocionController extends Controller
             'daysActive.*' => 'string|in:lunes,martes,miercoles,jueves,viernes,sabado,domingo',
             'status' => 'nullable|string|in:activa,pausada,finalizada',
             'target' => 'nullable|integer|min:0',
-            'image' => 'nullable|string|max:500',
+            'image' => ['nullable', 'string', 'max:500', $this->safePublicUrl()],
             'slug' => [
                 'nullable',
                 'string',
@@ -203,6 +205,9 @@ class PromocionController extends Controller
             'landingSubtitle' => 'nullable|string|max:500',
             'landingContent' => 'nullable|string|max:10000',
             'landingTemplate' => 'nullable|string|in:editorial,clasica',
+            'seoTitle' => 'nullable|string|max:255',
+            'seoDescription' => 'nullable|string|max:500',
+            'ogImage' => ['nullable', 'string', 'max:500', $this->safePublicUrl()],
             'ctaPrimaryText' => 'nullable|required_with:ctaPrimaryUrl|string|max:100',
             'ctaPrimaryUrl' => ['nullable', 'required_with:ctaPrimaryText', 'string', 'max:500', $this->safeCtaUrl()],
             'ctaSecondaryText' => 'nullable|required_with:ctaSecondaryUrl|string|max:100',
@@ -237,6 +242,9 @@ class PromocionController extends Controller
             'landingSubtitle' => $p->landing_subtitle ?? '',
             'landingContent' => $p->landing_content ?? '',
             'landingTemplate' => $p->landing_template ?? 'editorial',
+            'seoTitle' => $p->seo_title ?? '',
+            'seoDescription' => $p->seo_description ?? '',
+            'ogImage' => $p->og_image ?? '',
             'ctaPrimaryText' => $p->cta_primary_text ?? '',
             'ctaPrimaryUrl' => $p->cta_primary_url ?? '',
             'ctaSecondaryText' => $p->cta_secondary_text ?? '',
@@ -258,10 +266,10 @@ class PromocionController extends Controller
     {
         $map = [];
 
-        if ($request->has('name')) $map['titulo'] = $request->input('name');
-        if ($request->has('description')) $map['descripcion'] = $request->input('description');
+        if ($request->has('name')) $map['titulo'] = $this->cleanText($request->input('name'));
+        if ($request->has('description')) $map['descripcion'] = $this->nullableCleanText($request, 'description');
         if ($request->has('type')) $map['tipo'] = $request->input('type');
-        if ($request->has('discount')) $map['descuento'] = $request->input('discount');
+        if ($request->has('discount')) $map['descuento'] = $this->nullableCleanText($request, 'discount');
         if ($request->has('indefinite')) {
             $map['indefinida'] = $request->boolean('indefinite');
             if ($map['indefinida']) {
@@ -281,13 +289,16 @@ class PromocionController extends Controller
         if ($request->has('redemptions')) $map['redenciones'] = $request->input('redemptions');
         if ($request->has('slug')) $map['slug'] = $request->filled('slug') ? Str::slug($request->input('slug')) : null;
         if ($request->has('landingEnabled')) $map['landing_enabled'] = $request->boolean('landingEnabled');
-        if ($request->has('landingTitle')) $map['landing_title'] = $this->nullableString($request, 'landingTitle');
-        if ($request->has('landingSubtitle')) $map['landing_subtitle'] = $this->nullableString($request, 'landingSubtitle');
-        if ($request->has('landingContent')) $map['landing_content'] = $this->nullableString($request, 'landingContent');
+        if ($request->has('landingTitle')) $map['landing_title'] = $this->nullableCleanText($request, 'landingTitle');
+        if ($request->has('landingSubtitle')) $map['landing_subtitle'] = $this->nullableCleanText($request, 'landingSubtitle');
+        if ($request->has('landingContent')) $map['landing_content'] = $this->nullableCleanText($request, 'landingContent');
         if ($request->has('landingTemplate')) $map['landing_template'] = $request->input('landingTemplate') ?: 'editorial';
-        if ($request->has('ctaPrimaryText')) $map['cta_primary_text'] = $this->nullableString($request, 'ctaPrimaryText');
+        if ($request->has('seoTitle')) $map['seo_title'] = $this->nullableCleanText($request, 'seoTitle');
+        if ($request->has('seoDescription')) $map['seo_description'] = $this->nullableCleanText($request, 'seoDescription');
+        if ($request->has('ogImage')) $map['og_image'] = $this->nullableString($request, 'ogImage');
+        if ($request->has('ctaPrimaryText')) $map['cta_primary_text'] = $this->nullableCleanText($request, 'ctaPrimaryText');
         if ($request->has('ctaPrimaryUrl')) $map['cta_primary_url'] = $this->nullableString($request, 'ctaPrimaryUrl');
-        if ($request->has('ctaSecondaryText')) $map['cta_secondary_text'] = $this->nullableString($request, 'ctaSecondaryText');
+        if ($request->has('ctaSecondaryText')) $map['cta_secondary_text'] = $this->nullableCleanText($request, 'ctaSecondaryText');
         if ($request->has('ctaSecondaryUrl')) $map['cta_secondary_url'] = $this->nullableString($request, 'ctaSecondaryUrl');
         if ($request->has('formEnabled')) $map['form_enabled'] = $request->boolean('formEnabled');
         if ($request->has('formFields')) {
@@ -334,11 +345,50 @@ class PromocionController extends Controller
         };
     }
 
+    private function safePublicUrl(): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail): void {
+            if (! is_string($value) || $value === '') return;
+
+            if (preg_match('~^/(?!/)[A-Za-z0-9/_?=&%+.,:@#-]*$~', $value)) return;
+
+            if (filter_var($value, FILTER_VALIDATE_URL)
+                && strtolower((string) parse_url($value, PHP_URL_SCHEME)) === 'https') {
+                return;
+            }
+
+            $fail('El campo :attribute debe ser una ruta interna o una URL HTTPS válida.');
+        };
+    }
+
     private function nullableString(Request $request, string $key): ?string
     {
         $value = trim((string) $request->input($key, ''));
 
         return $value !== '' ? $value : null;
+    }
+
+    private function nullableCleanText(Request $request, string $key): ?string
+    {
+        $value = $this->cleanText($request->input($key));
+
+        return $value !== '' ? $value : null;
+    }
+
+    private function cleanText(mixed $value): string
+    {
+        $value = preg_replace('~<(script|style)\b[^>]*>.*?</\1>~is', '', (string) $value);
+
+        return trim(strip_tags((string) $value));
+    }
+
+    private function validateSanitizedName(array $attributes): void
+    {
+        if (array_key_exists('titulo', $attributes) && $attributes['titulo'] === '') {
+            throw ValidationException::withMessages([
+                'name' => 'El nombre debe contener texto visible.',
+            ]);
+        }
     }
 
     private function percentage(int $value, int $total): float

@@ -188,6 +188,84 @@ class PromoLandingPagesTest extends TestCase
             ->assertJsonValidationErrors(['ctaPrimaryUrl']);
     }
 
+    public function test_admin_can_configure_sanitized_seo_and_open_graph_fields(): void
+    {
+        $this->actingAs($this->admin)->postJson('/api/admin/promociones', [
+            'name' => '<b>Promo segura</b>',
+            'description' => '<script>alert("xss")</script>Descripción visible',
+            'type' => 'descuento',
+            'indefinite' => true,
+            'daysActive' => ['viernes'],
+            'status' => 'activa',
+            'landingEnabled' => true,
+            'landingTitle' => '<strong>Landing segura</strong>',
+            'landingContent' => "<style>body{display:none}</style>Primera condición.\nSegunda condición.",
+            'seoTitle' => '<em>Título SEO</em>',
+            'seoDescription' => '<script>alert(1)</script>Descripción SEO',
+            'ogImage' => 'https://api.popgastropub.com/api/storage/promociones/banner.webp',
+        ])->assertCreated()->assertJsonFragment([
+            'name' => 'Promo segura',
+            'description' => 'Descripción visible',
+            'slug' => 'promo-segura',
+            'landingTitle' => 'Landing segura',
+            'landingContent' => "Primera condición.\nSegunda condición.",
+            'seoTitle' => 'Título SEO',
+            'seoDescription' => 'Descripción SEO',
+            'ogImage' => 'https://api.popgastropub.com/api/storage/promociones/banner.webp',
+        ]);
+
+        $promo = Promocion::where('slug', 'promo-segura')->firstOrFail();
+        $this->assertSame('Descripción visible', $promo->descripcion);
+        $this->assertSame('Título SEO', $promo->seo_title);
+    }
+
+    public function test_admin_rejects_invalid_slug_image_and_open_graph_url(): void
+    {
+        $payload = [
+            'name' => 'Promo validada',
+            'type' => 'descuento',
+            'indefinite' => true,
+            'daysActive' => ['viernes'],
+            'status' => 'activa',
+            'landingEnabled' => true,
+        ];
+
+        $this->actingAs($this->admin)
+            ->postJson('/api/admin/promociones', $payload + ['slug' => 'Slug inválido'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['slug']);
+
+        $this->actingAs($this->admin)
+            ->postJson('/api/admin/promociones', $payload + ['image' => 'javascript:alert(1)'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['image']);
+
+        $this->actingAs($this->admin)
+            ->postJson('/api/admin/promociones', $payload + ['ogImage' => 'http://example.com/banner.jpg'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['ogImage']);
+
+        $this->actingAs($this->admin)
+            ->postJson('/api/admin/promociones', array_merge($payload, ['name' => '<script>alert(1)</script>']))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['name']);
+    }
+
+    public function test_public_landing_does_not_expose_aggregated_admin_metrics(): void
+    {
+        Promocion::create($this->promoAttributes([
+            'views_count' => 10,
+            'clicks_count' => 5,
+            'leads_count' => 2,
+        ]));
+
+        $this->getJson('/api/promociones/promo-publica')
+            ->assertOk()
+            ->assertJsonMissingPath('data.views_count')
+            ->assertJsonMissingPath('data.clicks_count')
+            ->assertJsonMissingPath('data.leads_count');
+    }
+
     private function promoAttributes(array $overrides = []): array
     {
         return array_merge([

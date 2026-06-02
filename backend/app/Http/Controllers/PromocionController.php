@@ -99,7 +99,7 @@ class PromocionController extends Controller
 
     private function toPublic(Promocion $promo): array
     {
-        $data = $promo->toArray();
+        $data = $promo->makeHidden(['views_count', 'clicks_count', 'leads_count'])->toArray();
         $data['dias_activos'] = $promo->activeDays();
         $data['disponible_hoy'] = $promo->isAvailableOn(today());
         $data['landing_url'] = $promo->hasPublicLanding(today())

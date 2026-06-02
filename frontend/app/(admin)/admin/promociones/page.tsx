@@ -29,6 +29,9 @@ interface Promo {
   landingSubtitle: string;
   landingContent: string;
   landingTemplate: "editorial" | "clasica";
+  seoTitle: string;
+  seoDescription: string;
+  ogImage: string;
   ctaPrimaryText: string;
   ctaPrimaryUrl: string;
   ctaSecondaryText: string;
@@ -119,6 +122,9 @@ const EMPTY_PROMO_FORM: Partial<Promo> = {
   landingSubtitle: "",
   landingContent: "",
   landingTemplate: "editorial",
+  seoTitle: "",
+  seoDescription: "",
+  ogImage: "",
   ctaPrimaryText: "",
   ctaPrimaryUrl: "",
   ctaSecondaryText: "",
@@ -267,6 +273,9 @@ export default function AdminPromocionesPage() {
     landing_subtitle: promo.landingSubtitle || "",
     landing_content: promo.landingContent || "",
     landing_template: promo.landingTemplate || "editorial",
+    seo_title: promo.seoTitle || "",
+    seo_description: promo.seoDescription || "",
+    og_image: promo.ogImage || "",
     cta_primary_text: promo.ctaPrimaryText || "",
     cta_primary_url: promo.ctaPrimaryUrl || "",
     cta_secondary_text: promo.ctaSecondaryText || "",
@@ -640,6 +649,42 @@ export default function AdminPromocionesPage() {
                         placeholder="Explica condiciones, productos incluidos o detalles relevantes..."
                         className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all resize-none"
                       />
+                    </div>
+                    <div className="rounded-lg border border-white/10 bg-black/10 p-4 space-y-4">
+                      <div>
+                        <p className="text-[10px] uppercase font-bold tracking-widest text-pop-gold">SEO y redes sociales</p>
+                        <p className="mt-1 text-xs text-gray-400">Personaliza cómo aparecerá el enlace al compartirlo. Si dejas campos vacíos se usarán los textos e imagen de la landing.</p>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Título SEO</label>
+                          <input
+                            type="text"
+                            value={form.seoTitle || ""}
+                            onChange={(e) => setForm({ ...form, seoTitle: e.target.value })}
+                            placeholder={form.landingTitle || form.name || "Título para buscadores"}
+                            className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Descripción SEO</label>
+                          <input
+                            type="text"
+                            value={form.seoDescription || ""}
+                            onChange={(e) => setForm({ ...form, seoDescription: e.target.value })}
+                            placeholder={form.landingSubtitle || form.description || "Descripción para buscadores y redes"}
+                            className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Imagen Open Graph (opcional)</label>
+                        <ImageUpload
+                          value={form.ogImage || ""}
+                          onChange={(url) => setForm({ ...form, ogImage: url })}
+                          folder="promociones"
+                        />
+                      </div>
                     </div>
                     {(["primary", "secondary"] as const).map((target) => {
                       const isPrimary = target === "primary";

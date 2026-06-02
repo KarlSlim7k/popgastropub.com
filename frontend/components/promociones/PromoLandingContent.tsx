@@ -21,6 +21,9 @@ export interface PromoLandingData {
   landing_subtitle?: string | null;
   landing_content?: string | null;
   landing_template?: string | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  og_image?: string | null;
   cta_primary_text?: string | null;
   cta_primary_url?: string | null;
   cta_secondary_text?: string | null;
@@ -36,7 +39,7 @@ const IMAGE_HOSTS = new Set([
   'images.unsplash.com',
 ]);
 
-function getSupportedImageUrl(value?: string | null): string | null {
+export function getSupportedImageUrl(value?: string | null): string | null {
   if (!value) return null;
   if (value.startsWith('/')) return value;
 

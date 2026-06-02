@@ -143,6 +143,25 @@ class PromoCampaignAnalyticsTest extends TestCase
         $this->assertStringContainsString("'=Ana", $csv->streamedContent());
     }
 
+    public function test_public_lead_endpoint_is_rate_limited(): void
+    {
+        Promocion::create($this->promoAttributes());
+        $payload = [
+            'nombre' => 'Ana',
+            'telefono' => '2821234567',
+        ];
+
+        for ($attempt = 1; $attempt <= 6; $attempt++) {
+            $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.50'])
+                ->postJson('/api/promociones/analitica/lead', $payload)
+                ->assertCreated();
+        }
+
+        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.50'])
+            ->postJson('/api/promociones/analitica/lead', $payload)
+            ->assertTooManyRequests();
+    }
+
     private function promoAttributes(array $overrides = []): array
     {
         return array_merge([

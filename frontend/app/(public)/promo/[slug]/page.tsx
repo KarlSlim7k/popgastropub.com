@@ -7,6 +7,14 @@ interface PromoResponse {
   data: PromoLandingData;
 }
 
+const SITE_URL = 'https://popgastropub.com';
+
+function absoluteUrl(value?: string | null): string | undefined {
+  if (!value) return undefined;
+
+  return value.startsWith('/') ? new URL(value, SITE_URL).toString() : value;
+}
+
 async function getPromo(slug: string): Promise<PromoLandingData | null> {
   const response = await fetch(`${API_URL}/promociones/${encodeURIComponent(slug)}`, {
     cache: 'no-store',
@@ -30,9 +38,26 @@ export async function generateMetadata({
 
   if (!promo) return {};
 
+  const title = promo.seo_title || promo.landing_title || promo.titulo;
+  const description = promo.seo_description || promo.landing_subtitle || promo.descripcion || `Conoce la promoción ${promo.titulo} de POP Perote.`;
+  const landingUrl = `${SITE_URL}/promo/${encodeURIComponent(slug)}`;
+  const image = absoluteUrl(promo.og_image || promo.imagen);
+
   return {
-    title: `${promo.landing_title || promo.titulo} | POP Perote`,
-    description: promo.landing_subtitle || promo.descripcion || `Conoce la promoción ${promo.titulo} de POP Perote.`,
+    title: `${title} | POP Perote`,
+    description,
+    alternates: {
+      canonical: landingUrl,
+    },
+    openGraph: {
+      type: 'website',
+      locale: 'es_MX',
+      siteName: 'POP Perote',
+      title,
+      description,
+      url: landingUrl,
+      images: image ? [{ url: image, alt: title }] : undefined,
+    },
   };
 }
 
