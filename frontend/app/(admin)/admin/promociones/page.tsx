@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { downloadAuthenticatedFile, fetchWithAuth } from "@/lib/api";
+import { APIError, downloadAuthenticatedFile, fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
 import PromoLandingContent, { type PromoLandingData } from "@/components/promociones/PromoLandingContent";
 import type { PromoFormField } from "@/components/promociones/PromoLandingInteractions";
@@ -192,7 +192,11 @@ export default function AdminPromocionesPage() {
       closeModal();
       fetchPromos();
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Error al guardar promoción");
+      if (error instanceof APIError) {
+        alert(error.getAllMessages());
+      } else {
+        alert(error instanceof Error ? error.message : "Error al guardar promoción");
+      }
     }
   };
 

@@ -34,7 +34,7 @@ class PromocionController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate($this->rules());
+        $request->validate($this->rules($request));
 
         $attributes = $this->fromFrontend($request);
         $this->validateSanitizedName($attributes);
@@ -53,7 +53,7 @@ class PromocionController extends Controller
     public function update(Request $request, $id)
     {
         $promo = Promocion::findOrFail($id);
-        $request->validate($this->rules(false, (int) $promo->id));
+        $request->validate($this->rules($request, false, (int) $promo->id));
 
         $attributes = $this->fromFrontend($request);
         $this->validateSanitizedName($attributes);
@@ -178,8 +178,10 @@ class PromocionController extends Controller
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
-    private function rules(bool $creating = true, ?int $id = null): array
+    private function rules(Request $request, bool $creating = true, ?int $id = null): array
     {
+        $formEnabled = $request->boolean('formEnabled');
+
         return [
             'name' => ($creating ? 'required' : 'sometimes') . '|string|max:255',
             'description' => 'nullable|string',
@@ -213,7 +215,9 @@ class PromocionController extends Controller
             'ctaSecondaryText' => 'nullable|required_with:ctaSecondaryUrl|string|max:100',
             'ctaSecondaryUrl' => ['nullable', 'required_with:ctaSecondaryText', 'string', 'max:500', $this->safeCtaUrl()],
             'formEnabled' => 'nullable|boolean',
-            'formFields' => 'nullable|required_if:formEnabled,true|array|min:1',
+            'formFields' => $formEnabled
+                ? 'required|array|min:1'
+                : 'nullable|array',
             'formFields.*' => ['string', Rule::in(Promocion::FORM_FIELDS), 'distinct'],
         ];
     }
