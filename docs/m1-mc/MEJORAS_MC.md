@@ -378,3 +378,21 @@ Agregar índices para `promocion_id, event_type, created_at` y para análisis po
 Implementar primero la **Fase 1** y la **Fase 2**. Estas fases entregan el valor principal: landings individuales compartibles, publicación controlada, imagen y CTA configurables, sin introducir todavía complejidad operativa por formularios o analítica detallada.
 
 Después de validar uso real y estabilidad, avanzar a leads y métricas en la **Fase 3** y la **Fase 4**. Cerrar con SEO, seguridad y pruebas de regresión en la **Fase 5**.
+
+## 13. Orden de despliegue y comprobación
+
+Cada entrega debe seguir este orden:
+
+1. Realizar `commit` con los cambios aprobados y ejecutar `push` al repositorio remoto.
+2. Confirmar que el VPS con Dokploy detecta el nuevo `push` e inicia el despliegue automático.
+3. Esperar aproximadamente entre 90 y 120 segundos para que termine la construcción y publicación.
+4. Revisar en Dokploy que el despliegue finalice correctamente.
+5. Comprobar en producción las rutas y funcionalidades modificadas.
+
+### Si ocurre un error
+
+- Revisar el estado del despliegue y los logs en Dokploy.
+- Identificar si el error ocurrió durante instalación, construcción, migraciones o arranque.
+- Corregir la causa raíz antes de repetir el despliegue.
+- Realizar un nuevo `commit` y `push` con la corrección.
+- Esperar nuevamente entre 90 y 120 segundos y repetir la comprobación.
