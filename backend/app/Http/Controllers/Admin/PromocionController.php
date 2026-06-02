@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Promocion;
+use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -132,6 +133,14 @@ class PromocionController extends Controller
                 Rule::unique('promociones', 'slug')->ignore($id),
             ],
             'landingEnabled' => 'nullable|boolean',
+            'landingTitle' => 'nullable|string|max:255',
+            'landingSubtitle' => 'nullable|string|max:500',
+            'landingContent' => 'nullable|string|max:10000',
+            'landingTemplate' => 'nullable|string|in:editorial,clasica',
+            'ctaPrimaryText' => 'nullable|required_with:ctaPrimaryUrl|string|max:100',
+            'ctaPrimaryUrl' => ['nullable', 'required_with:ctaPrimaryText', 'string', 'max:500', $this->safeCtaUrl()],
+            'ctaSecondaryText' => 'nullable|required_with:ctaSecondaryUrl|string|max:100',
+            'ctaSecondaryUrl' => ['nullable', 'required_with:ctaSecondaryText', 'string', 'max:500', $this->safeCtaUrl()],
         ];
     }
 
@@ -155,6 +164,14 @@ class PromocionController extends Controller
             'imageAlt' => $p->titulo,
             'slug' => $p->slug ?? '',
             'landingEnabled' => (bool) $p->landing_enabled,
+            'landingTitle' => $p->landing_title ?? '',
+            'landingSubtitle' => $p->landing_subtitle ?? '',
+            'landingContent' => $p->landing_content ?? '',
+            'landingTemplate' => $p->landing_template ?? 'editorial',
+            'ctaPrimaryText' => $p->cta_primary_text ?? '',
+            'ctaPrimaryUrl' => $p->cta_primary_url ?? '',
+            'ctaSecondaryText' => $p->cta_secondary_text ?? '',
+            'ctaSecondaryUrl' => $p->cta_secondary_url ?? '',
             'published' => $p->published_at !== null,
             'publishedAt' => $p->published_at?->toIso8601String(),
             'landingUrl' => $p->slug
@@ -190,6 +207,14 @@ class PromocionController extends Controller
         if ($request->has('redemptions')) $map['redenciones'] = $request->input('redemptions');
         if ($request->has('slug')) $map['slug'] = $request->filled('slug') ? Str::slug($request->input('slug')) : null;
         if ($request->has('landingEnabled')) $map['landing_enabled'] = $request->boolean('landingEnabled');
+        if ($request->has('landingTitle')) $map['landing_title'] = $this->nullableString($request, 'landingTitle');
+        if ($request->has('landingSubtitle')) $map['landing_subtitle'] = $this->nullableString($request, 'landingSubtitle');
+        if ($request->has('landingContent')) $map['landing_content'] = $this->nullableString($request, 'landingContent');
+        if ($request->has('landingTemplate')) $map['landing_template'] = $request->input('landingTemplate') ?: 'editorial';
+        if ($request->has('ctaPrimaryText')) $map['cta_primary_text'] = $this->nullableString($request, 'ctaPrimaryText');
+        if ($request->has('ctaPrimaryUrl')) $map['cta_primary_url'] = $this->nullableString($request, 'ctaPrimaryUrl');
+        if ($request->has('ctaSecondaryText')) $map['cta_secondary_text'] = $this->nullableString($request, 'ctaSecondaryText');
+        if ($request->has('ctaSecondaryUrl')) $map['cta_secondary_url'] = $this->nullableString($request, 'ctaSecondaryUrl');
 
         return $map;
     }
@@ -213,5 +238,28 @@ class PromocionController extends Controller
         }
 
         return $slug;
+    }
+
+    private function safeCtaUrl(): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail): void {
+            if (! is_string($value) || $value === '') return;
+
+            if (preg_match('~^/(?!/)[A-Za-z0-9/_?=&%+.,:@#-]*$~', $value)) return;
+
+            if (filter_var($value, FILTER_VALIDATE_URL)
+                && strtolower((string) parse_url($value, PHP_URL_SCHEME)) === 'https') {
+                return;
+            }
+
+            $fail('El campo :attribute debe ser una ruta interna o una URL HTTPS válida.');
+        };
+    }
+
+    private function nullableString(Request $request, string $key): ?string
+    {
+        $value = trim((string) $request->input($key, ''));
+
+        return $value !== '' ? $value : null;
     }
 }

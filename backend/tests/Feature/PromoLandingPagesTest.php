@@ -114,6 +114,80 @@ class PromoLandingPagesTest extends TestCase
         $this->getJson("/api/promociones/{$promo->slug}")->assertNotFound();
     }
 
+    public function test_admin_can_configure_landing_content_and_safe_ctas(): void
+    {
+        $response = $this->actingAs($this->admin)->postJson('/api/admin/promociones', [
+            'name' => 'Promo con CTA',
+            'type' => 'descuento',
+            'indefinite' => true,
+            'daysActive' => ['viernes'],
+            'status' => 'activa',
+            'landingEnabled' => true,
+            'landingTitle' => 'Viernes de POP',
+            'landingSubtitle' => 'Un beneficio listo para compartir.',
+            'landingContent' => "Primera condición.\nSegunda condición.",
+            'landingTemplate' => 'clasica',
+            'ctaPrimaryText' => 'Ordenar ahora',
+            'ctaPrimaryUrl' => '/orden',
+            'ctaSecondaryText' => 'Escribir por WhatsApp',
+            'ctaSecondaryUrl' => 'https://wa.me/522821278014',
+        ]);
+
+        $response->assertCreated()->assertJsonFragment([
+            'landingTitle' => 'Viernes de POP',
+            'landingTemplate' => 'clasica',
+            'ctaPrimaryUrl' => '/orden',
+            'ctaSecondaryUrl' => 'https://wa.me/522821278014',
+        ]);
+
+        $promo = Promocion::where('slug', 'promo-con-cta')->firstOrFail();
+        $promo->update(['published_at' => now()]);
+
+        $this->getJson('/api/promociones/promo-con-cta')
+            ->assertOk()
+            ->assertJsonPath('data.landing_title', 'Viernes de POP')
+            ->assertJsonPath('data.cta_primary_url', '/orden')
+            ->assertJsonPath('data.cta_secondary_url', 'https://wa.me/522821278014');
+    }
+
+    public function test_admin_rejects_insecure_or_incomplete_ctas(): void
+    {
+        $payload = [
+            'name' => 'Promo insegura',
+            'type' => 'descuento',
+            'indefinite' => true,
+            'daysActive' => ['viernes'],
+            'status' => 'activa',
+            'landingEnabled' => true,
+            'ctaPrimaryText' => 'Abrir enlace',
+        ];
+
+        $this->actingAs($this->admin)
+            ->postJson('/api/admin/promociones', $payload + ['ctaPrimaryUrl' => 'javascript:alert(1)'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['ctaPrimaryUrl']);
+
+        $this->actingAs($this->admin)
+            ->postJson('/api/admin/promociones', $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['ctaPrimaryUrl']);
+
+        $this->actingAs($this->admin)
+            ->postJson('/api/admin/promociones', $payload + ['ctaPrimaryUrl' => 'http://example.com'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['ctaPrimaryUrl']);
+
+        $this->actingAs($this->admin)
+            ->postJson('/api/admin/promociones', $payload + ['ctaPrimaryUrl' => '//example.com'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['ctaPrimaryUrl']);
+
+        $this->actingAs($this->admin)
+            ->postJson('/api/admin/promociones', $payload + ['ctaPrimaryUrl' => "/orden\notra-ruta"])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['ctaPrimaryUrl']);
+    }
+
     private function promoAttributes(array $overrides = []): array
     {
         return array_merge([
@@ -127,6 +201,7 @@ class PromoLandingPagesTest extends TestCase
             'activa' => true,
             'estado' => 'activa',
             'landing_enabled' => true,
+            'landing_template' => 'editorial',
             'published_at' => now(),
         ], $overrides);
     }

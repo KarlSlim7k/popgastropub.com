@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
+import PromoLandingContent, { type PromoLandingData } from "@/components/promociones/PromoLandingContent";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 
 interface Promo {
@@ -23,6 +24,14 @@ interface Promo {
   imageAlt: string;
   slug: string;
   landingEnabled: boolean;
+  landingTitle: string;
+  landingSubtitle: string;
+  landingContent: string;
+  landingTemplate: "editorial" | "clasica";
+  ctaPrimaryText: string;
+  ctaPrimaryUrl: string;
+  ctaSecondaryText: string;
+  ctaSecondaryUrl: string;
   published: boolean;
   publishedAt: string | null;
   landingUrl: string;
@@ -38,6 +47,14 @@ const DAYS = [
   { value: "domingo", label: "Dom" },
 ];
 const ALL_DAYS = DAYS.map((day) => day.value);
+const FOODBOOKING_URL = "https://www.foodbooking.com/ordering/restaurant/menu?company_uid=04f4d10b-2c07-4411-895d-4437eb890919&restaurant_uid=499ca112-e4ea-46f4-8990-47d5b58748ae&facebook=true";
+const CTA_PRESETS = [
+  { label: "Orden interna", text: "Ordenar ahora", url: "/orden" },
+  { label: "FoodBooking", text: "Pedir en FoodBooking", url: FOODBOOKING_URL },
+  { label: "WhatsApp", text: "Enviar WhatsApp", url: "https://wa.me/522821278014" },
+  { label: "Menú", text: "Ver menú", url: "/menu" },
+  { label: "Ubicación", text: "Ver ubicación", url: "/ubicacion" },
+];
 const TYPE_LABELS: Record<Promo["type"], string> = {
   descuento: "Descuento",
   "2x1": "2x1",
@@ -55,6 +72,7 @@ export default function AdminPromocionesPage() {
   const [editingPromo, setEditingPromo] = useState<Promo | null>(null);
   const [promos, setPromos] = useState<Promo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [previewPromo, setPreviewPromo] = useState<Partial<Promo> | null>(null);
 
   const [form, setForm] = useState<Partial<Promo>>({
     name: "",
@@ -70,6 +88,14 @@ export default function AdminPromocionesPage() {
     image: "",
     slug: "",
     landingEnabled: false,
+    landingTitle: "",
+    landingSubtitle: "",
+    landingContent: "",
+    landingTemplate: "editorial",
+    ctaPrimaryText: "",
+    ctaPrimaryUrl: "",
+    ctaSecondaryText: "",
+    ctaSecondaryUrl: "",
   });
 
   const fetchPromos = async () => {
@@ -92,7 +118,7 @@ export default function AdminPromocionesPage() {
 
   const openCreate = () => {
     setEditingPromo(null);
-    setForm({ name: "", description: "", type: "descuento", discount: "", startDate: "", endDate: "", daysActive: ALL_DAYS, indefinite: false, status: "activa", target: 0, image: "", slug: "", landingEnabled: false });
+    setForm({ name: "", description: "", type: "descuento", discount: "", startDate: "", endDate: "", daysActive: ALL_DAYS, indefinite: false, status: "activa", target: 0, image: "", slug: "", landingEnabled: false, landingTitle: "", landingSubtitle: "", landingContent: "", landingTemplate: "editorial", ctaPrimaryText: "", ctaPrimaryUrl: "", ctaSecondaryText: "", ctaSecondaryUrl: "" });
     setShowModal(true);
   };
 
@@ -152,6 +178,32 @@ export default function AdminPromocionesPage() {
     } catch {
       alert(`Copia este enlace: ${promo.landingUrl}`);
     }
+  };
+
+  const toPreviewData = (promo: Partial<Promo>): PromoLandingData => ({
+    titulo: promo.name || "Título de la campaña",
+    descripcion: promo.description || "",
+    descuento: promo.discount || "",
+    imagen: promo.image || "",
+    dia_inicio: promo.startDate || null,
+    dia_fin: promo.endDate || null,
+    dias_activos: promo.daysActive || [],
+    indefinida: !!promo.indefinite,
+    disponible_hoy: true,
+    landing_title: promo.landingTitle || "",
+    landing_subtitle: promo.landingSubtitle || "",
+    landing_content: promo.landingContent || "",
+    landing_template: promo.landingTemplate || "editorial",
+    cta_primary_text: promo.ctaPrimaryText || "",
+    cta_primary_url: promo.ctaPrimaryUrl || "",
+    cta_secondary_text: promo.ctaSecondaryText || "",
+    cta_secondary_url: promo.ctaSecondaryUrl || "",
+  });
+
+  const applyCtaPreset = (target: "primary" | "secondary", text: string, url: string) => {
+    setForm(target === "primary"
+      ? { ...form, ctaPrimaryText: text, ctaPrimaryUrl: url }
+      : { ...form, ctaSecondaryText: text, ctaSecondaryUrl: url });
   };
 
   const filteredPromos = promos.filter((p) => {
@@ -344,9 +396,14 @@ export default function AdminPromocionesPage() {
                           </>
                         )}
                         {promo.landingEnabled && (
-                          <button onClick={() => handlePublication(promo)} className="p-1.5 hover:bg-pop-orange/10 rounded transition-colors" title={promo.published ? "Despublicar" : "Publicar"}>
-                            <span className="material-symbols-outlined text-pop-orange text-lg">{promo.published ? "visibility_off" : "publish"}</span>
-                          </button>
+                          <>
+                            <button onClick={() => setPreviewPromo(promo)} className="p-1.5 hover:bg-pop-gold/10 rounded transition-colors" title="Previsualizar">
+                              <span className="material-symbols-outlined text-pop-gold text-lg">preview</span>
+                            </button>
+                            <button onClick={() => handlePublication(promo)} className="p-1.5 hover:bg-pop-orange/10 rounded transition-colors" title={promo.published ? "Despublicar" : "Publicar"}>
+                              <span className="material-symbols-outlined text-pop-orange text-lg">{promo.published ? "visibility_off" : "publish"}</span>
+                            </button>
+                          </>
                         )}
                         <button onClick={() => openEdit(promo)} className="p-1.5 hover:bg-pop-gold/10 rounded transition-colors" title="Editar">
                           <span className="material-symbols-outlined text-pop-gold text-lg">edit</span>
@@ -373,7 +430,7 @@ export default function AdminPromocionesPage() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeModal}>
-          <div className="bg-pop-cardGreen border border-white/10 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-pop-cardGreen border border-white/10 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-white/5 flex justify-between items-center">
               <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white">
                 {editingPromo ? "Editar Campaña" : "Crear Campaña"}
@@ -446,20 +503,103 @@ export default function AdminPromocionesPage() {
                   </span>
                 </label>
                 {form.landingEnabled && (
-                  <div>
-                    <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Slug de la URL</label>
-                    <div className="flex items-center rounded-lg border border-white/10 bg-gray-800/50 overflow-hidden focus-within:border-pop-gold/50 transition-all">
-                      <span className="px-3 py-3 text-xs text-gray-500 border-r border-white/10">/promo/</span>
-                      <input
-                        type="text"
-                        value={form.slug || ""}
-                        onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") })}
-                        placeholder="sushiercoles"
-                        className="w-full bg-transparent px-3 py-3 text-sm text-white placeholder-gray-500 focus:outline-none"
+                  <>
+                    <div>
+                      <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Slug de la URL</label>
+                      <div className="flex items-center rounded-lg border border-white/10 bg-gray-800/50 overflow-hidden focus-within:border-pop-gold/50 transition-all">
+                        <span className="px-3 py-3 text-xs text-gray-500 border-r border-white/10">/promo/</span>
+                        <input
+                          type="text"
+                          value={form.slug || ""}
+                          onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") })}
+                          placeholder="sushiercoles"
+                          className="w-full bg-transparent px-3 py-3 text-sm text-white placeholder-gray-500 focus:outline-none"
+                        />
+                      </div>
+                      <p className="text-[10px] text-gray-500 mt-2">Si lo dejas vacío al guardar, se generará desde el nombre de la campaña.</p>
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Plantilla</label>
+                      <select
+                        value={form.landingTemplate || "editorial"}
+                        onChange={(e) => setForm({ ...form, landingTemplate: e.target.value as Promo["landingTemplate"] })}
+                        className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-pop-gold/50 transition-all"
+                      >
+                        <option value="editorial">Editorial · imagen a la izquierda</option>
+                        <option value="clasica">Clásica · contenido a la izquierda</option>
+                      </select>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Título de landing</label>
+                        <input
+                          type="text"
+                          value={form.landingTitle || ""}
+                          onChange={(e) => setForm({ ...form, landingTitle: e.target.value })}
+                          placeholder={form.name || "Título principal"}
+                          className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Subtítulo</label>
+                        <input
+                          type="text"
+                          value={form.landingSubtitle || ""}
+                          onChange={(e) => setForm({ ...form, landingSubtitle: e.target.value })}
+                          placeholder="Beneficio breve para redes sociales"
+                          className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Contenido extendido</label>
+                      <textarea
+                        rows={4}
+                        value={form.landingContent || ""}
+                        onChange={(e) => setForm({ ...form, landingContent: e.target.value })}
+                        placeholder="Explica condiciones, productos incluidos o detalles relevantes..."
+                        className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all resize-none"
                       />
                     </div>
-                    <p className="text-[10px] text-gray-500 mt-2">Si lo dejas vacío al guardar, se generará desde el nombre de la campaña.</p>
-                  </div>
+                    {(["primary", "secondary"] as const).map((target) => {
+                      const isPrimary = target === "primary";
+                      return (
+                        <div key={target} className="rounded-lg border border-white/10 bg-black/10 p-4 space-y-3">
+                          <p className="text-[10px] uppercase font-bold tracking-widest text-pop-gold">
+                            CTA {isPrimary ? "principal" : "secundario"}
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {CTA_PRESETS.map((preset) => (
+                              <button
+                                key={`${target}-${preset.label}`}
+                                type="button"
+                                onClick={() => applyCtaPreset(target, preset.text, preset.url)}
+                                className="rounded border border-white/10 bg-gray-800/50 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-300 hover:border-pop-gold/40 hover:text-pop-gold transition-all"
+                              >
+                                {preset.label}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-[0.8fr_1.2fr] gap-3">
+                            <input
+                              type="text"
+                              value={(isPrimary ? form.ctaPrimaryText : form.ctaSecondaryText) || ""}
+                              onChange={(e) => setForm(isPrimary ? { ...form, ctaPrimaryText: e.target.value } : { ...form, ctaSecondaryText: e.target.value })}
+                              placeholder="Texto del botón"
+                              className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all"
+                            />
+                            <input
+                              type="text"
+                              value={(isPrimary ? form.ctaPrimaryUrl : form.ctaSecondaryUrl) || ""}
+                              onChange={(e) => setForm(isPrimary ? { ...form, ctaPrimaryUrl: e.target.value } : { ...form, ctaSecondaryUrl: e.target.value })}
+                              placeholder="/orden o https://..."
+                              className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </>
                 )}
               </section>
               <label className="flex items-start gap-3 rounded-lg border border-pop-gold/20 bg-pop-gold/5 p-4 cursor-pointer">
@@ -548,6 +688,11 @@ export default function AdminPromocionesPage() {
               </div>
             </div>
             <div className="p-6 border-t border-white/5 flex justify-end gap-3">
+              {form.landingEnabled && (
+                <button onClick={() => setPreviewPromo(form)} className="px-6 py-2.5 text-sm font-semibold text-pop-gold border border-pop-gold/40 rounded-lg hover:bg-pop-gold/10 transition-all">
+                  Previsualizar
+                </button>
+              )}
               <button onClick={closeModal} className="px-6 py-2.5 text-sm font-semibold text-gray-400 border border-gray-700 rounded-lg hover:bg-gray-800/50 transition-all">
                 Cancelar
               </button>
@@ -559,6 +704,19 @@ export default function AdminPromocionesPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {previewPromo && (
+        <div className="fixed inset-0 z-[70] overflow-y-auto bg-[#0D0D0D]" role="dialog" aria-modal="true" aria-label="Previsualización de landing">
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#F2C777]/20 bg-[#0D0D0D]/95 px-5 py-3 backdrop-blur">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#F2C777]">Vista previa · no publicada</p>
+            <button onClick={() => setPreviewPromo(null)} className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#F2C894] hover:text-[#F2C777]">
+              <span className="material-symbols-outlined text-lg">close</span>
+              Cerrar
+            </button>
+          </div>
+          <PromoLandingContent promo={toPreviewData(previewPromo)} preview />
         </div>
       )}
     </main>
