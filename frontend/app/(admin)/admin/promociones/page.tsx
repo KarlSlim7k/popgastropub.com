@@ -21,6 +21,11 @@ interface Promo {
   revenue: string;
   image: string;
   imageAlt: string;
+  slug: string;
+  landingEnabled: boolean;
+  published: boolean;
+  publishedAt: string | null;
+  landingUrl: string;
 }
 
 const DAYS = [
@@ -63,6 +68,8 @@ export default function AdminPromocionesPage() {
     status: "activa",
     target: 0,
     image: "",
+    slug: "",
+    landingEnabled: false,
   });
 
   const fetchPromos = async () => {
@@ -85,7 +92,7 @@ export default function AdminPromocionesPage() {
 
   const openCreate = () => {
     setEditingPromo(null);
-    setForm({ name: "", description: "", type: "descuento", discount: "", startDate: "", endDate: "", daysActive: ALL_DAYS, indefinite: false, status: "activa", target: 0, image: "" });
+    setForm({ name: "", description: "", type: "descuento", discount: "", startDate: "", endDate: "", daysActive: ALL_DAYS, indefinite: false, status: "activa", target: 0, image: "", slug: "", landingEnabled: false });
     setShowModal(true);
   };
 
@@ -123,6 +130,27 @@ export default function AdminPromocionesPage() {
       fetchPromos();
     } catch {
       alert("Error al eliminar");
+    }
+  };
+
+  const handlePublication = async (promo: Promo) => {
+    const session = getAuthSession();
+    if (!session) return;
+    try {
+      await fetchWithAuth(`/admin/promociones/${promo.id}/${promo.published ? "unpublish" : "publish"}`, session.token, { method: "POST" });
+      fetchPromos();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Error al actualizar la publicación");
+    }
+  };
+
+  const copyLandingLink = async (promo: Promo) => {
+    if (!promo.landingUrl) return;
+    try {
+      await navigator.clipboard.writeText(promo.landingUrl);
+      alert("Enlace copiado");
+    } catch {
+      alert(`Copia este enlace: ${promo.landingUrl}`);
     }
   };
 
@@ -165,9 +193,9 @@ export default function AdminPromocionesPage() {
       <header className="mb-8 lg:mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <h1 className="text-4xl lg:text-5xl font-black tracking-tighter text-white font-epilogue uppercase">
-            Promociones
+            Marketing y Campañas
           </h1>
-          <p className="text-gray-400 mt-2 text-base lg:text-lg font-manrope">Gestiona ofertas, descuentos y eventos especiales</p>
+          <p className="text-gray-400 mt-2 text-base lg:text-lg font-manrope">Gestiona promociones y landings públicas para compartir</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -175,7 +203,7 @@ export default function AdminPromocionesPage() {
             className="px-5 py-2.5 text-sm font-semibold text-pop-black bg-pop-gold rounded-lg hover:bg-pop-light-gold transition-all duration-200 flex items-center gap-2"
           >
             <span className="material-symbols-outlined text-lg">add_circle</span>
-            Nueva Promo
+            Nueva Campaña
           </button>
         </div>
       </header>
@@ -252,6 +280,7 @@ export default function AdminPromocionesPage() {
                 <th className="pb-4 text-left font-medium">Días</th>
                 <th className="pb-4 text-left font-medium">Progreso</th>
                 <th className="pb-4 text-left font-medium">Estado</th>
+                <th className="pb-4 text-left font-medium">Landing</th>
                 <th className="pb-4 text-right font-medium">Acciones</th>
               </tr>
             </thead>
@@ -293,8 +322,32 @@ export default function AdminPromocionesPage() {
                       </div>
                     </td>
                     <td className="py-4">{getStatusBadge(promo.status)}</td>
+                    <td className="py-4">
+                      {promo.published ? (
+                        <span className="text-[10px] font-bold px-2.5 py-1 rounded uppercase tracking-wider bg-pop-gold/10 text-pop-gold">Publicada</span>
+                      ) : promo.landingEnabled ? (
+                        <span className="text-[10px] font-bold px-2.5 py-1 rounded uppercase tracking-wider bg-pop-orange/10 text-pop-orange">Borrador</span>
+                      ) : (
+                        <span className="text-[10px] font-bold px-2.5 py-1 rounded uppercase tracking-wider bg-gray-600/10 text-gray-500">Desactivada</span>
+                      )}
+                    </td>
                     <td className="py-4 text-right">
                       <div className="flex justify-end gap-1">
+                        {promo.published && promo.slug && (
+                          <>
+                            <a href={promo.landingUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 hover:bg-pop-gold/10 rounded transition-colors" title="Ver landing">
+                              <span className="material-symbols-outlined text-pop-gold text-lg">open_in_new</span>
+                            </a>
+                            <button onClick={() => copyLandingLink(promo)} className="p-1.5 hover:bg-pop-gold/10 rounded transition-colors" title="Copiar enlace">
+                              <span className="material-symbols-outlined text-pop-gold text-lg">content_copy</span>
+                            </button>
+                          </>
+                        )}
+                        {promo.landingEnabled && (
+                          <button onClick={() => handlePublication(promo)} className="p-1.5 hover:bg-pop-orange/10 rounded transition-colors" title={promo.published ? "Despublicar" : "Publicar"}>
+                            <span className="material-symbols-outlined text-pop-orange text-lg">{promo.published ? "visibility_off" : "publish"}</span>
+                          </button>
+                        )}
                         <button onClick={() => openEdit(promo)} className="p-1.5 hover:bg-pop-gold/10 rounded transition-colors" title="Editar">
                           <span className="material-symbols-outlined text-pop-gold text-lg">edit</span>
                         </button>
@@ -308,7 +361,7 @@ export default function AdminPromocionesPage() {
               })}
               {filteredPromos.length === 0 && !loading && (
                 <tr>
-                  <td colSpan={8} className="py-10 text-center text-gray-500 text-xs uppercase tracking-widest">
+                  <td colSpan={9} className="py-10 text-center text-gray-500 text-xs uppercase tracking-widest">
                     Sin promociones
                   </td>
                 </tr>
@@ -323,7 +376,7 @@ export default function AdminPromocionesPage() {
           <div className="bg-pop-cardGreen border border-white/10 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-white/5 flex justify-between items-center">
               <h2 className="text-2xl font-black uppercase font-epilogue tracking-tighter text-white">
-                {editingPromo ? "Editar Promoción" : "Crear Promoción"}
+                {editingPromo ? "Editar Campaña" : "Crear Campaña"}
               </h2>
               <button onClick={closeModal} className="text-gray-500 hover:text-white transition-colors">
                 <span className="material-symbols-outlined text-2xl">close</span>
@@ -379,6 +432,36 @@ export default function AdminPromocionesPage() {
                   className="w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pop-gold/50 transition-all resize-none"
                 />
               </div>
+              <section className="rounded-lg border border-pop-gold/20 bg-pop-gold/5 p-4 space-y-4">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!!form.landingEnabled}
+                    onChange={(e) => setForm({ ...form, landingEnabled: e.target.checked })}
+                    className="mt-0.5 w-4 h-4 accent-pop-gold"
+                  />
+                  <span>
+                    <span className="block text-sm font-bold text-white">Landing pública individual</span>
+                    <span className="block text-xs text-gray-400 mt-1">Habilita una URL para compartir esta campaña. La landing seguirá oculta hasta publicarla.</span>
+                  </span>
+                </label>
+                {form.landingEnabled && (
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-gray-500 block mb-2">Slug de la URL</label>
+                    <div className="flex items-center rounded-lg border border-white/10 bg-gray-800/50 overflow-hidden focus-within:border-pop-gold/50 transition-all">
+                      <span className="px-3 py-3 text-xs text-gray-500 border-r border-white/10">/promo/</span>
+                      <input
+                        type="text"
+                        value={form.slug || ""}
+                        onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") })}
+                        placeholder="sushiercoles"
+                        className="w-full bg-transparent px-3 py-3 text-sm text-white placeholder-gray-500 focus:outline-none"
+                      />
+                    </div>
+                    <p className="text-[10px] text-gray-500 mt-2">Si lo dejas vacío al guardar, se generará desde el nombre de la campaña.</p>
+                  </div>
+                )}
+              </section>
               <label className="flex items-start gap-3 rounded-lg border border-pop-gold/20 bg-pop-gold/5 p-4 cursor-pointer">
                 <input
                   type="checkbox"
@@ -472,7 +555,7 @@ export default function AdminPromocionesPage() {
                 onClick={handleSubmit}
                 className="px-6 py-2.5 text-sm font-semibold text-pop-black bg-pop-gold rounded-lg hover:bg-pop-light-gold transition-all"
               >
-                {editingPromo ? "Guardar Cambios" : "Crear Promoción"}
+                {editingPromo ? "Guardar Cambios" : "Crear Campaña"}
               </button>
             </div>
           </div>

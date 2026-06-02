@@ -23,6 +23,7 @@ use App\Http\Controllers\PublicImageController;
 Route::get('/menu', [MenuController::class, 'index']);
 Route::get('/menu/{id}', [MenuController::class, 'show']);
 Route::get('/promociones', [PromocionController::class, 'index']);
+Route::get('/promociones/{slug}', [PromocionController::class, 'show']);
 Route::get('/storage/{path}', [PublicImageController::class, 'show'])->where('path', '.*');
 Route::get('/ubicacion', [UbicacionController::class, 'show']);
 Route::get('/tickets/validate', [\App\Http\Controllers\TicketRedeemController::class, 'validate']);
@@ -192,6 +193,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::apiResource('menu', App\Http\Controllers\Admin\MenuController::class);
 
     // Promociones CRUD
+    Route::post('/promociones/{id}/publish', [App\Http\Controllers\Admin\PromocionController::class, 'publish']);
+    Route::post('/promociones/{id}/unpublish', [App\Http\Controllers\Admin\PromocionController::class, 'unpublish']);
     Route::apiResource('promociones', App\Http\Controllers\Admin\PromocionController::class);
 
     // Facturas management

@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Promocion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class PromocionController extends Controller
 {
@@ -31,7 +34,10 @@ class PromocionController extends Controller
     {
         $request->validate($this->rules());
 
-        $promo = Promocion::create($this->fromFrontend($request));
+        $attributes = $this->fromFrontend($request);
+        $attributes['slug'] ??= $this->uniqueSlug((string) $request->input('name'));
+
+        $promo = Promocion::create($attributes);
 
         return response()->json($this->toFrontend($promo), 201);
     }
@@ -43,10 +49,14 @@ class PromocionController extends Controller
 
     public function update(Request $request, $id)
     {
-        $request->validate($this->rules(false));
-
         $promo = Promocion::findOrFail($id);
-        $promo->update($this->fromFrontend($request));
+        $request->validate($this->rules(false, (int) $promo->id));
+
+        $attributes = $this->fromFrontend($request);
+        if (($attributes['landing_enabled'] ?? $promo->landing_enabled) && ! ($attributes['slug'] ?? $promo->slug)) {
+            $attributes['slug'] = $this->uniqueSlug((string) ($attributes['titulo'] ?? $promo->titulo), (int) $promo->id);
+        }
+        $promo->update($attributes);
 
         return response()->json($this->toFrontend($promo->fresh()));
     }
@@ -58,7 +68,48 @@ class PromocionController extends Controller
         return response()->json(['message' => 'Promoción eliminada']);
     }
 
-    private function rules(bool $creating = true): array
+    public function publish($id)
+    {
+        $promo = Promocion::findOrFail($id);
+
+        if (! $promo->landing_enabled) {
+            throw ValidationException::withMessages([
+                'landingEnabled' => 'Activa la landing pública antes de publicarla.',
+            ]);
+        }
+
+        if (! $promo->slug || ! preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $promo->slug)) {
+            throw ValidationException::withMessages([
+                'slug' => 'La promoción necesita un slug válido antes de publicarse.',
+            ]);
+        }
+
+        if (! $promo->activa || $promo->estado !== 'activa') {
+            throw ValidationException::withMessages([
+                'status' => 'Solo se pueden publicar promociones activas.',
+            ]);
+        }
+
+        if (! $promo->hasValidDateWindow()) {
+            throw ValidationException::withMessages([
+                'startDate' => 'La promoción necesita una vigencia válida antes de publicarse.',
+            ]);
+        }
+
+        $promo->update(['published_at' => now()]);
+
+        return response()->json($this->toFrontend($promo->fresh()));
+    }
+
+    public function unpublish($id)
+    {
+        $promo = Promocion::findOrFail($id);
+        $promo->update(['published_at' => null]);
+
+        return response()->json($this->toFrontend($promo->fresh()));
+    }
+
+    private function rules(bool $creating = true, ?int $id = null): array
     {
         return [
             'name' => ($creating ? 'required' : 'sometimes') . '|string|max:255',
@@ -73,6 +124,14 @@ class PromocionController extends Controller
             'status' => 'nullable|string|in:activa,pausada,finalizada',
             'target' => 'nullable|integer|min:0',
             'image' => 'nullable|string|max:500',
+            'slug' => [
+                'nullable',
+                'string',
+                'max:250',
+                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+                Rule::unique('promociones', 'slug')->ignore($id),
+            ],
+            'landingEnabled' => 'nullable|boolean',
         ];
     }
 
@@ -94,6 +153,13 @@ class PromocionController extends Controller
             'revenue' => (float) ($p->ingresos ?? 0),
             'image' => $p->imagen ?? '',
             'imageAlt' => $p->titulo,
+            'slug' => $p->slug ?? '',
+            'landingEnabled' => (bool) $p->landing_enabled,
+            'published' => $p->published_at !== null,
+            'publishedAt' => $p->published_at?->toIso8601String(),
+            'landingUrl' => $p->slug
+                ? rtrim((string) config('app.frontend_url'), '/') . '/promo/' . $p->slug
+                : '',
         ];
     }
 
@@ -122,6 +188,8 @@ class PromocionController extends Controller
         if ($request->has('target')) $map['meta'] = $request->input('target');
         if ($request->has('image')) $map['imagen'] = $request->input('image');
         if ($request->has('redemptions')) $map['redenciones'] = $request->input('redemptions');
+        if ($request->has('slug')) $map['slug'] = $request->filled('slug') ? Str::slug($request->input('slug')) : null;
+        if ($request->has('landingEnabled')) $map['landing_enabled'] = $request->boolean('landingEnabled');
 
         return $map;
     }
@@ -130,5 +198,20 @@ class PromocionController extends Controller
     {
         return (bool) preg_match('/^\d{4}-\d{2}-\d{2}$/', $promo->dia_inicio ?? '')
             && (bool) preg_match('/^\d{4}-\d{2}-\d{2}$/', $promo->dia_fin ?? '');
+    }
+
+    private function uniqueSlug(string $value, ?int $ignoreId = null): string
+    {
+        $base = Str::slug($value) ?: 'promocion';
+        $slug = $base;
+        $suffix = 2;
+
+        while (Promocion::where('slug', $slug)
+            ->when($ignoreId, fn($query) => $query->where('id', '!=', $ignoreId))
+            ->exists()) {
+            $slug = $base . '-' . $suffix++;
+        }
+
+        return $slug;
     }
 }

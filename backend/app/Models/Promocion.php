@@ -17,6 +17,7 @@ class Promocion extends Model
 
     protected $fillable = [
         'titulo',
+        'slug',
         'descripcion',
         'tipo',
         'descuento',
@@ -27,6 +28,8 @@ class Promocion extends Model
         'dias_activos',
         'indefinida',
         'imagen',
+        'landing_enabled',
+        'published_at',
         'activa',
         'estado',
         'redenciones',
@@ -40,6 +43,8 @@ class Promocion extends Model
         'ingresos' => 'decimal:2',
         'activa' => 'boolean',
         'indefinida' => 'boolean',
+        'landing_enabled' => 'boolean',
+        'published_at' => 'datetime',
     ];
 
     public function activeDays(): array
@@ -74,6 +79,16 @@ class Promocion extends Model
             && (! $end || $date->lessThanOrEqualTo($end));
     }
 
+    public function hasValidDateWindow(): bool
+    {
+        if ($this->indefinida) return true;
+
+        $start = $this->parseDate($this->dia_inicio);
+        $end = $this->parseDate($this->dia_fin);
+
+        return $start !== null && $end !== null && $end->greaterThanOrEqualTo($start);
+    }
+
     public function isAvailableOn(CarbonInterface $date): bool
     {
         if (! $this->activa || ! $this->isWithinDateWindow($date)) return false;
@@ -82,6 +97,16 @@ class Promocion extends Model
         $weekDays = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
 
         return $days === [] || in_array($weekDays[$date->dayOfWeek], $days, true);
+    }
+
+    public function hasPublicLanding(CarbonInterface $date): bool
+    {
+        return $this->landing_enabled
+            && $this->published_at !== null
+            && $this->activa
+            && $this->estado === 'activa'
+            && $this->hasValidDateWindow()
+            && $this->isWithinDateWindow($date);
     }
 
     private function parseDate(?string $value): ?Carbon
