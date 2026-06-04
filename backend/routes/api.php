@@ -229,6 +229,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 
     // Meseros CRUD
     Route::apiResource('meseros', App\Http\Controllers\Admin\MeseroController::class);
+    Route::post('/meseros/{id}/adjust-points', [App\Http\Controllers\Admin\MeseroController::class, 'adjustPoints']);
     Route::get('/meseros/{id}/points-log', fn($id) => response()->json(
         \App\Models\MeseroPointsLog::where('mesero_id', $id)->orderByDesc('created_at')->limit(100)->get()
     ));

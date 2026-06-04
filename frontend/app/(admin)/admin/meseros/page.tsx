@@ -31,7 +31,14 @@ export default function AdminMeserosPage() {
   const [waiters, setWaiters] = useState<Waiter[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showAdjustModal, setShowAdjustModal] = useState(false);
   const [editingWaiter, setEditingWaiter] = useState<Waiter | null>(null);
+  const [adjustWaiter, setAdjustWaiter] = useState<Waiter | null>(null);
+  const [adjustForm, setAdjustForm] = useState({
+    category: "cocktail" as "cocktail" | "premium" | "pitcher" | "bottle" | "combo" | "upsell" | "rating",
+    points: 0,
+    description: "",
+  });
   const [form, setForm] = useState<Partial<Waiter>>({
     name: "",
     initials: "",
@@ -128,6 +135,33 @@ export default function AdminMeserosPage() {
       fetchWaiters();
     } catch {
       alert("Error al eliminar");
+    }
+  };
+
+  const openAdjustPoints = (w: Waiter) => {
+    setAdjustWaiter(w);
+    setAdjustForm({ category: "cocktail", points: 0, description: "" });
+    setShowAdjustModal(true);
+  };
+
+  const closeAdjustModal = () => {
+    setShowAdjustModal(false);
+    setAdjustWaiter(null);
+  };
+
+  const handleAdjustPoints = async () => {
+    if (!adjustWaiter || adjustForm.points === 0) return;
+    const session = getAuthSession();
+    if (!session) return;
+    try {
+      await fetchWithAuth(`/admin/meseros/${adjustWaiter.id}/adjust-points`, session.token, {
+        method: "POST",
+        body: JSON.stringify(adjustForm),
+      });
+      closeAdjustModal();
+      fetchWaiters();
+    } catch (e: any) {
+      alert(e.message || "Error al ajustar puntos");
     }
   };
 
@@ -288,6 +322,13 @@ export default function AdminMeserosPage() {
               </div>
               <p className="text-2xl lg:text-base font-black text-pop-gold font-epilogue lg:font-mono">{w.totalPoints.toLocaleString()}</p>
               <div className="flex gap-2 ml-4">
+                <button
+                  onClick={() => openAdjustPoints(w)}
+                  className="w-8 h-8 flex items-center justify-center bg-pop-gold/10 text-pop-gold rounded-lg hover:bg-pop-gold/20"
+                  title="Ajustar puntos"
+                >
+                  <span className="material-symbols-outlined text-base">add_circle</span>
+                </button>
                 <button
                   onClick={() => openEdit(w)}
                   className="w-8 h-8 flex items-center justify-center bg-white/5 text-pop-gold rounded-lg hover:bg-pop-gold/10"
@@ -501,6 +542,81 @@ export default function AdminMeserosPage() {
                 className="flex-[2] py-5 bg-pop-gold text-pop-black text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-pop-lightGold shadow-xl"
               >
                 Guardar Cambios
+              </button>
+            </footer>
+          </div>
+        </div>
+      )}
+
+      {showAdjustModal && adjustWaiter && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-pop-black/95 backdrop-blur-xl" onClick={closeAdjustModal} />
+          <div className="relative bg-pop-cardGreen border border-white/10 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl">
+            <header className="p-8 border-b border-white/5 flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-black text-white uppercase font-epilogue tracking-tighter flex items-center gap-3">
+                  <span className="material-symbols-outlined text-pop-gold">add_circle</span>
+                  Ajustar Puntos
+                </h2>
+                <p className="text-[10px] text-pop-orange font-bold uppercase tracking-widest mt-1">{adjustWaiter.name}</p>
+              </div>
+              <button
+                onClick={closeAdjustModal}
+                className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center text-gray-500 hover:text-white transition-colors"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </header>
+            <div className="p-8 space-y-6">
+              <div className="space-y-2">
+                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Categoría</label>
+                <select
+                  value={adjustForm.category}
+                  onChange={(e) => setAdjustForm({ ...adjustForm, category: e.target.value as any })}
+                  className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none"
+                >
+                  <option value="cocktail">Cóctel / Margarita (10 pts)</option>
+                  <option value="premium">Bebida Premium (15 pts)</option>
+                  <option value="pitcher">Jarra / Compartida (25 pts)</option>
+                  <option value="bottle">Botella Completa (50 pts)</option>
+                  <option value="combo">Combo Comida + Bebida (20 pts)</option>
+                  <option value="upsell">Upselling (15 pts)</option>
+                  <option value="rating">Rating del Cliente (30 pts)</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">
+                  Puntos (positivo = sumar, negativo = restar)
+                </label>
+                <input
+                  type="number"
+                  value={adjustForm.points}
+                  onChange={(e) => setAdjustForm({ ...adjustForm, points: Number(e.target.value) })}
+                  placeholder="Ej: 100 o -50"
+                  className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none"
+                />
+                <p className="text-[10px] text-gray-500 mt-1">Usa números negativos para restar puntos</p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Descripción (opcional)</label>
+                <input
+                  type="text"
+                  value={adjustForm.description}
+                  onChange={(e) => setAdjustForm({ ...adjustForm, description: e.target.value })}
+                  placeholder="Ej: Corrección manual, bonus especial"
+                  className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none"
+                />
+              </div>
+            </div>
+            <footer className="p-8 border-t border-white/5 flex gap-4">
+              <button onClick={closeAdjustModal} className="flex-1 py-4 text-xs font-black text-gray-500 uppercase tracking-widest">
+                Cancelar
+              </button>
+              <button
+                onClick={handleAdjustPoints}
+                className="flex-[2] py-5 bg-pop-gold text-pop-black text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-pop-lightGold shadow-xl"
+              >
+                Ajustar Puntos
               </button>
             </footer>
           </div>

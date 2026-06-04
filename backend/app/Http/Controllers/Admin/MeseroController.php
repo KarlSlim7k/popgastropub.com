@@ -103,6 +103,49 @@ class MeseroController extends Controller
         return response()->json(['message' => 'Mesero eliminado']);
     }
 
+    public function adjustPoints(Request $request, $id)
+    {
+        $request->validate([
+            'points' => 'required|integer',
+            'category' => 'required|in:cocktail,premium,pitcher,bottle,combo,upsell,rating',
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        $mesero = Mesero::findOrFail($id);
+        $points = (int) $request->input('points');
+        $category = $request->input('category');
+        $description = $request->input('description', 'Ajuste manual admin');
+
+        $categoryField = $category . '_points';
+
+        if ($points > 0) {
+            $mesero->increment($categoryField, $points);
+            $mesero->increment('puntos', $points);
+        } else {
+            $absPoints = abs($points);
+            $currentCategoryPoints = (int) $mesero->{$categoryField};
+            
+            if ($currentCategoryPoints < $absPoints) {
+                abort(422, "Puntos insuficientes en categoría {$category}. Tiene {$currentCategoryPoints}, intenta restar {$absPoints}");
+            }
+
+            $mesero->decrement($categoryField, $absPoints);
+            $mesero->decrement('puntos', $absPoints);
+        }
+
+        MeseroPointsLog::create([
+            'mesero_id' => $mesero->id,
+            'category' => $category,
+            'points' => $points,
+            'multiplier' => 1.0,
+        ]);
+
+        return response()->json([
+            'message' => $points > 0 ? "Puntos añadidos: +{$points}" : "Puntos restados: {$points}",
+            'mesero' => $this->toFrontend($mesero->fresh()->load('user')),
+        ]);
+    }
+
     private function toFrontend(Mesero $m): array
     {
         $total = $m->cocktail_points + $m->premium_points + $m->pitcher_points +
