@@ -151,5 +151,3 @@ class LoyaltyController extends Controller
         return $tiers[$nextTierKey];
     }
 }
-  }
-}
