@@ -16,3 +16,8 @@ Artisan::command('facturas:retry-accountant-emails {--limit=25}', function (\App
 Schedule::command('facturas:retry-accountant-emails --limit=25')
     ->everyMinute()
     ->withoutOverlapping();
+
+Schedule::command('loyalty:expire-inactive-points --months=2')
+    ->dailyAt('03:00')
+    ->withoutOverlapping()
+    ->onOneServer();
