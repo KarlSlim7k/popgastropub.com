@@ -35,6 +35,37 @@ class AuthController extends Controller
             'phone' => ['nullable', 'regex:/^[0-9]{10}$/', 'unique:users,phone'],
             'birth_date' => ['nullable', 'date', 'before:today'],
             'terms_accepted' => ['accepted'],
+        ], [
+            'name.required' => 'Escribe tu nombre completo.',
+            'name.string' => 'Tu nombre solo debe contener letras y espacios.',
+            'name.max' => 'Tu nombre es demasiado largo (máx. 255 caracteres).',
+            'name.regex' => 'Tu nombre solo puede contener letras y espacios, sin números ni símbolos.',
+
+            'email.required' => 'Escribe tu correo electrónico.',
+            'email.email' => 'Verifica el formato de tu correo. Ejemplo: tucorreo@dominio.com.',
+            'email.max' => 'Tu correo es demasiado largo (máx. 255 caracteres).',
+            'email.unique' => 'Este correo ya está registrado. Inicia sesión o usa otro correo.',
+
+            'password.required' => 'Crea una contraseña para tu cuenta.',
+            'password.confirmed' => 'Las contraseñas no coinciden. Verifícalas y vuelve a intentarlo.',
+            'password.min' => 'Tu contraseña debe tener al menos 8 caracteres.',
+            'password.letters' => 'Tu contraseña debe incluir al menos una letra.',
+            'password.numbers' => 'Tu contraseña debe incluir al menos un número.',
+
+            'phone.regex' => 'El teléfono debe tener exactamente 10 dígitos, sin espacios ni guiones.',
+            'phone.unique' => 'Este número ya está registrado. Usa otro teléfono o déjalo vacío.',
+
+            'birth_date.date' => 'Ingresa una fecha de nacimiento válida.',
+            'birth_date.before' => 'La fecha de nacimiento debe ser anterior a hoy.',
+
+            'terms_accepted.accepted' => 'Debes aceptar los Términos y la Política de Privacidad para continuar.',
+        ], [
+            'name' => 'nombre',
+            'email' => 'correo',
+            'password' => 'contraseña',
+            'phone' => 'teléfono',
+            'birth_date' => 'fecha de nacimiento',
+            'terms_accepted' => 'términos',
         ]);
 
         if ($validator->fails()) {
@@ -93,14 +124,16 @@ class AuthController extends Controller
         $validator = Validator::make($payload, [
             'login' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:8', 'max:128'],
+        ], [
+            'login.required' => 'Ingresa tu correo o teléfono para iniciar sesión.',
+            'login.max' => 'El dato ingresado es demasiado largo.',
+            'password.required' => 'Ingresa tu contraseña.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.max' => 'La contraseña es demasiado larga.',
+        ], [
+            'login' => 'correo o teléfono',
+            'password' => 'contraseña',
         ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'La información de inicio de sesión no es válida.',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
 
         $user = $this->findUserByIdentifier($payload['login']);
 

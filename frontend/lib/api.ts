@@ -4,6 +4,45 @@ interface FetchOptions extends RequestInit {
   params?: Record<string, string>
 }
 
+const VALIDATION_FALLBACK: Record<string, Record<string, string>> = {
+  es: {
+    required: 'Este campo es obligatorio.',
+    email: 'Verifica el formato. Ejemplo: tucorreo@dominio.com.',
+    unique: 'Este valor ya está registrado. Usa otro diferente.',
+    regex: 'El formato ingresado no es válido.',
+    min: 'Debe tener al menos :min caracteres.',
+    max: 'Debe tener máximo :max caracteres.',
+    confirmed: 'La confirmación no coincide.',
+    accepted: 'Debes aceptar para continuar.',
+    numeric: 'Solo se permiten números.',
+    'before:today': 'La fecha debe ser anterior a hoy.',
+  },
+}
+
+function humanizeRuleMessage(rule: string, field: string): string {
+  const map = VALIDATION_FALLBACK.es
+  const [name, ...paramParts] = rule.split(':')
+  const paramString = paramParts.join(':')
+  const params: Record<string, string> = {}
+  if (paramString) {
+    for (const part of paramString.split(',')) {
+      const [k, v] = part.split('=')
+      if (k && v) params[k.trim()] = v.trim()
+    }
+  }
+  let template = map[name] ?? `Verifica el campo "${field}".`
+  for (const [k, v] of Object.entries(params)) {
+    template = template.replace(`:${k}`, v)
+  }
+  return template
+}
+
+export function translateValidationMessage(message: string, field: string): string {
+  if (!message.startsWith('validation.')) return message
+  const rule = message.replace(/^validation\./, '')
+  return humanizeRuleMessage(rule, field)
+}
+
 export class APIError extends Error {
   status: number
   errors: Record<string, string[]>
@@ -16,11 +55,18 @@ export class APIError extends Error {
   }
 
   getFieldError(field: string): string | undefined {
-    return this.errors[field]?.[0]
+    const raw = this.errors[field]?.[0]
+    if (!raw) return undefined
+    return translateValidationMessage(raw, field)
   }
 
   getAllMessages(): string {
-    const fieldMessages = Object.values(this.errors).flat()
+    const fieldMessages: string[] = []
+    for (const [field, messages] of Object.entries(this.errors)) {
+      for (const msg of messages) {
+        fieldMessages.push(translateValidationMessage(msg, field))
+      }
+    }
     if (fieldMessages.length > 0) {
       return fieldMessages.join('. ')
     }
