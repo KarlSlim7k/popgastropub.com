@@ -116,7 +116,7 @@ export default function Promociones() {
   if (error) return <ErrorState onRetry={fetchPromos} />;
 
   return (
-    <main className="pt-20 pb-32 bg-[#0D0D0D] min-h-screen">
+    <main className="pt-28 md:pt-36 pb-32 bg-[#0D0D0D] min-h-screen">
       {/* ── Hero ── */}
       <section className="px-4 sm:px-8 mb-20 max-w-7xl mx-auto">
         <motion.div
@@ -430,7 +430,7 @@ export default function Promociones() {
 /* ── Loading Skeleton ── */
 function LoadingSkeleton() {
   return (
-    <main className="pt-20 pb-32 bg-[#0D0D0D] min-h-screen">
+    <main className="pt-28 md:pt-36 pb-32 bg-[#0D0D0D] min-h-screen">
       <section className="px-4 sm:px-8 mb-20 max-w-7xl mx-auto">
         <div className="h-14 w-80 bg-[#1c1b1b] rounded-lg animate-pulse mb-4" />
         <div className="h-5 w-64 bg-[#1c1b1b] rounded-lg animate-pulse mb-12" />
@@ -459,7 +459,7 @@ function LoadingSkeleton() {
 /* ── Error State ── */
 function ErrorState({ onRetry }: { onRetry: () => void }) {
   return (
-    <main className="pt-20 pb-32 bg-[#0D0D0D] min-h-screen flex items-center justify-center">
+    <main className="pt-28 md:pt-36 pb-32 bg-[#0D0D0D] min-h-screen flex items-center justify-center">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
