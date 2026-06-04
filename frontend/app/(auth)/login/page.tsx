@@ -485,9 +485,9 @@ export default function Login() {
                   </div>
 
                   <div className="flex justify-end pt-2">
-                    <a className="text-[11px] uppercase tracking-tighter font-bold text-secondary hover:text-primary transition-colors" href="#">
+                    <Link className="text-[11px] uppercase tracking-tighter font-bold text-secondary hover:text-primary transition-colors" href="/recuperar-contrasena">
                       ¿Olvidaste tu contraseña?
-                    </a>
+                    </Link>
                   </div>
 
                   <button

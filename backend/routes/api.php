@@ -45,6 +45,8 @@ Route::get('/push/vapid-public-key', [App\Http\Controllers\PushNotificationContr
 
 Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:auth-register');
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:auth-login');
+Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:auth-password-reset');
+Route::post('/auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:auth-password-reset');
 Route::get('/auth/social/providers', [SocialAuthController::class, 'providers']);
 Route::get('/auth/social/{provider}/redirect', [SocialAuthController::class, 'redirectToProvider'])
     ->whereIn('provider', ['google', 'facebook', 'x'])

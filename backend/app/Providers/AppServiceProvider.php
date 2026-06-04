@@ -52,5 +52,18 @@ class AppServiceProvider extends ServiceProvider
                     ->response(fn () => response()->json(['message' => 'Demasiadas solicitudes de autenticación social. Intenta más tarde.'], 429)),
             ];
         });
+
+        RateLimiter::for('auth-password-reset', function (Request $request) {
+            $email = Str::lower((string) $request->input('email', 'guest'));
+
+            return [
+                Limit::perMinute(3)
+                    ->by("{$email}|{$request->ip()}")
+                    ->response(fn () => response()->json(['message' => 'Demasiados intentos. Espera un minuto antes de intentar de nuevo.'], 429)),
+                Limit::perMinute(10)
+                    ->by($request->ip())
+                    ->response(fn () => response()->json(['message' => 'Demasiadas solicitudes desde esta red. Intenta más tarde.'], 429)),
+            ];
+        });
     }
 }

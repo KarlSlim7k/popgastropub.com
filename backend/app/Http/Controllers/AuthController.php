@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\LoyaltyTransaction;
+use App\Mail\ResetPasswordCode;
 use App\Services\LoyaltyConfig;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
@@ -202,6 +205,90 @@ class AuthController extends Controller
         $user->update(['password' => Hash::make($request->input('password'))]);
 
         return response()->json(['message' => 'Contraseña actualizada correctamente.']);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ], [
+            'email.required' => 'Escribe tu correo electrónico.',
+            'email.email' => 'Verifica el formato de tu correo.',
+        ]);
+
+        $email = Str::lower(trim($request->input('email')));
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'Si el correo está registrado, recibirás un código.']);
+        }
+
+        if ($user->oauth_provider) {
+            return response()->json([
+                'message' => 'Tu cuenta fue creada con ' . ucfirst($user->oauth_provider) . '. Inicia sesión desde ahí.',
+            ], 422);
+        }
+
+        DB::table('password_reset_tokens')->where('email', $email)->delete();
+
+        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        DB::table('password_reset_tokens')->insert([
+            'email' => $email,
+            'token' => Hash::make($code),
+            'created_at' => Carbon::now(),
+        ]);
+
+        Mail::to($user->email)->send(new ResetPasswordCode($user->name, $code));
+
+        return response()->json(['message' => 'Si el correo está registrado, recibirás un código.']);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'code' => 'required|string|size:6',
+            'password' => ['required', 'string', 'confirmed', Password::min(8)->letters()->numbers()],
+        ], [
+            'email.required' => 'Escribe tu correo electrónico.',
+            'email.email' => 'Verifica el formato de tu correo.',
+            'code.required' => 'Escribe el código de 6 dígitos.',
+            'code.size' => 'El código debe tener exactamente 6 dígitos.',
+            'password.required' => 'Crea una nueva contraseña.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.letters' => 'La contraseña debe incluir al menos una letra.',
+            'password.numbers' => 'La contraseña debe incluir al menos un número.',
+        ]);
+
+        $email = Str::lower(trim($request->input('email')));
+        $code = (string) $request->input('code');
+
+        $record = DB::table('password_reset_tokens')->where('email', $email)->first();
+
+        if (!$record || !Hash::check($code, $record->token)) {
+            return response()->json(['message' => 'El código es incorrecto o ha expirado.'], 422);
+        }
+
+        if (Carbon::parse($record->created_at)->addMinutes(15)->isPast()) {
+            DB::table('password_reset_tokens')->where('email', $email)->delete();
+            return response()->json(['message' => 'El código ha expirado. Solicita uno nuevo.'], 422);
+        }
+
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'No se encontró una cuenta con este correo.'], 404);
+        }
+
+        $user->update(['password' => Hash::make($request->input('password'))]);
+
+        DB::table('password_reset_tokens')->where('email', $email)->delete();
+
+        $user->tokens()->delete();
+
+        return response()->json(['message' => 'Contraseña restablecida correctamente. Ya puedes iniciar sesión.']);
     }
 
     private function findUserByIdentifier(string $identifier): ?User
