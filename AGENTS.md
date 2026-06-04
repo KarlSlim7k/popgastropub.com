@@ -28,7 +28,7 @@
 | Backend | PHP + Laravel (REST API) |
 | Database | MySQL / MariaDB |
 | Auth | Laravel Breeze + Laravel Sanctum |
-| Hosting | Hostinger Shared Hosting (no Docker, no CI/CD) |
+| Hosting | Hostinger VPS with Docker + Dokploy + Cloudflare |
 | Domain | popgastropub.com |
 
 ---
@@ -42,7 +42,7 @@
 4. API Routes → ONLY in routes/api.php in Laravel
 5. Responses  → ALWAYS use Laravel API Resources / Response::json()
 6. Auth       → Laravel Sanctum tokens, NEVER from request body
-7. Deploy     → Hostinger Shared Hosting — no Docker, no automatic CI/CD
+7. Deploy     → Hostinger VPS with Docker + Dokploy; push to repo triggers auto-deploy via Dokploy (90-120s); NEVER deploy manually to VPS unless explicitly instructed
 8. Colors     → ONLY use POP palette: #F2C777, #F2C894, #D96725, #732817, #0D0D0D
 9. Secrets    → NEVER commit .env, ALWAYS use environment variables
 10. Images    → ALWAYS use next/image with defined width/height
@@ -74,18 +74,36 @@
 ## Architecture
 
 ```
-┌─────────────────┐         ┌─────────────────┐
-│   Next.js       │  HTTP   │   Laravel       │
-│   (Frontend)    │ ──────► │   (Backend API) │
-│   Hostinger     │ ◄────── │   Hostinger     │
-│                 │  JSON   │                 │
-└─────────────────┘         └────────┬────────┘
+┌─────────────────┐         ┌─────────────────┐         ┌─────────────────┐
+│   Cloudflare    │  HTTPS  │   Dokploy       │  HTTP   │   Next.js       │
+│   (CDN/WAF)     │ ──────► │   (Traefik)     │ ──────► │   (Frontend)    │
+│                 │ ◄────── │                 │ ◄────── │   Docker        │
+└─────────────────┘         └────────┬────────┘         └─────────────────┘
                                      │
-                              ┌──────▼──────┐
-                              │   MySQL     │
-                              │  (MariaDB)  │
-                              └─────────────┘
+                                     ▼
+                            ┌─────────────────┐
+                            │   Nginx         │
+                            │   (Reverse      │
+                            │    Proxy)       │
+                            └────────┬────────┘
+                                     │
+               ┌─────────────────────┼─────────────────────┐
+               │                     │                     │
+               ▼                     ▼                     ▼
+        ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+        │   Laravel    │    │   MariaDB    │    │   Scheduler  │
+        │   (Backend)  │    │   (Database) │    │   (Cron)     │
+        │   PHP-FPM    │    │              │    │              │
+        └──────────────┘    └──────────────┘    └──────────────┘
 ```
+
+### Infrastructure
+- **VPS:** Hostinger VPS (IP: 76.13.123.24)
+- **OS:** Linux (Docker + Dokploy)
+- **Reverse Proxy:** Nginx inside Docker → Traefik (Dokploy) → Cloudflare
+- **Containers:** frontend (Next.js), backend (Laravel PHP-FPM), nginx, mariadb, scheduler
+- **Domains:** `popgastropub.com` (frontend), `api.popgastropub.com` (backend)
+- **SSL:** Let's Encrypt via Traefik (managed by Dokploy)
 
 ---
 
