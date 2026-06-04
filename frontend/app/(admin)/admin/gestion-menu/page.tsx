@@ -26,16 +26,19 @@ interface MenuItem {
   allergens: string[];
 }
 
-const BAR_TYPES = [
-  { value: "cocktail", label: "Cóctel / Margarita", points: 10, icon: "local_bar" },
-  { value: "premium", label: "Bebida Premium", points: 15, icon: "wine_bar" },
-  { value: "pitcher", label: "Jarra / Compartida", points: 25, icon: "sports_bar" },
-  { value: "bottle", label: "Botella Completa", points: 50, icon: "local_drink" },
-  { value: "combo", label: "Combo Comida + Bebida", points: 20, icon: "restaurant" },
-  { value: "upsell", label: "Upselling (Upgrade)", points: 15, icon: "trending_up" },
-];
+interface DrinkType {
+  id: number;
+  slug: string;
+  label: string;
+  points: number;
+  icon: string;
+  active: boolean;
+  sort_order: number;
+}
 
 const BEVERAGE_CATEGORIES = ["BEBIDAS.", "MIXOLOGIA", "Bebidas", "Mixología", "Coctelería"];
+
+const PLACEHOLDER_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%231a1a1a'/%3E%3Ctext x='75' y='75' text-anchor='middle' dy='.3em' fill='%23555' font-family='sans-serif' font-size='14'%3ESin imagen%3C/text%3E%3C/svg%3E";
 
 export default function AdminGestionMenuPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -44,6 +47,7 @@ export default function AdminGestionMenuPage() {
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [drinkTypes, setDrinkTypes] = useState<DrinkType[]>([]);
 
   const [form, setForm] = useState<Partial<MenuItem>>({
     name: "",
@@ -83,8 +87,21 @@ export default function AdminGestionMenuPage() {
     }
   };
 
+  const fetchDrinkTypes = async () => {
+    const session = getAuthSession();
+    if (!session) return;
+    try {
+      const data = await fetchWithAuth<DrinkType[]>("/admin/drink-types", session.token);
+      const active = Array.isArray(data) ? data.filter((t) => t.active) : [];
+      setDrinkTypes(active);
+    } catch {
+      // error
+    }
+  };
+
   useEffect(() => {
     fetchMenu();
+    fetchDrinkTypes();
   }, []);
 
   const CATEGORIES = Array.from(new Set([
@@ -168,7 +185,7 @@ export default function AdminGestionMenuPage() {
   };
 
   const handleBarTypeChange = (barType: string) => {
-    const typeConfig = BAR_TYPES.find(t => t.value === barType);
+    const typeConfig = drinkTypes.find(t => t.slug === barType);
     setForm({
       ...form,
       bar_type: barType,
@@ -186,12 +203,12 @@ export default function AdminGestionMenuPage() {
 
   const getBarTypeLabel = (barType: string | null) => {
     if (!barType) return "Sin tipo";
-    return BAR_TYPES.find(t => t.value === barType)?.label || barType;
+    return drinkTypes.find(t => t.slug === barType)?.label || barType;
   };
 
   const getBarTypeIcon = (barType: string | null) => {
     if (!barType) return "local_bar";
-    return BAR_TYPES.find(t => t.value === barType)?.icon || "local_bar";
+    return drinkTypes.find(t => t.slug === barType)?.icon || "local_bar";
   };
 
   return (
@@ -286,7 +303,7 @@ export default function AdminGestionMenuPage() {
             <div className="lg:col-span-2 flex items-center gap-4 mb-4 lg:mb-0">
               <div className="w-20 h-16 lg:w-16 lg:h-12 rounded-xl bg-pop-black border border-white/10 overflow-hidden shadow-lg">
                 <img
-                  src={item.image || "https://via.placeholder.com/150"}
+                  src={item.image || PLACEHOLDER_SVG}
                   alt={item.name}
                   className="w-full h-full object-cover"
                 />
@@ -409,13 +426,13 @@ export default function AdminGestionMenuPage() {
               <div className="space-y-3">
                 <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Tipo de Bebida (para Ranking)</label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {BAR_TYPES.map((type) => (
+                  {drinkTypes.map((type) => (
                     <button
-                      key={type.value}
+                      key={type.slug}
                       type="button"
-                      onClick={() => handleBarTypeChange(type.value)}
+                      onClick={() => handleBarTypeChange(type.slug)}
                       className={`p-4 rounded-xl border transition-all text-left ${
-                        form.bar_type === type.value
+                        form.bar_type === type.slug
                           ? "bg-pop-gold/10 border-pop-gold"
                           : "bg-white/5 border-white/10 hover:border-pop-gold/30"
                       }`}
@@ -427,6 +444,12 @@ export default function AdminGestionMenuPage() {
                       <p className="text-[9px] text-pop-gold font-bold">{type.points} pts</p>
                     </button>
                   ))}
+                  {drinkTypes.length === 0 && (
+                    <p className="col-span-full text-[10px] text-gray-500 text-center py-4">
+                      No hay tipos configurados. Ve a{" "}
+                      <a href="/admin/tipos-bebida" className="text-pop-gold underline">Tipos de Bebida</a> para crear uno.
+                    </p>
+                  )}
                 </div>
               </div>
 

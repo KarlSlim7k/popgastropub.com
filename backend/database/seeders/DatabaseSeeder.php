@@ -97,6 +97,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             ProductoSeeder::class,
+            DrinkTypeSeeder::class,
         ]);
     }
 }

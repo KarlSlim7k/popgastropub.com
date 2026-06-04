@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DrinkType;
 use App\Models\Mesero;
 use App\Models\MeseroPointsLog;
 use Illuminate\Http\Request;
@@ -21,17 +22,15 @@ class RankingController extends Controller
     public function addPoints(Request $request)
     {
         $user = $request->user();
-        $categories = [
-            'cocktail' => ['points' => 10, 'label' => 'Cóctel / Margarita'],
-            'premium' => ['points' => 15, 'label' => 'Bebida Premium'],
-            'pitcher' => ['points' => 25, 'label' => 'Pitcher / Compartida'],
-            'bottle' => ['points' => 50, 'label' => 'Botella Completa'],
-            'combo' => ['points' => 20, 'label' => 'Combo Comida + Bebida'],
-            'upsell' => ['points' => 15, 'label' => 'Upselling'],
-        ];
+
+        $types = DrinkType::active()->pluck('points', 'slug')->toArray();
+
+        if (empty($types)) {
+            return response()->json(['message' => 'No hay tipos de bebida configurados.'], 422);
+        }
 
         $validated = $request->validate([
-            'category' => 'required|in:' . implode(',', array_keys($categories)),
+            'category' => 'required|in:' . implode(',', array_keys($types)),
             'quantity' => 'required|integer|min:1|max:100',
         ]);
 
@@ -42,7 +41,7 @@ class RankingController extends Controller
 
         $category = $validated['category'];
         $multiplier = (float) ($mesero->point_multiplier ?? 1.0);
-        $basePoints = $categories[$category]['points'] * $validated['quantity'];
+        $basePoints = $types[$category] * $validated['quantity'];
         $points = (int) round($basePoints * $multiplier);
 
         $mesero->increment($category . '_points', $points);

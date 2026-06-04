@@ -3,11 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\DrinkType;
 use App\Models\Producto;
 use Illuminate\Http\Request;
 
 class MenuController extends Controller
 {
+    private function getValidBarTypes(): string
+    {
+        return DrinkType::active()->pluck('slug')->implode(',');
+    }
+
     public function index(Request $request)
     {
         $perPage = min((int) $request->input('per_page', 50), 200);
@@ -30,11 +36,13 @@ class MenuController extends Controller
 
     public function store(Request $request)
     {
+        $validTypes = $this->getValidBarTypes();
+
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category' => 'required|string|max:100',
-            'bar_type' => 'nullable|string|in:cocktail,premium,pitcher,bottle,combo,upsell',
+            'bar_type' => 'nullable|string|in:' . $validTypes,
             'ranking_points' => 'nullable|integer|min:0',
             'price' => 'required|numeric|min:0',
             'cost' => 'nullable|numeric|min:0',
@@ -61,11 +69,13 @@ class MenuController extends Controller
 
     public function update(Request $request, $id)
     {
+        $validTypes = $this->getValidBarTypes();
+
         $request->validate([
             'name' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
             'category' => 'sometimes|string|max:100',
-            'bar_type' => 'nullable|string|in:cocktail,premium,pitcher,bottle,combo,upsell',
+            'bar_type' => 'nullable|string|in:' . $validTypes,
             'ranking_points' => 'nullable|integer|min:0',
             'price' => 'sometimes|numeric|min:0',
             'cost' => 'nullable|numeric|min:0',

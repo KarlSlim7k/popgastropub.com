@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-provider";
 const navItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: "dashboard" },
   { label: "Gestión Menú", href: "/admin/gestion-menu", icon: "restaurant_menu" },
+  { label: "Tipos Bebida", href: "/admin/tipos-bebida", icon: "local_drink" },
   { label: "Marketing y Campañas", href: "/admin/promociones", icon: "campaign" },
   { label: "Puntos POP", href: "/admin/puntos", icon: "military_tech" },
   { label: "Usuarios", href: "/admin/usuarios", icon: "group" },

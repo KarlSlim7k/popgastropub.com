@@ -105,9 +105,12 @@ class MeseroController extends Controller
 
     public function adjustPoints(Request $request, $id)
     {
+        $drinkTypeSlugs = \App\Models\DrinkType::pluck('slug')->toArray();
+        $validCategories = implode(',', array_merge($drinkTypeSlugs, ['rating']));
+
         $request->validate([
             'points' => 'required|integer',
-            'category' => 'required|in:cocktail,premium,pitcher,bottle,combo,upsell,rating',
+            'category' => 'required|in:' . $validCategories,
             'description' => 'nullable|string|max:255',
         ]);
 

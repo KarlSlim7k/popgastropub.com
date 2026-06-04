@@ -209,6 +209,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     // Menu CRUD
     Route::apiResource('menu', App\Http\Controllers\Admin\MenuController::class);
 
+    // Drink Types CRUD
+    Route::apiResource('drink-types', App\Http\Controllers\Admin\DrinkTypeController::class);
+    Route::post('/drink-types/reorder', [App\Http\Controllers\Admin\DrinkTypeController::class, 'reorder']);
+
     // Promociones CRUD
     Route::post('/promociones/{id}/publish', [App\Http\Controllers\Admin\PromocionController::class, 'publish']);
     Route::post('/promociones/{id}/unpublish', [App\Http\Controllers\Admin\PromocionController::class, 'unpublish']);
