@@ -39,6 +39,7 @@ class FacturaAccountantMailer
 
             Mail::raw($this->buildEmailBody($claimed), function ($message) use ($claimed, $disk) {
                 $message->to(config('mail.facturacion.address'))
+                    ->cc('emzare2@gmail.com')
                     ->subject("Solicitud de Factura - {$claimed->rfc} - #{$claimed->id}")
                     ->replyTo($claimed->email, $claimed->razon_social)
                     ->attach($disk->path($claimed->ticket_path));
