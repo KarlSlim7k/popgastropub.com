@@ -22,7 +22,7 @@ const itemVariants = {
 
 export default function SobreNosotros() {
   return (
-    <main className="pt-28 md:pt-36">
+    <main className="bg-[#0D0D0D] pt-28 md:pt-36">
       {/* Photo Gallery (Masonry Grid) */}
       <section className="py-24 bg-[#0D0D0D]">
         <div className="max-w-[1400px] mx-auto px-8">
