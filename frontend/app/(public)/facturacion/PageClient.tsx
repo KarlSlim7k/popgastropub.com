@@ -1,7 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { getAuthSession } from '@/lib/auth-session';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.23, 1, 0.32, 1] as [number, number, number, number] },
+  },
+};
 
 type Step = 'idle' | 'uploading' | 'form' | 'submitting' | 'done' | 'error';
 
@@ -114,7 +132,7 @@ export default function FacturacionPage() {
 
   if (isLoggedIn === null) {
     return (
-      <main className="min-h-screen bg-[#234032] pt-24 pb-32">
+      <main className="min-h-screen bg-[#234032] pt-28 md:pt-36 pb-32">
         <div className="flex items-center justify-center py-24">
           <div className="w-10 h-10 border-4 border-t-[#F2C166] border-[#F2C166]/20 rounded-full animate-spin" />
         </div>
@@ -124,19 +142,29 @@ export default function FacturacionPage() {
 
   if (!isLoggedIn) {
     return (
-      <main className="min-h-screen bg-[#234032] pt-24 pb-32">
+      <main className="min-h-screen bg-[#234032] pt-28 md:pt-36 pb-32">
         <section className="relative overflow-hidden py-20 px-6 md:px-16">
           <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-[#D96E30]/10 blur-[120px] rounded-full" />
-          <div className="relative z-10 max-w-4xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
+            className="relative z-10 max-w-4xl mx-auto text-center"
+          >
             <p className="text-[11px] font-black uppercase tracking-[0.4em] text-[#F2C166]/60 mb-4">
               POP PEROTE · Facturación
             </p>
             <h1 className="font-epilogue text-5xl md:text-7xl font-black tracking-tighter text-white leading-none mb-6">
               SOLICITAR <span className="text-[#F2C166]">FACTURA</span>
             </h1>
-          </div>
+          </motion.div>
         </section>
-        <div className="max-w-2xl mx-auto px-4 md:px-8 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
+          className="max-w-2xl mx-auto px-4 md:px-8 text-center"
+        >
           <p className="text-white/60 text-lg mb-6">Inicia sesión para solicitar factura</p>
           <a
             href="/login"
@@ -144,18 +172,23 @@ export default function FacturacionPage() {
           >
             Iniciar Sesión
           </a>
-        </div>
+        </motion.div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#234032] pt-24 pb-32">
+    <main className="min-h-screen bg-[#234032] pt-28 md:pt-36 pb-32">
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden py-20 px-6 md:px-16">
         <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-[#D96E30]/10 blur-[120px] rounded-full" />
-        <div className="relative z-10 max-w-4xl mx-auto text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
+          className="relative z-10 max-w-4xl mx-auto text-center"
+        >
           <p className="text-[11px] font-black uppercase tracking-[0.4em] text-[#F2C166]/60 mb-4">
             POP PEROTE · Facturación
           </p>
@@ -166,25 +199,31 @@ export default function FacturacionPage() {
           <p className="text-white/60 text-lg max-w-xl mx-auto font-manrope leading-relaxed">
             Sube tu ticket, proporciona tus datos fiscales y nuestro equipo de contadores se encargará del resto.
           </p>
-        </div>
+        </motion.div>
 
         {/* Pasos */}
-        <div className="relative z-10 max-w-3xl mx-auto mt-16 grid grid-cols-3 gap-4 md:gap-8">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="relative z-10 max-w-3xl mx-auto mt-16 grid grid-cols-3 gap-4 md:gap-8"
+        >
           {[
             { icon: 'cloud_upload', num: '01', title: 'Sube ticket', desc: 'Digitaliza tu comprobante de consumo físico.' },
             { icon: 'edit_document', num: '02', title: 'Datos fiscales', desc: 'Ingresa tu RFC y detalles fiscales vigentes.' },
             { icon: 'support_agent', num: '03', title: 'Contadores contactarán', desc: 'Nuestro equipo se pondrá en contacto contigo.' },
           ].map((s, i) => (
-            <div key={i} className="text-center group">
+            <motion.div key={i} variants={itemVariants} className="text-center group">
               <div className="relative mx-auto mb-4 w-14 h-14 md:w-16 md:h-16 bg-[#2E592D] border border-[#F2C166]/15 flex items-center justify-center transition-colors group-hover:border-[#F2C166]/40">
                 <span className="material-symbols-outlined text-[#F2C166] text-2xl md:text-3xl">{s.icon}</span>
                 <span className="absolute -top-2 -right-2 text-[10px] font-black bg-[#D96E30] text-white px-1.5 py-0.5 leading-none">{s.num}</span>
               </div>
               <h3 className="font-epilogue font-black text-white text-sm md:text-base uppercase tracking-tight mb-1">{s.title}</h3>
               <p className="text-white/40 text-xs leading-relaxed hidden md:block">{s.desc}</p>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
       <div className="max-w-5xl mx-auto px-4 md:px-8">
@@ -194,7 +233,12 @@ export default function FacturacionPage() {
 
             {/* PASO 1: Upload */}
             {step === 'idle' && (
-              <div className="bg-[#1C3028] p-6 md:p-8">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+                className="bg-[#1C3028] p-6 md:p-8"
+              >
                 <div className="flex items-center gap-3 mb-6">
                   <span className="material-symbols-outlined text-[#F2C166] text-2xl">cloud_upload</span>
                   <h2 className="font-epilogue font-black text-white text-xl uppercase tracking-tight">
@@ -232,7 +276,7 @@ export default function FacturacionPage() {
                   className="sr-only"
                   onChange={handleInput}
                 />
-              </div>
+              </motion.div>
             )}
 
             {/* ESTADO: Subiendo */}
@@ -418,7 +462,13 @@ export default function FacturacionPage() {
           </div>
 
           {/* ── Columna derecha: info ── */}
-          <aside className="lg:col-span-2 space-y-6">
+          <motion.aside
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.15, ease: [0.23, 1, 0.32, 1] }}
+            className="lg:col-span-2 space-y-6"
+          >
             <div className="bg-[#1C3028] p-6">
               <p className="text-[10px] font-black uppercase tracking-widest text-[#F2C166]/60 mb-4">Datos del Establecimiento</p>
               <div className="space-y-3 text-sm">
@@ -480,12 +530,18 @@ export default function FacturacionPage() {
                 ))}
               </div>
             </div>
-          </aside>
+          </motion.aside>
         </div>
       </div>
 
       {/* ── Barra de contacto inferior ── */}
-      <div className="max-w-5xl mx-auto px-4 md:px-8 mt-20">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
+        className="max-w-5xl mx-auto px-4 md:px-8 mt-20"
+      >
         <div className="bg-[#732B1A]/30 border border-[#732B1A]/50 px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <p className="text-white font-bold text-sm">¿Problemas con tu factura?</p>
@@ -510,7 +566,7 @@ export default function FacturacionPage() {
             </a>
           </div>
         </div>
-      </div>
+      </motion.div>
 
     </main>
   );
