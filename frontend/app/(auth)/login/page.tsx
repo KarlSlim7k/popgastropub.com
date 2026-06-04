@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { fetchAPI, fetchWithAuth, APIError } from '@/lib/api';
 import { getRoleDashboard, saveAuthSession } from '@/lib/auth-session';
 import { useAuth } from '@/lib/auth-provider';
+import PasswordInput from '@/components/ui/PasswordInput';
 
 type AuthTab = 'login' | 'register';
 type SocialProvider = 'google' | 'facebook' | 'x';
@@ -466,10 +467,9 @@ export default function Login() {
                     <label className="block font-headline text-[10px] uppercase tracking-widest text-primary mb-2">
                       Contraseña
                     </label>
-                    <input
-                      className="w-full bg-transparent border-0 border-b border-outline-variant py-3 px-0 focus:ring-0 focus:border-secondary transition-colors duration-300 placeholder-on-surface/20 text-on-surface"
+                    <PasswordInput
+                      className="w-full bg-transparent border-0 border-b border-outline-variant py-3 pr-9 pl-0 focus:ring-0 focus:border-secondary transition-colors duration-300 placeholder-on-surface/20 text-on-surface"
                       placeholder="••••••••"
-                      type="password"
                       required
                       autoComplete="current-password"
                       minLength={8}
@@ -545,21 +545,21 @@ export default function Login() {
                     </div>
                     <div>
                       <label className="block font-headline text-[10px] uppercase tracking-widest text-primary mb-1">
-                        Teléfono
+                        Teléfono <span className="text-on-surface/40">(opcional)</span>
                       </label>
                       <input
                         className={`w-full bg-transparent border-0 border-b py-2 px-0 focus:ring-0 transition-colors duration-300 text-on-surface ${fieldErrors.phone ? 'border-red-400 focus:border-red-400' : 'border-outline-variant focus:border-secondary'}`}
                         type="tel"
-                        required
                         autoComplete="tel"
                         inputMode="numeric"
                         pattern="^[0-9]{10}$"
-                        title="Ingresa un número de teléfono válido de 10 dígitos"
+                        maxLength={10}
+                        title="Opcional. Si lo proporcionas, ingresa 10 dígitos sin espacios."
                         value={registerForm.phone}
                         onChange={(event) =>
                           setRegisterForm((current) => ({
                             ...current,
-                            phone: event.target.value,
+                            phone: event.target.value.replace(/\D/g, '').slice(0, 10),
                           }))
                         }
                       />
@@ -609,9 +609,8 @@ export default function Login() {
                       <label className="block font-headline text-[10px] uppercase tracking-widest text-primary mb-1">
                         Contraseña
                       </label>
-                      <input
-                        className={`w-full bg-transparent border-0 border-b py-2 px-0 focus:ring-0 transition-colors duration-300 text-on-surface ${fieldErrors.password ? 'border-red-400 focus:border-red-400' : 'border-outline-variant focus:border-secondary'}`}
-                        type="password"
+                      <PasswordInput
+                        className={`w-full bg-transparent border-0 border-b py-2 pr-9 pl-0 focus:ring-0 transition-colors duration-300 text-on-surface placeholder-on-surface/20 ${fieldErrors.password ? 'border-red-400 focus:border-red-400' : 'border-outline-variant focus:border-secondary'}`}
                         required
                         autoComplete="new-password"
                         minLength={8}
@@ -633,9 +632,8 @@ export default function Login() {
                     <label className="block font-headline text-[10px] uppercase tracking-widest text-primary mb-1">
                       Confirmar Contraseña
                     </label>
-                    <input
-                      className={`w-full bg-transparent border-0 border-b py-2 px-0 focus:ring-0 transition-colors duration-300 text-on-surface ${fieldErrors.password_confirmation ? 'border-red-400 focus:border-red-400' : 'border-outline-variant focus:border-secondary'}`}
-                      type="password"
+                    <PasswordInput
+                      className={`w-full bg-transparent border-0 border-b py-2 pr-9 pl-0 focus:ring-0 transition-colors duration-300 text-on-surface placeholder-on-surface/20 ${fieldErrors.password_confirmation ? 'border-red-400 focus:border-red-400' : 'border-outline-variant focus:border-secondary'}`}
                       required
                       autoComplete="new-password"
                       minLength={8}

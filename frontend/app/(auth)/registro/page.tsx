@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { fetchAPI } from "@/lib/api";
 import { saveAuthSession } from "@/lib/auth-session";
 import { useAuth } from "@/lib/auth-provider";
+import PasswordInput from "@/components/ui/PasswordInput";
 
 interface AuthResponse {
   user: { id: number; name: string; email: string; role?: string; points?: number; tier?: string };
@@ -87,22 +88,22 @@ export default function RegistroPage() {
 
           <div>
             <label className="block text-[10px] uppercase tracking-widest text-[#F2C166] mb-1">Teléfono <span className="text-white/40">(opcional)</span></label>
-            <input type="tel" value={form.phone} onChange={set("phone")} autoComplete="tel"
+            <input type="tel" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))} autoComplete="tel" inputMode="numeric" maxLength={10}
               className="w-full bg-transparent border border-white/10 rounded-md px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#D96E30] transition-colors"
               placeholder="2828253243" />
           </div>
 
           <div>
             <label className="block text-[10px] uppercase tracking-widest text-[#F2C166] mb-1">Contraseña</label>
-            <input type="password" required minLength={8} value={form.password} onChange={set("password")} autoComplete="new-password"
-              className="w-full bg-transparent border border-white/10 rounded-md px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#D96E30] transition-colors"
+            <PasswordInput required minLength={8} value={form.password} onChange={set("password")} autoComplete="new-password"
+              className="w-full bg-transparent border border-white/10 rounded-md px-4 py-3 pr-10 text-white placeholder-white/30 focus:outline-none focus:border-[#D96E30] transition-colors"
               placeholder="Mínimo 8 caracteres" />
           </div>
 
           <div>
             <label className="block text-[10px] uppercase tracking-widest text-[#F2C166] mb-1">Confirmar contraseña</label>
-            <input type="password" required minLength={8} value={form.password_confirmation} onChange={set("password_confirmation")} autoComplete="new-password"
-              className="w-full bg-transparent border border-white/10 rounded-md px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#D96E30] transition-colors"
+            <PasswordInput required minLength={8} value={form.password_confirmation} onChange={set("password_confirmation")} autoComplete="new-password"
+              className="w-full bg-transparent border border-white/10 rounded-md px-4 py-3 pr-10 text-white placeholder-white/30 focus:outline-none focus:border-[#D96E30] transition-colors"
               placeholder="Repite tu contraseña" />
           </div>
 
