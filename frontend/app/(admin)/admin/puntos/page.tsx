@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
+import { IconPicker } from "@/components/ui/IconPicker";
 
 interface TierData {
   id: number;
@@ -617,9 +618,8 @@ export default function AdminPuntosPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className={labelCls}>Icono (Material Symbol)</label>
-                  <input type="text" value={tierForm.icon} onChange={(e) => setTierForm({ ...tierForm, icon: e.target.value })} placeholder="person" className={inputCls} />
-                  <span className="material-symbols-outlined text-2xl mt-1" style={{ color: tierForm.color }}>{tierForm.icon}</span>
+                  <label className={labelCls}>Icono</label>
+                  <IconPicker value={tierForm.icon} onChange={(icon) => setTierForm({ ...tierForm, icon })} color={tierForm.color} />
                 </div>
                 <div>
                   <label className={labelCls}>Orden</label>
@@ -683,9 +683,8 @@ export default function AdminPuntosPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className={labelCls}>Icono (Material Symbol)</label>
-                  <input type="text" value={actionForm.icon} onChange={(e) => setActionForm({ ...actionForm, icon: e.target.value })} placeholder="token" className={inputCls} />
-                  <span className="material-symbols-outlined text-2xl mt-1" style={{ color: actionForm.color }}>{actionForm.icon}</span>
+                  <label className={labelCls}>Icono</label>
+                  <IconPicker value={actionForm.icon} onChange={(icon) => setActionForm({ ...actionForm, icon })} color={actionForm.color} />
                 </div>
                 <div>
                   <label className={labelCls}>Color</label>

@@ -15,6 +15,8 @@ class Producto extends Model
         'precio',
         'costo',
         'categoria',
+        'bar_type',
+        'ranking_points',
         'imagen',
         'disponible',
         'destacado',
@@ -36,5 +38,6 @@ class Producto extends Model
         'destacado' => 'boolean',
         'tiene_promo' => 'boolean',
         'alergenos' => 'array',
+        'ranking_points' => 'integer',
     ];
 }

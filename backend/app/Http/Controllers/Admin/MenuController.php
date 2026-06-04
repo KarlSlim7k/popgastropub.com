@@ -34,6 +34,8 @@ class MenuController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category' => 'required|string|max:100',
+            'bar_type' => 'nullable|string|in:cocktail,premium,pitcher,bottle,combo,upsell',
+            'ranking_points' => 'nullable|integer|min:0',
             'price' => 'required|numeric|min:0',
             'cost' => 'nullable|numeric|min:0',
             'stock' => 'nullable|integer|min:0|max:100',
@@ -63,6 +65,8 @@ class MenuController extends Controller
             'name' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
             'category' => 'sometimes|string|max:100',
+            'bar_type' => 'nullable|string|in:cocktail,premium,pitcher,bottle,combo,upsell',
+            'ranking_points' => 'nullable|integer|min:0',
             'price' => 'sometimes|numeric|min:0',
             'cost' => 'nullable|numeric|min:0',
             'stock' => 'nullable|integer|min:0|max:100',
@@ -96,6 +100,8 @@ class MenuController extends Controller
             'name' => $p->nombre,
             'description' => $p->descripcion ?? '',
             'category' => $p->categoria,
+            'bar_type' => $p->bar_type,
+            'ranking_points' => $p->ranking_points ?? 0,
             'price' => (float) $p->precio,
             'cost' => (float) $p->costo,
             'stock' => $p->stock,
@@ -118,6 +124,8 @@ class MenuController extends Controller
         if ($request->has('name')) $map['nombre'] = $request->input('name');
         if ($request->has('description')) $map['descripcion'] = $request->input('description');
         if ($request->has('category')) $map['categoria'] = $request->input('category');
+        if ($request->has('bar_type')) $map['bar_type'] = $request->input('bar_type');
+        if ($request->has('ranking_points')) $map['ranking_points'] = $request->input('ranking_points');
         if ($request->has('price')) $map['precio'] = $request->input('price');
         if ($request->has('cost')) $map['costo'] = $request->input('cost');
         if ($request->has('stock')) $map['stock'] = $request->input('stock');

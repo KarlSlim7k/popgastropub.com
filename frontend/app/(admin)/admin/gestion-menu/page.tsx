@@ -10,6 +10,8 @@ interface MenuItem {
   name: string;
   description: string;
   category: string;
+  bar_type: string | null;
+  ranking_points: number;
   price: number;
   cost: number;
   stock: number;
@@ -24,8 +26,16 @@ interface MenuItem {
   allergens: string[];
 }
 
-const ALLERGENS = ["Pescado", "Mariscos", "Sésamo", "Gluten", "Lácteos", "Huevo", "Soya", "Cacahuate"];
-// Categories are derived dynamically from loaded products (see below)
+const BAR_TYPES = [
+  { value: "cocktail", label: "Cóctel / Margarita", points: 10, icon: "local_bar" },
+  { value: "premium", label: "Bebida Premium", points: 15, icon: "wine_bar" },
+  { value: "pitcher", label: "Jarra / Compartida", points: 25, icon: "sports_bar" },
+  { value: "bottle", label: "Botella Completa", points: 50, icon: "local_drink" },
+  { value: "combo", label: "Combo Comida + Bebida", points: 20, icon: "restaurant" },
+  { value: "upsell", label: "Upselling (Upgrade)", points: 15, icon: "trending_up" },
+];
+
+const BEVERAGE_CATEGORIES = ["BEBIDAS.", "MIXOLOGIA", "Bebidas", "Mixología", "Coctelería"];
 
 export default function AdminGestionMenuPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,7 +48,9 @@ export default function AdminGestionMenuPage() {
   const [form, setForm] = useState<Partial<MenuItem>>({
     name: "",
     description: "",
-    category: "Sushi",
+    category: "BEBIDAS.",
+    bar_type: null,
+    ranking_points: 0,
     price: 0,
     cost: 0,
     stock: 100,
@@ -59,7 +71,11 @@ export default function AdminGestionMenuPage() {
     setLoading(true);
     try {
       const data = await fetchWithAuth<any>("/admin/menu?all=true", session.token);
-      setMenuItems(Array.isArray(data) ? data : data.data ?? []);
+      const allItems = Array.isArray(data) ? data : data.data ?? [];
+      const beverages = allItems.filter((item: MenuItem) =>
+        BEVERAGE_CATEGORIES.some(cat => item.category?.toLowerCase().includes(cat.toLowerCase()))
+      );
+      setMenuItems(beverages);
     } catch {
       // error
     } finally {
@@ -71,10 +87,9 @@ export default function AdminGestionMenuPage() {
     fetchMenu();
   }, []);
 
-  // Derive categories from loaded products, with fallback defaults
   const CATEGORIES = Array.from(new Set([
     ...menuItems.map((i) => i.category).filter(Boolean),
-    "Sushi", "Wings", "Bebidas", "Postres", "Snacks",
+    "BEBIDAS.", "MIXOLOGIA",
   ]));
 
   const openCreate = () => {
@@ -82,7 +97,9 @@ export default function AdminGestionMenuPage() {
     setForm({
       name: "",
       description: "",
-      category: "Sushi",
+      category: "BEBIDAS.",
+      bar_type: null,
+      ranking_points: 0,
       price: 0,
       cost: 0,
       stock: 100,
@@ -127,7 +144,7 @@ export default function AdminGestionMenuPage() {
   const handleDelete = async (id: string | number) => {
     const session = getAuthSession();
     if (!session) return;
-    if (!confirm("¿Eliminar este platillo?")) return;
+    if (!confirm("¿Eliminar esta bebida?")) return;
     try {
       await fetchWithAuth(`/admin/menu/${id}`, session.token, { method: "DELETE" });
       fetchMenu();
@@ -150,6 +167,15 @@ export default function AdminGestionMenuPage() {
     }
   };
 
+  const handleBarTypeChange = (barType: string) => {
+    const typeConfig = BAR_TYPES.find(t => t.value === barType);
+    setForm({
+      ...form,
+      bar_type: barType,
+      ranking_points: typeConfig?.points || 0,
+    });
+  };
+
   const filteredItems = menuItems.filter((item) => {
     const matchesCategory = selectedCategory === "Todos" || item.category === selectedCategory;
     const matchesSearch =
@@ -158,32 +184,43 @@ export default function AdminGestionMenuPage() {
     return matchesCategory && matchesSearch;
   });
 
+  const getBarTypeLabel = (barType: string | null) => {
+    if (!barType) return "Sin tipo";
+    return BAR_TYPES.find(t => t.value === barType)?.label || barType;
+  };
+
+  const getBarTypeIcon = (barType: string | null) => {
+    if (!barType) return "local_bar";
+    return BAR_TYPES.find(t => t.value === barType)?.icon || "local_bar";
+  };
+
   return (
     <main className="pt-24 lg:pt-20 p-4 lg:p-10 min-h-screen bg-pop-black">
       <header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-          <h1 className="text-4xl lg:text-7xl font-black tracking-tighter text-white font-epilogue uppercase leading-none">
-            Menú
+          <h1 className="text-4xl lg:text-7xl font-black tracking-tighter text-white font-epilogue uppercase leading-none flex items-center gap-4">
+            <span className="material-symbols-outlined text-pop-gold text-5xl lg:text-7xl">local_bar</span>
+            Bebidas Bar
           </h1>
           <p className="text-pop-orange mt-2 text-xs font-bold uppercase tracking-[0.3em]">
-            Administración de catálogo · POP Perote
+            Gestión de bebidas para ranking POP Bar Stars
           </p>
         </div>
         <button
           onClick={openCreate}
           className="w-full md:w-auto px-8 py-4 bg-pop-gold text-pop-black font-black uppercase text-xs tracking-[0.2em] rounded-lg hover:bg-pop-lightGold transition-all shadow-lg"
         >
-          Agregar Platillo
+          Agregar Bebida
         </button>
       </header>
 
       <section className="flex lg:grid lg:grid-cols-4 gap-4 lg:gap-6 mb-10 overflow-x-auto no-scrollbar pb-2">
         <div className="min-w-[160px] flex-1 bg-pop-cardGreen p-5 rounded-2xl border border-white/5">
-          <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Items</p>
+          <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Bebidas</p>
           <p className="text-2xl font-black text-white">{menuItems.length}</p>
         </div>
         <div className="min-w-[160px] flex-1 bg-pop-cardGreen p-5 rounded-2xl border border-white/5">
-          <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Margen</p>
+          <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Margen Promedio</p>
           <p className="text-2xl font-black text-green-400">
             {menuItems.length
               ? Math.round(
@@ -194,12 +231,12 @@ export default function AdminGestionMenuPage() {
           </p>
         </div>
         <div className="min-w-[160px] flex-1 bg-pop-cardGreen p-5 rounded-2xl border border-white/5">
-          <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Agotados</p>
-          <p className="text-2xl font-black text-pop-orange">{menuItems.filter((i) => i.status === "out").length}</p>
+          <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Con Ranking</p>
+          <p className="text-2xl font-black text-pop-gold">{menuItems.filter((i) => i.bar_type).length}</p>
         </div>
         <div className="min-w-[160px] flex-1 bg-pop-cardGreen p-5 rounded-2xl border border-white/5">
           <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Categorías</p>
-          <p className="text-2xl font-black text-pop-gold">{CATEGORIES.length}</p>
+          <p className="text-2xl font-black text-pop-orange">{CATEGORIES.length}</p>
         </div>
       </section>
 
@@ -232,18 +269,19 @@ export default function AdminGestionMenuPage() {
       </div>
 
       <div className="space-y-4">
-        <div className="hidden lg:grid grid-cols-6 gap-4 px-8 py-4 bg-white/[0.02] text-[10px] font-black uppercase text-gray-500 tracking-[0.2em] border-b border-white/5">
-          <div className="col-span-2">Platillo</div>
+        <div className="hidden lg:grid grid-cols-7 gap-4 px-8 py-4 bg-white/[0.02] text-[10px] font-black uppercase text-gray-500 tracking-[0.2em] border-b border-white/5">
+          <div className="col-span-2">Bebida</div>
           <div>Categoría</div>
-          <div>PVP / Costo</div>
-          <div>Inventario</div>
+          <div>Tipo Bar</div>
+          <div>Pts Ranking</div>
+          <div>Precio</div>
           <div className="text-right">Estado / Acciones</div>
         </div>
 
         {filteredItems.map((item) => (
           <article
             key={item.id}
-            className="bg-pop-cardGreen lg:bg-transparent rounded-2xl lg:rounded-none p-5 lg:p-0 border border-white/5 lg:border-none lg:grid lg:grid-cols-6 lg:gap-4 lg:px-8 lg:py-6 lg:items-center hover:bg-white/[0.02] transition-all"
+            className="bg-pop-cardGreen lg:bg-transparent rounded-2xl lg:rounded-none p-5 lg:p-0 border border-white/5 lg:border-none lg:grid lg:grid-cols-7 lg:gap-4 lg:px-8 lg:py-6 lg:items-center hover:bg-white/[0.02] transition-all"
           >
             <div className="lg:col-span-2 flex items-center gap-4 mb-4 lg:mb-0">
               <div className="w-20 h-16 lg:w-16 lg:h-12 rounded-xl bg-pop-black border border-white/10 overflow-hidden shadow-lg">
@@ -265,25 +303,26 @@ export default function AdminGestionMenuPage() {
                 <span className="text-[10px] font-black uppercase tracking-widest text-pop-orange/80">{item.category}</span>
               </div>
 
-              <div className="lg:hidden text-[9px] font-black text-gray-500 uppercase">PVP / Costo</div>
-              <div className="text-right lg:text-left font-mono">
-                <span className="text-white font-bold">${item.price}</span>
-                <span className="text-[10px] text-gray-500 ml-2 lg:block lg:ml-0 lg:mt-0.5">/ ${item.cost}</span>
+              <div className="lg:hidden text-[9px] font-black text-gray-500 uppercase">Tipo Bar</div>
+              <div className="text-right lg:text-left flex items-center gap-2 justify-end lg:justify-start">
+                <span className="material-symbols-outlined text-pop-gold text-sm">{getBarTypeIcon(item.bar_type)}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-pop-gold">{getBarTypeLabel(item.bar_type)}</span>
+              </div>
+            </div>
+
+            <div className="mb-4 lg:mb-0">
+              <div className="lg:hidden text-[9px] font-black text-gray-500 uppercase mb-2">Pts Ranking</div>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-black text-pop-gold">{item.ranking_points}</span>
+                <span className="text-[9px] text-gray-500 uppercase">pts</span>
               </div>
             </div>
 
             <div className="mb-6 lg:mb-0">
-              <div className="lg:hidden text-[9px] font-black text-gray-500 uppercase mb-2">Inventario</div>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 lg:max-w-[100px] h-1.5 bg-white/5 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full ${
-                      item.status === "out" ? "bg-red-500" : item.status === "low" ? "bg-pop-orange" : "bg-pop-gold"
-                    }`}
-                    style={{ width: `${item.stock}%` }}
-                  />
-                </div>
-                <span className="text-[10px] font-black text-white">{item.stock}%</span>
+              <div className="lg:hidden text-[9px] font-black text-gray-500 uppercase mb-2">Precio</div>
+              <div className="font-mono">
+                <span className="text-white font-bold">${item.price}</span>
+                <span className="text-[10px] text-gray-500 ml-2 lg:block lg:ml-0 lg:mt-0.5">/ ${item.cost}</span>
               </div>
             </div>
 
@@ -316,7 +355,7 @@ export default function AdminGestionMenuPage() {
           </article>
         ))}
         {filteredItems.length === 0 && !loading && (
-          <div className="text-center py-10 text-gray-500 text-xs uppercase tracking-widest">Sin resultados</div>
+          <div className="text-center py-10 text-gray-500 text-xs uppercase tracking-widest">Sin bebidas</div>
         )}
       </div>
 
@@ -326,10 +365,11 @@ export default function AdminGestionMenuPage() {
           <div className="relative bg-pop-cardGreen border-t md:border border-white/10 w-full max-w-2xl rounded-t-3xl md:rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300">
             <header className="p-6 lg:p-8 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
               <div>
-                <h2 className="text-xl lg:text-2xl font-black uppercase font-epilogue tracking-tighter text-white">
-                  {editingItem ? "Editar Plato" : "Nuevo Plato"}
+                <h2 className="text-xl lg:text-2xl font-black uppercase font-epilogue tracking-tighter text-white flex items-center gap-3">
+                  <span className="material-symbols-outlined text-pop-gold text-3xl">local_bar</span>
+                  {editingItem ? "Editar Bebida" : "Nueva Bebida"}
                 </h2>
-                <p className="text-[10px] text-pop-orange font-bold uppercase tracking-widest mt-1">Configuración Técnica</p>
+                <p className="text-[10px] text-pop-orange font-bold uppercase tracking-widest mt-1">Configuración para Ranking POP Bar Stars</p>
               </div>
               <button
                 onClick={closeModal}
@@ -353,7 +393,7 @@ export default function AdminGestionMenuPage() {
                 <div className="space-y-2">
                   <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Categoría</label>
                   <select
-                    value={form.category || "Sushi"}
+                    value={form.category || "BEBIDAS."}
                     onChange={(e) => setForm({ ...form, category: e.target.value })}
                     className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none"
                   >
@@ -362,6 +402,55 @@ export default function AdminGestionMenuPage() {
                         {c}
                       </option>
                     ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Tipo de Bebida (para Ranking)</label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {BAR_TYPES.map((type) => (
+                    <button
+                      key={type.value}
+                      type="button"
+                      onClick={() => handleBarTypeChange(type.value)}
+                      className={`p-4 rounded-xl border transition-all text-left ${
+                        form.bar_type === type.value
+                          ? "bg-pop-gold/10 border-pop-gold"
+                          : "bg-white/5 border-white/10 hover:border-pop-gold/30"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="material-symbols-outlined text-pop-gold text-xl">{type.icon}</span>
+                        <span className="text-[10px] font-black uppercase text-white">{type.label}</span>
+                      </div>
+                      <p className="text-[9px] text-pop-gold font-bold">{type.points} pts</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Puntos Ranking (manual)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.ranking_points || 0}
+                    onChange={(e) => setForm({ ...form, ranking_points: Number(e.target.value) })}
+                    className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Estado Inventario</label>
+                  <select
+                    value={form.status || "available"}
+                    onChange={(e) => setForm({ ...form, status: e.target.value as any })}
+                    className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none"
+                  >
+                    <option value="available">Disponible</option>
+                    <option value="low">Bajo</option>
+                    <option value="out">Agotado</option>
                   </select>
                 </div>
               </div>
@@ -403,32 +492,6 @@ export default function AdminGestionMenuPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Stock (%)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={form.stock || 0}
-                    onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })}
-                    className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Estado Inventario</label>
-                  <select
-                    value={form.status || "available"}
-                    onChange={(e) => setForm({ ...form, status: e.target.value as any })}
-                    className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none"
-                  >
-                    <option value="available">Disponible</option>
-                    <option value="low">Bajo</option>
-                    <option value="out">Agotado</option>
-                  </select>
-                </div>
-              </div>
-
               <div className="space-y-2">
                 <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Imagen</label>
                 <ImageUpload
@@ -438,44 +501,6 @@ export default function AdminGestionMenuPage() {
                 />
               </div>
 
-              <div className="space-y-4">
-                <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Alérgenos</label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {ALLERGENS.map((alg) => (
-                    <label
-                      key={alg}
-                      className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-3 rounded-xl cursor-pointer hover:border-pop-gold transition-all"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={(form.allergens || []).includes(alg)}
-                        onChange={(e) => {
-                          const arr = form.allergens || [];
-                          setForm({
-                            ...form,
-                            allergens: e.target.checked ? [...arr, alg] : arr.filter((a) => a !== alg),
-                          });
-                        }}
-                        className="w-4 h-4 rounded accent-pop-gold"
-                      />
-                      <span className="text-[10px] font-bold text-white uppercase">{alg}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="p-5 bg-pop-orange/5 border border-pop-orange/10 rounded-2xl flex items-center justify-between">
-                <div>
-                  <h4 className="text-white font-bold text-sm">Oferta Flash</h4>
-                  <p className="text-[8px] text-pop-orange uppercase tracking-widest font-black">Multiplicador de Visibilidad</p>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={!!form.hasPromo}
-                  onChange={(e) => setForm({ ...form, hasPromo: e.target.checked })}
-                  className="w-6 h-6 accent-pop-orange"
-                />
-              </div>
               <div className="p-5 bg-pop-gold/5 border border-pop-gold/10 rounded-2xl flex items-center justify-between">
                 <div>
                   <h4 className="text-white font-bold text-sm">Mostrar como destacado</h4>
@@ -488,17 +513,6 @@ export default function AdminGestionMenuPage() {
                   className="w-6 h-6 accent-pop-gold"
                 />
               </div>
-              {form.hasPromo && (
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Precio Promo ($)</label>
-                  <input
-                    type="number"
-                    value={form.promoPrice || 0}
-                    onChange={(e) => setForm({ ...form, promoPrice: Number(e.target.value) })}
-                    className="w-full bg-pop-black border border-white/10 rounded-xl p-4 text-white focus:border-pop-gold outline-none"
-                  />
-                </div>
-              )}
             </div>
 
             <footer className="p-6 lg:p-8 border-t border-white/5 flex gap-3">
@@ -510,7 +524,7 @@ export default function AdminGestionMenuPage() {
                 type="button"
                 className="flex-[2] py-4 bg-pop-gold text-pop-black font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-pop-lightGold shadow-lg"
               >
-                {editingItem ? "Guardar Cambios" : "Crear Platillo"}
+                {editingItem ? "Guardar Cambios" : "Crear Bebida"}
               </button>
             </footer>
           </div>
