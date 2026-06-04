@@ -37,7 +37,7 @@ export default function MenuPage() {
     <main className="min-h-screen bg-[#0D0D0D] pt-20 pb-32">
       {/* Hero */}
       <section className="relative h-[400px] flex items-center justify-center overflow-hidden">
-        <Image alt="Sushi POP Perote" src="/images/sushi_1.jpg" fill className="object-cover brightness-[0.25]" priority />
+        <Image alt="Sushi POP Perote" src="/images/sushi_1.webp" fill className="object-cover brightness-[0.25]" priority />
         <div className="relative z-10 text-center px-4 space-y-4">
           <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-white uppercase leading-none">
             Nuestro <span className="text-[#F2C777]">Menú</span>

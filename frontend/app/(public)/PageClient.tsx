@@ -24,11 +24,11 @@ import { getOpenStatus as getOpenStatusBase, DIAS_SEMANA } from '@/lib/business-
 
 const HERO_SLIDES = [
   {
-    src: '/images/entrada_pop_horizontal.jpg',
+    src: '/images/entrada_pop_horizontal.webp',
     alt: 'Entrada del restaurante POP Perote, fachada iluminada con letras doradas',
   },
   {
-    src: '/images/vista_general.jpg',
+    src: '/images/vista_general.webp',
     alt: 'Vista general del interior de POP Perote, ambiente cálido y elegante',
   },
 ];
@@ -378,7 +378,7 @@ export default function Home() {
       {/*  1.6 Location & Hours  */}
       <section className="flex flex-col md:flex-row h-auto md:h-[600px] bg-surface-container-low border-t border-[#F2C166]/10">
         <div className="w-full md:w-1/2 h-[400px] md:h-full overflow-hidden relative">
-          <Image fill className="object-cover" alt="Entrada del restaurante POP Perote" src="/images/entrada_vertical.jpg" />
+          <Image fill className="object-cover" alt="Entrada del restaurante POP Perote" src="/images/entrada_vertical.webp" />
           <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#234032]/30 hidden md:block"></div>
         </div>
         <div className="w-full md:w-1/2 p-12 md:p-24 flex flex-col justify-center">

@@ -68,7 +68,7 @@ export default function Ubicacion() {
     <main className="bg-[#0D0D0D] pt-20">
       {/* Hero */}
       <section className="relative h-[716px] w-full overflow-hidden">
-        <Image alt="Entrada del restaurante POP Perote" src="/images/entrada_pop_horizontal.jpg" fill className="object-cover brightness-[0.35]" priority />
+        <Image alt="Entrada del restaurante POP Perote" src="/images/entrada_pop_horizontal.webp" fill className="object-cover brightness-[0.35]" priority />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
           <h1 className="font-headline text-5xl md:text-8xl font-black text-[#F2C777] tracking-tighter mb-4">ENCUÉNTRANOS 📍</h1>
           <p className="font-body text-lg md:text-xl text-white/80 max-w-2xl font-light uppercase tracking-[0.2em]">Gastronomía de Autor en el Corazón de Perote</p>
@@ -233,18 +233,18 @@ export default function Ubicacion() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-4">
               <div className="relative h-64 overflow-hidden rounded-lg">
-                <Image alt="Mesa grande POP Perote" src="/images/mesa_grande_1.jpg" fill className="object-cover transition-transform duration-700 hover:scale-110" />
+                <Image alt="Mesa grande POP Perote" src="/images/mesa_grande_1.webp" fill className="object-cover transition-transform duration-700 hover:scale-110" />
               </div>
               <div className="relative h-80 overflow-hidden rounded-lg">
-                <Image alt="Decoración POP Perote" src="/images/decoracion_pop_3.jpg" fill className="object-cover transition-transform duration-700 hover:scale-110" />
+                <Image alt="Decoración POP Perote" src="/images/decoracion_pop_3.webp" fill className="object-cover transition-transform duration-700 hover:scale-110" />
               </div>
             </div>
             <div className="space-y-4 pt-12">
               <div className="relative h-80 overflow-hidden rounded-lg">
-                <Image alt="Mesa lateral POP Perote" src="/images/mesa_lateral.jpg" fill className="object-cover transition-transform duration-700 hover:scale-110" />
+                <Image alt="Mesa lateral POP Perote" src="/images/mesa_lateral.webp" fill className="object-cover transition-transform duration-700 hover:scale-110" />
               </div>
               <div className="relative h-64 overflow-hidden rounded-lg">
-                <Image alt="Decoración interior POP" src="/images/decoracion_pop_6.jpg" fill className="object-cover transition-transform duration-700 hover:scale-110" />
+                <Image alt="Decoración interior POP" src="/images/decoracion_pop_6.webp" fill className="object-cover transition-transform duration-700 hover:scale-110" />
               </div>
             </div>
           </div>

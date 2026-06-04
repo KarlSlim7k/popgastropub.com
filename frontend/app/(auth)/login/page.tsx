@@ -374,7 +374,7 @@ export default function Login() {
     <div className="relative min-h-screen overflow-hidden">
       <div className="absolute inset-0 -z-30">
         <Image
-          src="/images/decoracion_pop_8.jpg"
+          src="/images/decoracion_pop_8.webp"
           alt="Decoración interior de POP"
           fill
           priority
