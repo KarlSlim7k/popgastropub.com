@@ -166,9 +166,21 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     // Puntos POP
     Route::get('/puntos/stats', [App\Http\Controllers\Admin\PuntosController::class, 'stats']);
     Route::get('/puntos/tiers', [App\Http\Controllers\Admin\PuntosController::class, 'tiers']);
+    Route::post('/puntos/tiers', [App\Http\Controllers\Admin\PuntosController::class, 'storeTier']);
+    Route::put('/puntos/tiers/{id}', [App\Http\Controllers\Admin\PuntosController::class, 'updateTier']);
+    Route::delete('/puntos/tiers/{id}', [App\Http\Controllers\Admin\PuntosController::class, 'destroyTier']);
+    Route::post('/puntos/tiers/reorder', [App\Http\Controllers\Admin\PuntosController::class, 'reorderTiers']);
+
+    Route::get('/puntos/actions', [App\Http\Controllers\Admin\PuntosController::class, 'pointActions']);
+    Route::post('/puntos/actions', [App\Http\Controllers\Admin\PuntosController::class, 'storePointAction']);
+    Route::put('/puntos/actions/{id}', [App\Http\Controllers\Admin\PuntosController::class, 'updatePointAction']);
+    Route::delete('/puntos/actions/{id}', [App\Http\Controllers\Admin\PuntosController::class, 'destroyPointAction']);
+    Route::post('/puntos/actions/reorder', [App\Http\Controllers\Admin\PuntosController::class, 'reorderPointActions']);
+
     Route::get('/puntos/top-members', [App\Http\Controllers\Admin\PuntosController::class, 'topMembers']);
     Route::get('/puntos/activity', [App\Http\Controllers\Admin\PuntosController::class, 'activity']);
     Route::post('/puntos/redeem', [App\Http\Controllers\Admin\PuntosController::class, 'redeem']);
+    Route::post('/puntos/adjust', [App\Http\Controllers\Admin\PuntosController::class, 'adjustPoints']);
 
     // Configuración
     Route::get('/configuracion', [App\Http\Controllers\Admin\ConfiguracionController::class, 'index']);

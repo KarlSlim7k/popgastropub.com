@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\LoyaltyPointAction;
+use App\Models\LoyaltyTier;
 use App\Models\LoyaltyTransaction;
 use App\Models\RewardRedemption;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class PuntosController extends Controller
 {
@@ -27,12 +30,209 @@ class PuntosController extends Controller
 
     public function tiers()
     {
-        return response()->json([
-            ['name' => 'POP Fan', 'range' => '0-499 pts', 'members' => User::where('role', 'cliente')->where('points', '<', 500)->count()],
-            ['name' => 'POP Lover', 'range' => '500-1,499 pts', 'members' => User::where('role', 'cliente')->whereBetween('points', [500, 1499])->count()],
-            ['name' => 'POP VIP', 'range' => '1,500-2,999 pts', 'members' => User::where('role', 'cliente')->whereBetween('points', [1500, 2999])->count()],
-            ['name' => 'POP Elite', 'range' => '3,000+ pts', 'members' => User::where('role', 'cliente')->where('points', '>=', 3000)->count()],
+        $tiers = LoyaltyTier::active()->ordered()->get();
+
+        return response()->json($tiers->map(function ($tier) {
+            $members = User::where('role', 'cliente')
+                ->where('points', '>=', $tier->min_points)
+                ->where(function ($q) use ($tier) {
+                    if ($tier->max_points) {
+                        $q->where('points', '<=', $tier->max_points);
+                    }
+                })->count();
+
+            return [
+                'id' => $tier->id,
+                'name' => $tier->name,
+                'slug' => $tier->slug,
+                'range' => $tier->max_points
+                    ? "{$tier->min_points}-{$tier->max_points} pts"
+                    : "{$tier->min_points}+ pts",
+                'min_points' => $tier->min_points,
+                'max_points' => $tier->max_points,
+                'color' => $tier->color,
+                'bg_color' => $tier->bg_color,
+                'border_color' => $tier->border_color,
+                'icon' => $tier->icon,
+                'benefits' => $tier->benefits,
+                'config' => $tier->config,
+                'members' => $members,
+                'is_active' => $tier->is_active,
+                'sort_order' => $tier->sort_order,
+            ];
+        }));
+    }
+
+    public function storeTier(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:50',
+            'slug' => 'required|string|max:50|unique:loyalty_tiers,slug',
+            'min_points' => 'required|integer|min:0',
+            'max_points' => 'nullable|integer|min:0',
+            'color' => 'nullable|string|max:7',
+            'bg_color' => 'nullable|string|max:7',
+            'border_color' => 'nullable|string|max:7',
+            'icon' => 'nullable|string|max:50',
+            'benefits' => 'nullable|array',
+            'config' => 'nullable|array',
+            'is_active' => 'boolean',
+            'sort_order' => 'nullable|integer|min:0',
         ]);
+
+        $validated['color'] = $validated['color'] ?? '#F2C777';
+        $validated['bg_color'] = $validated['bg_color'] ?? $validated['color'];
+        $validated['border_color'] = $validated['border_color'] ?? $validated['color'];
+        $validated['icon'] = $validated['icon'] ?? 'person';
+        $validated['is_active'] = $validated['is_active'] ?? true;
+        $validated['sort_order'] = $validated['sort_order'] ?? 0;
+
+        $tier = LoyaltyTier::create($validated);
+        Cache::forget('loyalty_tiers');
+
+        return response()->json($tier, 201);
+    }
+
+    public function updateTier(Request $request, $id)
+    {
+        $tier = LoyaltyTier::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:50',
+            'slug' => 'sometimes|string|max:50|unique:loyalty_tiers,slug,' . $id,
+            'min_points' => 'sometimes|integer|min:0',
+            'max_points' => 'nullable|integer|min:0',
+            'color' => 'nullable|string|max:7',
+            'bg_color' => 'nullable|string|max:7',
+            'border_color' => 'nullable|string|max:7',
+            'icon' => 'nullable|string|max:50',
+            'benefits' => 'nullable|array',
+            'config' => 'nullable|array',
+            'is_active' => 'boolean',
+            'sort_order' => 'nullable|integer|min:0',
+        ]);
+
+        $tier->update($validated);
+        Cache::forget('loyalty_tiers');
+
+        return response()->json($tier->fresh());
+    }
+
+    public function destroyTier($id)
+    {
+        $tier = LoyaltyTier::findOrFail($id);
+        $tier->delete();
+        Cache::forget('loyalty_tiers');
+
+        return response()->json(['message' => 'Nivel eliminado']);
+    }
+
+    public function reorderTiers(Request $request)
+    {
+        $request->validate([
+            'tiers' => 'required|array',
+            'tiers.*.id' => 'required|exists:loyalty_tiers,id',
+            'tiers.*.sort_order' => 'required|integer|min:0',
+        ]);
+
+        foreach ($request->input('tiers') as $tierData) {
+            LoyaltyTier::where('id', $tierData['id'])->update(['sort_order' => $tierData['sort_order']]);
+        }
+
+        Cache::forget('loyalty_tiers');
+
+        return response()->json(['message' => 'Orden actualizado']);
+    }
+
+    public function pointActions()
+    {
+        $actions = LoyaltyPointAction::active()->ordered()->get();
+
+        return response()->json($actions->map(function ($action) {
+            return [
+                'id' => $action->id,
+                'action' => $action->action,
+                'slug' => $action->slug,
+                'points' => $action->points,
+                'points_type' => $action->points_type,
+                'icon' => $action->icon,
+                'color' => $action->color,
+                'description' => $action->description,
+                'conditions' => $action->conditions,
+                'is_active' => $action->is_active,
+                'sort_order' => $action->sort_order,
+            ];
+        }));
+    }
+
+    public function storePointAction(Request $request)
+    {
+        $validated = $request->validate([
+            'action' => 'required|string|max:100',
+            'slug' => 'required|string|max:50|unique:loyalty_point_actions,slug',
+            'points' => 'required|integer|min:0',
+            'points_type' => 'required|in:fixed,per_amount,multiplier',
+            'icon' => 'nullable|string|max:50',
+            'color' => 'nullable|string|max:7',
+            'description' => 'nullable|string',
+            'conditions' => 'nullable|array',
+            'is_active' => 'boolean',
+            'sort_order' => 'nullable|integer|min:0',
+        ]);
+
+        $validated['icon'] = $validated['icon'] ?? 'token';
+        $validated['color'] = $validated['color'] ?? '#F2C777';
+        $validated['is_active'] = $validated['is_active'] ?? true;
+        $validated['sort_order'] = $validated['sort_order'] ?? 0;
+
+        $action = LoyaltyPointAction::create($validated);
+
+        return response()->json($action, 201);
+    }
+
+    public function updatePointAction(Request $request, $id)
+    {
+        $action = LoyaltyPointAction::findOrFail($id);
+
+        $validated = $request->validate([
+            'action' => 'sometimes|string|max:100',
+            'slug' => 'sometimes|string|max:50|unique:loyalty_point_actions,slug,' . $id,
+            'points' => 'sometimes|integer|min:0',
+            'points_type' => 'sometimes|in:fixed,per_amount,multiplier',
+            'icon' => 'nullable|string|max:50',
+            'color' => 'nullable|string|max:7',
+            'description' => 'nullable|string',
+            'conditions' => 'nullable|array',
+            'is_active' => 'boolean',
+            'sort_order' => 'nullable|integer|min:0',
+        ]);
+
+        $action->update($validated);
+
+        return response()->json($action->fresh());
+    }
+
+    public function destroyPointAction($id)
+    {
+        $action = LoyaltyPointAction::findOrFail($id);
+        $action->delete();
+
+        return response()->json(['message' => 'Acción eliminada']);
+    }
+
+    public function reorderPointActions(Request $request)
+    {
+        $request->validate([
+            'actions' => 'required|array',
+            'actions.*.id' => 'required|exists:loyalty_point_actions,id',
+            'actions.*.sort_order' => 'required|integer|min:0',
+        ]);
+
+        foreach ($request->input('actions') as $actionData) {
+            LoyaltyPointAction::where('id', $actionData['id'])->update(['sort_order' => $actionData['sort_order']]);
+        }
+
+        return response()->json(['message' => 'Orden actualizado']);
     }
 
     public function topMembers()
@@ -42,13 +242,20 @@ class PuntosController extends Controller
         $tierColors = ['fan' => 'text-gray-300', 'lover' => 'text-pop-light-gold', 'vip' => 'text-pop-orange', 'elite' => 'text-pop-gold'];
 
         return response()->json($users->values()->map(function ($u, $i) use ($tierColors) {
+            $tier = LoyaltyTier::where('min_points', '<=', $u->points)
+                ->where(function ($q) use ($u) {
+                    $q->whereNull('max_points')->orWhere('max_points', '>=', $u->points);
+                })
+                ->orderBy('min_points', 'desc')
+                ->first();
+
             return [
                 'rank' => $i + 1,
                 'name' => $u->name,
                 'initials' => strtoupper(collect(explode(' ', $u->name))->map(fn($w) => $w[0] ?? '')->join('')),
                 'points' => $u->points,
-                'tier' => 'POP ' . ucfirst($u->tier),
-                'tierColor' => $tierColors[$u->tier] ?? 'text-gray-300',
+                'tier' => $tier ? $tier->name : 'POP Fan',
+                'tierColor' => $tierColors[$tier->slug ?? 'fan'] ?? 'text-gray-300',
                 'visits' => $u->orders_count ?? 0,
                 'orders' => $u->orders_count ?? 0,
                 'redeemed' => RewardRedemption::where('user_id', $u->id)->count(),
@@ -113,5 +320,43 @@ class PuntosController extends Controller
         });
 
         return response()->json(['message' => 'Canje registrado', 'newPoints' => $newPoints]);
+    }
+
+    public function adjustPoints(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'points' => 'required|integer',
+            'description' => 'nullable|string',
+        ]);
+
+        $newPoints = DB::transaction(function () use ($request) {
+            $user = User::whereKey($request->input('user_id'))->lockForUpdate()->firstOrFail();
+            $points = (int) $request->input('points');
+            $description = $request->input('description') ?: 'Ajuste manual admin';
+
+            if ($user->role !== 'cliente') {
+                abort(422, 'Solo puedes ajustar puntos de clientes.');
+            }
+
+            if ($points > 0) {
+                $user->increment('points', $points);
+            } else {
+                if ($user->points < abs($points)) {
+                    abort(422, 'Puntos insuficientes para restar');
+                }
+                $user->decrement('points', abs($points));
+            }
+
+            LoyaltyTransaction::create([
+                'user_id' => $user->id,
+                'points' => $points,
+                'concept' => $description,
+            ]);
+
+            return $user->fresh()->points;
+        });
+
+        return response()->json(['message' => 'Puntos ajustados', 'newPoints' => $newPoints]);
     }
 }
