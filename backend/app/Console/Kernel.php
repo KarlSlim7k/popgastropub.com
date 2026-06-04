@@ -9,7 +9,10 @@ class Kernel extends ConsoleKernel
 {
     protected function schedule(Schedule $schedule): void
     {
-        //
+        $schedule->command('loyalty:expire-inactive-points --months=2')
+            ->dailyAt('03:00')
+            ->withoutOverlapping()
+            ->onOneServer();
     }
 
     protected function commands(): void

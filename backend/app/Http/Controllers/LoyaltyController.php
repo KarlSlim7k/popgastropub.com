@@ -120,6 +120,7 @@ class LoyaltyController extends Controller
             }
 
             $user->decrement('points', $request->points);
+            $user->update(['last_activity' => now()]);
 
             LoyaltyTransaction::create([
                 'user_id' => $user->id,
@@ -149,4 +150,6 @@ class LoyaltyController extends Controller
         $nextTierKey = $order[$currentIndex + 1];
         return $tiers[$nextTierKey];
     }
+}
+  }
 }

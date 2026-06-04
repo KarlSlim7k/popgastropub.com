@@ -41,8 +41,10 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'last_visit' => 'datetime',
+        'last_activity' => 'datetime',
         'password' => 'hashed',
         'points' => 'integer',
+        'points_expired_total' => 'integer',
         'orders_count' => 'integer',
         'total_spent' => 'decimal:2',
     ];
