@@ -24,10 +24,10 @@ export default function StaffVentasPage() {
 
   useEffect(() => {
     if (!session?.token) return;
-    fetchWithAuth<{ stats: { puntos_totales: number; bebidas_vendidas: number } }>("/staff/dashboard", session.token)
+    fetchWithAuth<{ stats: { ventas_hoy: number; bebidas_vendidas: number } }>("/staff/dashboard", session.token)
       .then((data) => {
         if (data?.stats) {
-          setTodayPoints(data.stats.puntos_totales);
+          setTodayPoints(data.stats.ventas_hoy);
           setTodaySales(data.stats.bebidas_vendidas);
         }
       })

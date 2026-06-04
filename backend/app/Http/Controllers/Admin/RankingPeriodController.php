@@ -45,9 +45,28 @@ class RankingPeriodController extends Controller
 
         if (! empty($validated['mesero_id'])) {
             Mesero::where('id', $validated['mesero_id'])->update(['point_multiplier' => $validated['multiplier']]);
+            $mesero = Mesero::find($validated['mesero_id']);
+            if ($mesero) {
+                \App\Models\StaffNotification::send(
+                    $mesero->id,
+                    'multiplier',
+                    '¡Multiplicador activado!',
+                    "Tienes un multiplicador de {$validated['multiplier']}x puntos. ¡Aprovecha!",
+                    ['multiplier' => (float) $validated['multiplier']]
+                );
+            }
         } else {
-            // Apply to all active meseros (e.g., "drink of the month" 2x for everyone)
+            $meseros = Mesero::where('activo', true)->get();
             Mesero::where('activo', true)->update(['point_multiplier' => $validated['multiplier']]);
+            foreach ($meseros as $mesero) {
+                \App\Models\StaffNotification::send(
+                    $mesero->id,
+                    'multiplier',
+                    '¡Multiplicador global activado!',
+                    "Todos ganan {$validated['multiplier']}x puntos. ¡Aprovecha!",
+                    ['multiplier' => (float) $validated['multiplier']]
+                );
+            }
         }
 
         return response()->json(['message' => 'Multiplicador actualizado']);

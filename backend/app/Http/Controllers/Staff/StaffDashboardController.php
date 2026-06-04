@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Models\Mesero;
-use App\Models\Reserva;
+use App\Models\MeseroPointsLog;
 use Illuminate\Http\Request;
 
 class StaffDashboardController extends Controller
@@ -17,19 +17,22 @@ class StaffDashboardController extends Controller
         $totalPoints = 0;
         $ordersServed = 0;
         $totalSales = 0;
+        $ventasHoy = 0;
 
         if ($mesero) {
             $totalPoints = $mesero->cocktail_points + $mesero->premium_points + $mesero->pitcher_points +
                            $mesero->bottle_points + $mesero->combo_points + $mesero->upsell_points + $mesero->rating_points;
             $ordersServed = $mesero->orders_served;
             $totalSales = (float) $mesero->total_sales;
-        }
 
-        $reservasHoy = Reserva::whereDate('fecha', today())->where('estado', '!=', 'cancelada')->count();
+            $ventasHoy = MeseroPointsLog::where('mesero_id', $mesero->id)
+                ->whereDate('created_at', today())
+                ->sum('points');
+        }
 
         return response()->json([
             'stats' => [
-                'mesas_hoy' => $reservasHoy,
+                'ventas_hoy' => $ventasHoy,
                 'bebidas_vendidas' => $ordersServed,
                 'puntos_totales' => $totalPoints,
                 'ventas_totales' => $totalSales,

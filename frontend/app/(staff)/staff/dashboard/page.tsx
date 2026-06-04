@@ -28,7 +28,7 @@ interface Notification {
 }
 
 interface DashStats {
-  mesas_hoy: number;
+  ventas_hoy: number;
   bebidas_vendidas: number;
   puntos_totales: number;
 }
@@ -111,9 +111,9 @@ export default function WaiterDashboardPage() {
 
       {/* Stats Grid */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <StatCard label="Mesas Atendidas" value={stats ? String(stats.mesas_hoy) : "—"} icon="table_restaurant" />
+        <StatCard label="Puntos Hoy" value={stats ? stats.ventas_hoy.toLocaleString("es-MX") : "—"} icon="trending_up" />
         <StatCard label="Bebidas Vendidas" value={stats ? String(stats.bebidas_vendidas) : "—"} icon="local_bar" />
-        <StatCard label="Puntos Ganados" value={stats ? stats.puntos_totales.toLocaleString("es-MX") : "—"} icon="military_tech" />
+        <StatCard label="Puntos Totales" value={stats ? stats.puntos_totales.toLocaleString("es-MX") : "—"} icon="military_tech" />
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">

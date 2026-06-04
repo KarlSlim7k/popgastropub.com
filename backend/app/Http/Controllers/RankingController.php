@@ -47,6 +47,7 @@ class RankingController extends Controller
 
         $mesero->increment($category . '_points', $points);
         $mesero->increment('puntos', $points);
+        $mesero->increment('orders_served', $validated['quantity']);
 
         MeseroPointsLog::create([
             'mesero_id' => $mesero->id,
@@ -56,6 +57,8 @@ class RankingController extends Controller
         ]);
 
         $mesero->refresh();
+
+        $this->checkTierUp($mesero);
 
         return response()->json([
             'message' => "Puntos añadidos: +{$points}",
@@ -76,5 +79,29 @@ class RankingController extends Controller
                 ->limit(50)
                 ->get()
         );
+    }
+
+    protected function checkTierUp(Mesero $mesero): void
+    {
+        $points = $mesero->puntos;
+        $tierThresholds = [
+            5000 => 'Legend',
+            3000 => 'Master',
+            1500 => 'Pro',
+            500 => 'Rising',
+        ];
+
+        foreach ($tierThresholds as $threshold => $tier) {
+            if ($points >= $threshold && $points - 1 < $threshold) {
+                \App\Models\StaffNotification::send(
+                    $mesero->id,
+                    'tier_up',
+                    "¡Subiste a {$tier}!",
+                    "Alcanzaste {$points} pts y desbloqueaste el nivel {$tier}. ¡Sigue asi!",
+                    ['tier' => $tier, 'points' => $points]
+                );
+                break;
+            }
+        }
     }
 }
