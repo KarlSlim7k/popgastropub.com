@@ -344,6 +344,10 @@ export default function RecompensasPage() {
           </a>
         </div>
       </section>
+
+      <p className="mt-6 text-center text-xs text-gray-500 font-manrope">
+        Los POP Points caducan tras 2 meses de inactividad en tu cuenta. Mantén tu saldo activo realizando compras, canjes o check-ins.
+      </p>
     </main>
   );
 }
