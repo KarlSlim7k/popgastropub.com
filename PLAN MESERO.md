@@ -6,6 +6,8 @@
 > **Estado general:** ~20% funcional
 > **Credenciales test:** mesero@popgastropub.com / PopPerote2026!
 
+> **⚠️ Aclaración de Alcance (Junio 2026):** El ranking POP Bar Stars otorga puntos **exclusivamente por venta de bebidas** (cócteles, bebidas premium, jarras, botellas, combos bebida). Los alimentos NO generan puntos para el ranking. El menú admin solo gestiona bebidas/botellas/mixología.
+
 ---
 
 ## Resumen Ejecutivo

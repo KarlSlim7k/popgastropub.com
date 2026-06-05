@@ -1,5 +1,7 @@
 # Análisis Profundo — Rol ADMIN · POP Perote
 
+> **⚠️ Aclaración de Alcance (Junio 2026):** El módulo de **Gestión Menú** solo administra **bebidas, botellas grandes (vinos, destilados) y mixología** para el ranking de meseros. **FoodBooking** gestiona todos los pedidos de alimentos y bebidas del restaurante. El módulo de **Pedidos** en el admin es para referencia/consulta — no gestiona pedidos de comida.
+
 ## Resumen Ejecutivo
 
 El panel administrativo tiene **9 módulos** con sus vistas frontend implementadas y un diseño visual premium (Obsidian Sommelier). Sin embargo, la integración backend-frontend está **parcialmente funcional** — la mayoría de módulos hacen llamadas API reales pero los datos devueltos están vacíos o no mapean correctamente a las interfaces.
@@ -62,7 +64,9 @@ El panel administrativo tiene **9 módulos** con sus vistas frontend implementad
 
 ---
 
-### 2. Gestión Menú (`/admin/gestion-menu`)
+### Módulo 2: Gestión Menú (Solo Bebidas/Mixología)
+
+> **Nota:** Este módulo solo gestiona bebidas, botellas grandes y mixología para el ranking de meseros. Los alimentos se gestionan en FoodBooking.
 
 **Estado: 🟢 Mayormente Funcional (~65%)**
 

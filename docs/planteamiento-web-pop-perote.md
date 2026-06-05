@@ -8,6 +8,8 @@
 
 ## 1. Contexto del Restaurante
 
+> **⚠️ Aclaración de Alcance (Junio 2026):** **FoodBooking** es la plataforma principal del restaurante para gestionar TODOS los pedidos de alimentos y bebidas. **POP Perote (esta plataforma)** NO gestiona pedidos de comida. Su alcance se limita a: gestión de menú de **bebidas/botellas/mixología** (para ranking de meseros), fidelización de clientes (POP Points vía QR), facturación CFDI, promociones y reservaciones. La página `/orden` y el componente `OrderPanel` son **legacy/deprecados**.
+
 | Dato | Detalle |
 |---|---|
 | **Nombre** | POP Perote |
@@ -689,7 +691,7 @@ Si está registrado → Puntos POP Points acreditados automáticamente
 | Módulo | Funcionalidades |
 |---|---|
 | **Dashboard** | Métricas generales: ventas, usuarios activos, puntos emitidos, ranking del mes |
-| **Menú** | Agregar/editar/eliminar platillos, categorías, precios, fotos |
+| **Menú (Solo Bebidas)** | Agregar/editar/eliminar bebidas, botellas, mixología, categorías, precios, fotos — solo para ranking de meseros |
 | **Promociones** | Crear promos, programar fechas, asignar a segmentos de usuarios |
 | **Fidelidad** | Configurar reglas de puntos, niveles, beneficios, catálogo de canje |
 | **Usuarios** | Ver lista de clientes, puntos, historial, enviar notificaciones |
@@ -697,7 +699,7 @@ Si está registrado → Puntos POP Points acreditados automáticamente
 | **Ventas Bebidas** | Registrar ventas de bebidas por mesero, ver estadísticas |
 | **Notificaciones** | Programar y enviar WhatsApps/emails masivos o segmentados |
 | **Facturación** | Ver solicitudes, validar tickets, timbrar, cancelar, reemitir |
-| **Configuración** | Datos del restaurante, horarios, redes sociales, integración FoodBooking, datos fiscales del restaurante (RFC, CSD) |
+| **Configuración** | Datos del restaurante, horarios, redes sociales, datos fiscales del restaurante (RFC, CSD) |
 
 ### 10.2 Dashboard — Vista Rápida
 

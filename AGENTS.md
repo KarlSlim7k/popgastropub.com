@@ -1,7 +1,7 @@
 # AGENTS.md — POP Perote
 
 > Project context for AI coding agents: OpenCode, Claude Code, Gemini, Codex.
-> Last updated: April 2026
+> Last updated: June 2026
 
 ---
 
@@ -15,6 +15,18 @@
 **Specialties:** Sushi (40+ rolls), Wings (10 sauces), Boneless, Crepes, Snacks
 **Ordering System:** FoodBooking (existing integration)
 **Social:** Facebook @pop.perote (5.2K), Instagram @pop_perote, TikTok
+
+### Scope Clarification (Updated June 2026)
+
+**FoodBooking** is the restaurant's primary platform for managing ALL food and beverage orders (sushi, wings, boneless, crepes, snacks, beverages, etc.). The restaurant actively uses FoodBooking for daily operations.
+
+**POP Perote (this platform)** does NOT manage food orders. Its scope is limited to:
+- **Beverage menu management** — Only beverages, large alcoholic bottles (wines, spirits), and mixology items are managed in the POP admin menu. These are the ONLY products tracked for the waiter ranking system.
+- **POP Bar Stars ranking** — Waiters earn points exclusively from beverage sales (cocktails, premium drinks, pitchers, bottles, combos). Food items do NOT contribute to the ranking.
+- **Customer loyalty (POP Points)** — Points are earned from all purchases (tracked via QR tickets in-restaurant), but the admin menu CRUD only manages beverages for ranking purposes.
+- **CFDI invoicing, promotions, reservations** — These modules operate independently of FoodBooking.
+
+The internal `/orden` page and `OrderPanel` component are **legacy/deprecated** — they should not be used for new features. All ordering goes through FoodBooking.
 
 ---
 
@@ -61,12 +73,12 @@
 ## Project Modules
 
 1. **Landing Page** — Hero with video, promos, menu, loyalty teaser, testimonials, location
-2. **Menu** — Catalog with filters, product cards, FoodBooking integration
+2. **Menu** — Beverage catalog (drinks, bottles, mixology) for ranking, product cards, FoodBooking link for full menu
 3. **Promotions** — Active promos, weekly calendar, FOMO
 4. **POP Points** — Loyalty system with tiers (Fan → Lover → VIP → Elite)
 5. **CFDI Invoicing** — Ticket upload, tax data, PAC integration, tracking
 6. **POP Bar Stars** — Internal waiter ranking by beverage sales
-7. **Admin Panel** — Dashboard, CRUD for menu/promos/users/waiters/invoices
+7. **Admin Panel** — Dashboard, CRUD for menu (beverages only)/promos/users/waiters/invoices
 8. **Location & Contact** — Map, hours, WhatsApp, reservations
 
 ---
@@ -236,7 +248,7 @@ MAIL_FROM_NAME="POP Perote"
 
 ## Key Integrations
 
-- **FoodBooking:** Existing ordering system (iframe or redirect with tracking)
+- **FoodBooking:** Restaurant's primary platform for ALL food & beverage orders. POP links to it for ordering; POP does NOT manage orders internally
 - **WhatsApp Business API:** Primary notification channel in Mexico
 - **PAC (CFDI):** Facturama (recommended), SW Sapien, Finkok, or Diverza
 - **Google Maps:** Location embed
@@ -269,6 +281,8 @@ MAIL_FROM_NAME="POP Perote"
 ---
 
 ## Waiter Ranking — POP Bar Stars
+
+> Points are earned exclusively from **beverage sales** (cocktails, premium drinks, pitchers, bottles, combos). Food items do NOT contribute to the ranking.
 
 | Action | Points |
 |--------|--------|
