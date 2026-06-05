@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import CustomCursor from '../components/ui/CustomCursor'
+import ToasterProvider from '@/components/ui/ToasterProvider'
 import { AuthProvider } from '@/lib/auth-provider'
 import './globals.css'
 
@@ -36,6 +37,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <CustomCursor />
+          <ToasterProvider />
           {children}
         </AuthProvider>
       </body>

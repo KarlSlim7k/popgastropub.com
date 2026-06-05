@@ -123,13 +123,13 @@ Route::middleware('auth:sanctum')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth:sanctum', 'role:mesero,admin'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:mesero,admin', 'throttle:admin-api'])->group(function () {
     Route::get('/ranking', [RankingController::class, 'index']);
     Route::post('/ranking/points', [RankingController::class, 'addPoints']);
     Route::get('/ranking/history', [RankingController::class, 'history']);
 });
 
-Route::middleware(['auth:sanctum', 'role:mesero,admin'])->prefix('staff')->group(function () {
+Route::middleware(['auth:sanctum', 'role:mesero,admin', 'throttle:admin-api'])->prefix('staff')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Staff\StaffDashboardController::class, 'index']);
     Route::get('/analytics', [App\Http\Controllers\Staff\StaffAnalyticsController::class, 'index']);
     Route::get('/reservas', [App\Http\Controllers\Staff\StaffReservaController::class, 'index']);
@@ -154,7 +154,7 @@ Route::middleware(['auth:sanctum', 'role:mesero,admin'])->prefix('staff')->group
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin', 'throttle:admin-api'])->prefix('admin')->group(function () {
     // Upload
     Route::post('/upload', [App\Http\Controllers\Admin\UploadController::class, 'store']);
 

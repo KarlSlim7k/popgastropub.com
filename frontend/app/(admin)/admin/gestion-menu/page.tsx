@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
 import { ImageUpload } from "@/components/ui/ImageUpload";
@@ -154,7 +155,7 @@ export default function AdminGestionMenuPage() {
       closeModal();
       fetchMenu();
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Error al guardar");
+      toast.error(error instanceof Error ? error.message : "Error al guardar");
     }
   };
 
@@ -166,7 +167,7 @@ export default function AdminGestionMenuPage() {
       await fetchWithAuth(`/admin/menu/${id}`, session.token, { method: "DELETE" });
       fetchMenu();
     } catch {
-      alert("Error al eliminar");
+      toast.error("Error al eliminar");
     }
   };
 
@@ -180,7 +181,7 @@ export default function AdminGestionMenuPage() {
       });
       setMenuItems((prev) => prev.map((item) => (item.id === id ? { ...item, active: !current } : item)));
     } catch {
-      alert("Error al cambiar estado");
+      toast.error("Error al cambiar estado");
     }
   };
 

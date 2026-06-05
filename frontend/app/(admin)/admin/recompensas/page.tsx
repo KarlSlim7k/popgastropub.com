@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
 import { ImageUpload } from "@/components/ui/ImageUpload";
@@ -32,7 +33,7 @@ export default function AdminRecompensasPage() {
     try {
       setRewards(await fetchWithAuth<Recompensa[]>("/admin/recompensas", session.token));
     } catch {
-      alert("No se pudieron cargar las recompensas");
+      toast.error("No se pudieron cargar las recompensas");
     }
   };
 
@@ -52,7 +53,7 @@ export default function AdminRecompensasPage() {
       setShowModal(false);
       load();
     } catch {
-      alert("No se pudo guardar la recompensa");
+      toast.error("No se pudo guardar la recompensa");
     }
   };
 
@@ -63,7 +64,7 @@ export default function AdminRecompensasPage() {
       await fetchWithAuth(`/admin/recompensas/${id}`, session.token, { method: "DELETE" });
       setRewards((current) => current.filter((reward) => reward.id !== id));
     } catch {
-      alert("No se pudo eliminar la recompensa");
+      toast.error("No se pudo eliminar la recompensa");
     }
   };
 

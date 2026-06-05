@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
 
@@ -80,7 +81,7 @@ export default function AdminTiposBebidaPage() {
     const session = getAuthSession();
     if (!session) return;
     if (!form.slug.trim() || !form.label.trim()) {
-      alert("El identificador y el nombre son obligatorios.");
+      toast.error("El identificador y el nombre son obligatorios.");
       return;
     }
     try {
@@ -98,7 +99,7 @@ export default function AdminTiposBebidaPage() {
       closeModal();
       fetchTypes();
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Error al guardar");
+      toast.error(error instanceof Error ? error.message : "Error al guardar");
     }
   };
 
@@ -111,7 +112,7 @@ export default function AdminTiposBebidaPage() {
       fetchTypes();
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Error al eliminar";
-      alert(msg);
+      toast.error(msg);
     }
   };
 
@@ -125,7 +126,7 @@ export default function AdminTiposBebidaPage() {
       });
       setDrinkTypes((prev) => prev.map((t) => (t.id === item.id ? { ...t, active: !t.active } : t)));
     } catch {
-      alert("Error al cambiar estado");
+      toast.error("Error al cambiar estado");
     }
   };
 

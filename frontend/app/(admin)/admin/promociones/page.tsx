@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { APIError, downloadAuthenticatedFile, fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
 import PromoLandingContent, { type PromoLandingData } from "@/components/promociones/PromoLandingContent";
@@ -193,9 +194,9 @@ export default function AdminPromocionesPage() {
       fetchPromos();
     } catch (error) {
       if (error instanceof APIError) {
-        alert(error.getAllMessages());
+        toast.error(error.getAllMessages());
       } else {
-        alert(error instanceof Error ? error.message : "Error al guardar promoción");
+        toast.error(error instanceof Error ? error.message : "Error al guardar promoción");
       }
     }
   };
@@ -208,7 +209,7 @@ export default function AdminPromocionesPage() {
       await fetchWithAuth(`/admin/promociones/${id}`, session.token, { method: "DELETE" });
       fetchPromos();
     } catch {
-      alert("Error al eliminar");
+      toast.error("Error al eliminar");
     }
   };
 
@@ -219,7 +220,7 @@ export default function AdminPromocionesPage() {
       await fetchWithAuth(`/admin/promociones/${promo.id}/${promo.published ? "unpublish" : "publish"}`, session.token, { method: "POST" });
       fetchPromos();
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Error al actualizar la publicación");
+      toast.error(error instanceof Error ? error.message : "Error al actualizar la publicación");
     }
   };
 
@@ -227,9 +228,9 @@ export default function AdminPromocionesPage() {
     if (!promo.landingUrl) return;
     try {
       await navigator.clipboard.writeText(promo.landingUrl);
-      alert("Enlace copiado");
+      toast.success("Enlace copiado");
     } catch {
-      alert(`Copia este enlace: ${promo.landingUrl}`);
+      toast.info(`Copia este enlace: ${promo.landingUrl}`);
     }
   };
 
@@ -246,7 +247,7 @@ export default function AdminPromocionesPage() {
       setMetrics(metricsResponse);
       setLeads(leadsResponse.data);
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Error al cargar métricas");
+      toast.error(error instanceof Error ? error.message : "Error al cargar métricas");
       setInsightsPromo(null);
     } finally {
       setLoadingInsights(false);
@@ -259,7 +260,7 @@ export default function AdminPromocionesPage() {
     try {
       await downloadAuthenticatedFile(`/admin/promociones/${insightsPromo.id}/leads.csv`, session.token, `leads-${insightsPromo.slug || insightsPromo.id}.csv`);
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Error al exportar leads");
+      toast.error(error instanceof Error ? error.message : "Error al exportar leads");
     }
   };
 

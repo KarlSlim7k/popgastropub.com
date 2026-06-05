@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState, useEffect } from "react";
+import { toast } from "sonner";
 import { downloadAuthenticatedFile, fetchWithAuth, openAuthenticatedFile } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
 import { Pagination } from "@/components/ui/Pagination";
@@ -82,7 +83,7 @@ export default function AdminFacturacionPage() {
       });
       setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, estado: newStatus as Factura["estado"] } : r)));
     } catch {
-      alert("Error al actualizar estado");
+      toast.error("Error al actualizar estado");
     }
   };
 
@@ -120,7 +121,7 @@ export default function AdminFacturacionPage() {
     try {
       await openAuthenticatedFile(`/admin/facturas/${id}/ticket`, session.token);
     } catch {
-      alert("No se pudo abrir el ticket");
+      toast.error("No se pudo abrir el ticket");
     }
   };
 
@@ -130,7 +131,7 @@ export default function AdminFacturacionPage() {
     try {
       await downloadAuthenticatedFile(`/admin/facturas/${id}/ticket?download=1`, session.token, path.split("/").pop() || "ticket");
     } catch {
-      alert("No se pudo descargar el ticket");
+      toast.error("No se pudo descargar el ticket");
     }
   };
 
@@ -141,9 +142,9 @@ export default function AdminFacturacionPage() {
       const response = await fetchWithAuth<{ factura: Factura; message: string }>(`/admin/facturas/${id}/retry-accountant-email`, session.token, { method: "POST" });
       setRequests((current) => current.map((factura) => factura.id === id ? response.factura : factura));
       setDetailItem((current) => current?.id === id ? response.factura : current);
-      alert(response.message);
+      toast(response.message);
     } catch {
-      alert("No se pudo reenviar el correo a contadores");
+      toast.error("No se pudo reenviar el correo a contadores");
     }
   };
 

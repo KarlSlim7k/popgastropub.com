@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { downloadAuthenticatedFile, fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
 import { Pagination } from "@/components/ui/Pagination";
@@ -76,12 +77,12 @@ export default function AdminUsuariosPage() {
       if (editingUser) {
         await fetchWithAuth(`/admin/usuarios/${editingUser.id}`, session.token, { method: "PUT", body: JSON.stringify(payload) });
       } else {
-        if (!form.password) { alert("La contraseña es requerida"); return; }
+        if (!form.password) { toast.error("La contraseña es requerida"); return; }
         await fetchWithAuth("/admin/usuarios", session.token, { method: "POST", body: JSON.stringify(payload) });
       }
       setShowModal(false);
       fetchUsers();
-    } catch { alert("Error al guardar usuario"); }
+    } catch { toast.error("Error al guardar usuario"); }
   };
 
   const handleDelete = async (id: string) => {
@@ -91,7 +92,7 @@ export default function AdminUsuariosPage() {
     try {
       await fetchWithAuth(`/admin/usuarios/${id}`, session.token, { method: "DELETE" });
       fetchUsers();
-    } catch { alert("Error al eliminar"); }
+    } catch { toast.error("Error al eliminar"); }
   };
 
   const handleExport = async () => {
@@ -100,7 +101,7 @@ export default function AdminUsuariosPage() {
     try {
       await downloadAuthenticatedFile("/admin/usuarios-export", session.token, "usuarios_pop_perote.csv");
     } catch {
-      alert("Error al exportar usuarios");
+      toast.error("Error al exportar usuarios");
     }
   };
 

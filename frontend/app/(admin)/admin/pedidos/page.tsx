@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
 import { Pagination } from "@/components/ui/Pagination";
@@ -37,7 +38,7 @@ export default function AdminPedidosPage() {
       setPedidos(Array.isArray(data) ? data : data.data ?? []);
       if (data.meta) setMeta(data.meta);
     } catch {
-      alert("No se pudieron cargar los pedidos");
+      toast.error("No se pudieron cargar los pedidos");
     } finally {
       setLoading(false);
     }
@@ -56,7 +57,7 @@ export default function AdminPedidosPage() {
       });
       setPedidos((current) => current.map((pedido) => pedido.id === id ? updated : pedido));
     } catch {
-      alert("No se pudo actualizar el pedido");
+      toast.error("No se pudo actualizar el pedido");
     }
   };
 
@@ -67,7 +68,7 @@ export default function AdminPedidosPage() {
       await fetchWithAuth(`/admin/pedidos/${id}`, session.token, { method: "DELETE" });
       setPedidos((current) => current.filter((pedido) => pedido.id !== id));
     } catch {
-      alert("No se pudo eliminar el pedido");
+      toast.error("No se pudo eliminar el pedido");
     }
   };
 

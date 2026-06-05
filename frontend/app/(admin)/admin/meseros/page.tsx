@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
 
@@ -122,7 +123,7 @@ export default function AdminMeserosPage() {
       closeModal();
       fetchWaiters();
     } catch {
-      alert("Error al guardar mesero");
+      toast.error("Error al guardar mesero");
     }
   };
 
@@ -134,7 +135,7 @@ export default function AdminMeserosPage() {
       await fetchWithAuth(`/admin/meseros/${id}`, session.token, { method: "DELETE" });
       fetchWaiters();
     } catch {
-      alert("Error al eliminar");
+      toast.error("Error al eliminar");
     }
   };
 
@@ -161,7 +162,7 @@ export default function AdminMeserosPage() {
       closeAdjustModal();
       fetchWaiters();
     } catch (e: any) {
-      alert(e.message || "Error al ajustar puntos");
+      toast.error(e.message || "Error al ajustar puntos");
     }
   };
 

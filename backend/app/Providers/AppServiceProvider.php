@@ -65,5 +65,15 @@ class AppServiceProvider extends ServiceProvider
                     ->response(fn () => response()->json(['message' => 'Demasiadas solicitudes desde esta red. Intenta más tarde.'], 429)),
             ];
         });
+
+        RateLimiter::for('admin-api', function (Request $request) {
+            $userId = $request->user()?->id ?? $request->ip();
+
+            return [
+                Limit::perMinute(120)
+                    ->by("{$userId}|{$request->ip()}")
+                    ->response(fn () => response()->json(['message' => 'Demasiadas solicitudes. Espera un momento.'], 429)),
+            ];
+        });
     }
 }

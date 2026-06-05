@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
 import { Pagination } from "@/components/ui/Pagination";
@@ -37,7 +38,7 @@ export default function AdminReservasPage() {
       setReservas(Array.isArray(data) ? data : data.data ?? []);
       if (data.meta) setMeta(data.meta);
     } catch {
-      if (!silent) alert("No se pudieron cargar las reservas");
+      if (!silent) toast.error("No se pudieron cargar las reservas");
     } finally {
       if (!silent) setLoading(false);
     }
@@ -62,7 +63,7 @@ export default function AdminReservasPage() {
       });
       setReservas((current) => current.map((reserva) => reserva.id === id ? { ...reserva, ...updated } : reserva));
     } catch {
-      alert("No se pudo actualizar la reserva");
+      toast.error("No se pudo actualizar la reserva");
     }
   };
 
@@ -73,7 +74,7 @@ export default function AdminReservasPage() {
       await fetchWithAuth(`/admin/reservas/${id}`, session.token, { method: "DELETE" });
       setReservas((current) => current.filter((reserva) => reserva.id !== id));
     } catch {
-      alert("No se pudo eliminar la reserva");
+      toast.error("No se pudo eliminar la reserva");
     }
   };
 

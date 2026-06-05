@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
 import { IconPicker } from "@/components/ui/IconPicker";
@@ -221,7 +222,7 @@ export default function AdminPuntosPage() {
       closeModal();
       await loadData();
     } catch (e: any) {
-      alert(e.message || "Error al guardar nivel");
+      toast.error(e.message || "Error al guardar nivel");
     } finally {
       setLoading(false);
     }
@@ -235,7 +236,7 @@ export default function AdminPuntosPage() {
       await fetchWithAuth(`/admin/puntos/tiers/${id}`, session.token, { method: "DELETE" });
       await loadData();
     } catch (e: any) {
-      alert(e.message || "Error al eliminar");
+      toast.error(e.message || "Error al eliminar");
     }
   };
 
@@ -263,7 +264,7 @@ export default function AdminPuntosPage() {
       closeModal();
       await loadData();
     } catch (e: any) {
-      alert(e.message || "Error al guardar acción");
+      toast.error(e.message || "Error al guardar acción");
     } finally {
       setLoading(false);
     }
@@ -277,7 +278,7 @@ export default function AdminPuntosPage() {
       await fetchWithAuth(`/admin/puntos/actions/${id}`, session.token, { method: "DELETE" });
       await loadData();
     } catch (e: any) {
-      alert(e.message || "Error al eliminar");
+      toast.error(e.message || "Error al eliminar");
     }
   };
 
@@ -293,7 +294,7 @@ export default function AdminPuntosPage() {
       closeModal();
       await loadData();
     } catch (e: any) {
-      alert(e.message || "Error al registrar canje");
+      toast.error(e.message || "Error al registrar canje");
     } finally {
       setLoading(false);
     }
@@ -311,7 +312,7 @@ export default function AdminPuntosPage() {
       closeModal();
       await loadData();
     } catch (e: any) {
-      alert(e.message || "Error al ajustar puntos");
+      toast.error(e.message || "Error al ajustar puntos");
     } finally {
       setLoading(false);
     }

@@ -6,12 +6,14 @@ use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Throwable;
 
 class Promocion extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes, LogsActivity;
 
     public const FORM_FIELDS = ['nombre', 'telefono', 'email', 'mensaje'];
 
