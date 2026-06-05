@@ -9,7 +9,11 @@ const navItems = [
   { label: "Mi Dashboard", href: "/staff/dashboard", icon: "dashboard" },
   { label: "Registrar Venta", href: "/staff/ventas", icon: "local_bar" },
   { label: "QR de Puntos", href: "/staff/qr", icon: "qr_code_2" },
-  { label: "Reservaciones", href: "/staff/reservaciones", icon: "calendar_month" },
+  {
+    label: "Reservaciones",
+    href: "/staff/reservaciones",
+    icon: "calendar_month",
+  },
   { label: "Carta / Menú", href: "/staff/menu", icon: "restaurant_menu" },
   { label: "Ranking POP Stars", href: "/staff/ranking", icon: "star" },
   { label: "Analíticas", href: "/staff/analiticas", icon: "monitoring" },
@@ -26,7 +30,7 @@ export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const userName = session?.user?.name || "Ricardo S.";
+  const userName = session?.user?.name || "Staff";
   const userInitials = userName
     .split(" ")
     .map((n) => n[0])
@@ -58,17 +62,23 @@ export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {
     <>
       {/* Backdrop for mobile */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
           onClick={onClose}
         />
       )}
 
-      <nav className={`fixed top-0 left-0 w-64 h-full bg-pop-darkGreen border-r border-white/10 z-50 flex flex-col transition-transform duration-300 transform ${
-        isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-      }`}>
+      <nav
+        className={`fixed top-0 left-0 w-64 h-full bg-pop-darkGreen border-r border-white/10 z-50 flex flex-col transition-transform duration-300 transform ${
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
         <div className="p-8 flex justify-between items-center">
-          <Link href="/staff/dashboard" className="flex flex-col" onClick={onClose}>
+          <Link
+            href="/staff/dashboard"
+            className="flex flex-col"
+            onClick={onClose}
+          >
             <span className="text-2xl font-black text-pop-gold font-epilogue tracking-tighter">
               POP PEROTE
             </span>
@@ -76,7 +86,10 @@ export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {
               PORTAL STAFF
             </span>
           </Link>
-          <button onClick={onClose} className="lg:hidden text-gray-500 hover:text-white">
+          <button
+            onClick={onClose}
+            className="lg:hidden text-gray-500 hover:text-white"
+          >
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
@@ -97,9 +110,13 @@ export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {
               >
                 <span
                   className={`material-symbols-outlined text-2xl transition-transform group-hover:scale-110 ${
-                    isActive ? "text-pop-gold" : "text-gray-600 group-hover:text-pop-lightGold"
+                    isActive
+                      ? "text-pop-gold"
+                      : "text-gray-600 group-hover:text-pop-lightGold"
                   }`}
-                  style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}
+                  style={{
+                    fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
+                  }}
                 >
                   {item.icon}
                 </span>
@@ -112,7 +129,10 @@ export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {
         </div>
 
         {/* User Section with Dropdown */}
-        <div className="relative bg-pop-black border-t border-white/10" ref={menuRef}>
+        <div
+          className="relative bg-pop-black border-t border-white/10"
+          ref={menuRef}
+        >
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
             className="w-full p-6 flex items-center gap-4 hover:bg-white/5 transition-colors text-left"
@@ -123,8 +143,12 @@ export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-white uppercase tracking-wider truncate">{userName}</p>
-              <p className="text-[10px] text-pop-orange font-bold uppercase">Staff</p>
+              <p className="text-xs font-bold text-white uppercase tracking-wider truncate">
+                {userName}
+              </p>
+              <p className="text-[10px] text-pop-orange font-bold uppercase">
+                Mesero · POP Bar Stars
+              </p>
             </div>
             <span
               className={`material-symbols-outlined text-gray-500 text-lg transition-transform duration-200 ${
@@ -142,7 +166,9 @@ export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {
                 {/* User Info Header */}
                 <div className="px-3 py-2 mb-1 bg-black/20 rounded-lg">
                   <p className="text-xs font-bold text-white">{userName}</p>
-                  <p className="text-[10px] text-gray-500 truncate">{userEmail || "Staff POP Perote"}</p>
+                  <p className="text-[10px] text-gray-500 truncate">
+                    {userEmail || "Staff POP Perote"}
+                  </p>
                 </div>
 
                 {/* Perfil */}
@@ -154,7 +180,9 @@ export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {
                   }}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"
                 >
-                  <span className="material-symbols-outlined text-lg text-gray-500">person_outline</span>
+                  <span className="material-symbols-outlined text-lg text-gray-500">
+                    person_outline
+                  </span>
                   Perfil
                 </Link>
 
@@ -167,7 +195,9 @@ export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {
                   }}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"
                 >
-                  <span className="material-symbols-outlined text-lg text-gray-500">settings</span>
+                  <span className="material-symbols-outlined text-lg text-gray-500">
+                    settings
+                  </span>
                   Configuración
                 </Link>
 
@@ -179,7 +209,9 @@ export default function StaffSidebar({ isOpen, onClose }: StaffSidebarProps) {
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-error hover:bg-error/10 transition-all duration-200"
                 >
-                  <span className="material-symbols-outlined text-lg">logout</span>
+                  <span className="material-symbols-outlined text-lg">
+                    logout
+                  </span>
                   Cerrar Sesión
                 </button>
               </div>
