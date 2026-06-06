@@ -7,15 +7,26 @@ import { useAuth } from "@/lib/auth-provider";
 
 const navItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: "dashboard" },
-  { label: "Gestión Menú", href: "/admin/gestion-menu", icon: "restaurant_menu" },
+  {
+    label: "Gestión Menú",
+    href: "/admin/gestion-menu",
+    icon: "restaurant_menu",
+  },
   { label: "Tipos Bebida", href: "/admin/tipos-bebida", icon: "local_drink" },
-  { label: "Marketing y Campañas", href: "/admin/promociones", icon: "campaign" },
+  {
+    label: "Marketing y Campañas",
+    href: "/admin/promociones",
+    icon: "campaign",
+  },
   { label: "Puntos POP", href: "/admin/puntos", icon: "military_tech" },
   { label: "Usuarios", href: "/admin/usuarios", icon: "group" },
   { label: "Ranking Staff", href: "/admin/meseros", icon: "star" },
-  { label: "Periodos Ranking", href: "/admin/ranking-periodos", icon: "calendar_month" },
+  {
+    label: "Periodos Ranking",
+    href: "/admin/ranking-periodos",
+    icon: "calendar_month",
+  },
   { label: "Reservas", href: "/admin/reservas", icon: "event_seat" },
-  { label: "Pedidos", href: "/admin/pedidos", icon: "receipt" },
   { label: "Recompensas", href: "/admin/recompensas", icon: "redeem" },
   { label: "Facturación", href: "/admin/facturacion", icon: "receipt_long" },
 ];
@@ -69,11 +80,17 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         />
       )}
 
-      <nav className={`fixed top-0 left-0 w-64 h-full bg-pop-darkGreen border-r border-white/10 z-50 flex flex-col transition-transform duration-300 transform ${
-        isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-      }`}>
+      <nav
+        className={`fixed top-0 left-0 w-64 h-full bg-pop-darkGreen border-r border-white/10 z-50 flex flex-col transition-transform duration-300 transform ${
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
         <div className="p-8 flex justify-between items-center">
-          <Link href="/admin/dashboard" className="flex flex-col" onClick={onClose}>
+          <Link
+            href="/admin/dashboard"
+            className="flex flex-col"
+            onClick={onClose}
+          >
             <span className="text-2xl font-black text-pop-gold font-epilogue tracking-tighter">
               POP PEROTE
             </span>
@@ -81,7 +98,10 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
               CONTROL CENTRAL
             </span>
           </Link>
-          <button onClick={onClose} className="lg:hidden text-gray-500 hover:text-white">
+          <button
+            onClick={onClose}
+            className="lg:hidden text-gray-500 hover:text-white"
+          >
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
@@ -102,9 +122,13 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
               >
                 <span
                   className={`material-symbols-outlined text-2xl transition-transform group-hover:scale-110 ${
-                    isActive ? "text-pop-gold" : "text-gray-600 group-hover:text-pop-lightGold"
+                    isActive
+                      ? "text-pop-gold"
+                      : "text-gray-600 group-hover:text-pop-lightGold"
                   }`}
-                  style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}
+                  style={{
+                    fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
+                  }}
                 >
                   {item.icon}
                 </span>
@@ -117,7 +141,10 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         </div>
 
         {/* User Section with Dropdown */}
-        <div className="relative bg-pop-black border-t border-white/10" ref={menuRef}>
+        <div
+          className="relative bg-pop-black border-t border-white/10"
+          ref={menuRef}
+        >
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
             className="w-full p-6 flex items-center gap-4 hover:bg-white/5 transition-colors text-left"
@@ -128,8 +155,12 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-white uppercase tracking-wider truncate">{userName}</p>
-              <p className="text-[10px] text-pop-orange font-bold uppercase">Master Access</p>
+              <p className="text-xs font-bold text-white uppercase tracking-wider truncate">
+                {userName}
+              </p>
+              <p className="text-[10px] text-pop-orange font-bold uppercase">
+                Master Access
+              </p>
             </div>
             <span
               className={`material-symbols-outlined text-gray-500 text-lg transition-transform duration-200 ${
@@ -147,7 +178,9 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                 {/* User Info Header */}
                 <div className="px-3 py-2 mb-1 bg-black/30 rounded-lg">
                   <p className="text-xs font-bold text-white">{userName}</p>
-                  <p className="text-[10px] text-gray-500 truncate">{userEmail}</p>
+                  <p className="text-[10px] text-gray-500 truncate">
+                    {userEmail}
+                  </p>
                 </div>
 
                 {/* Perfil */}
@@ -159,7 +192,9 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                   }}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"
                 >
-                  <span className="material-symbols-outlined text-lg text-gray-500">person_outline</span>
+                  <span className="material-symbols-outlined text-lg text-gray-500">
+                    person_outline
+                  </span>
                   Perfil
                 </Link>
 
@@ -172,7 +207,9 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                   }}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-200"
                 >
-                  <span className="material-symbols-outlined text-lg text-gray-500">settings</span>
+                  <span className="material-symbols-outlined text-lg text-gray-500">
+                    settings
+                  </span>
                   Configuración
                 </Link>
 
@@ -184,7 +221,9 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-error hover:bg-error/10 transition-all duration-200"
                 >
-                  <span className="material-symbols-outlined text-lg">logout</span>
+                  <span className="material-symbols-outlined text-lg">
+                    logout
+                  </span>
                   Cerrar Sesión
                 </button>
               </div>

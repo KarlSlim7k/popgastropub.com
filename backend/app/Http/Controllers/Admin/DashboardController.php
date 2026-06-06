@@ -43,25 +43,50 @@ class DashboardController extends Controller
 
     public function salesMix()
     {
-        $productos = Producto::where('disponible', true)->orderBy('pedidos_count', 'desc')->limit(4)->get();
-        $total = $productos->sum('pedidos_count') ?: 1;
         $colors = ['#F2C777', '#D96725', '#F2C894', '#732817'];
 
-        $data = $productos->values()->map(function ($p, $i) use ($total, $colors) {
-            return [
-                'name' => $p->nombre,
-                'percent' => round(($p->pedidos_count / $total) * 100),
-                'color' => $colors[$i] ?? '#732817',
-            ];
-        });
+        // Try by pedidos_count first
+        $productos = Producto::where('disponible', true)
+            ->orderBy('pedidos_count', 'desc')
+            ->limit(4)
+            ->get();
 
-        if ($data->isEmpty()) {
-            $data = collect([
-                ['name' => 'Sin datos', 'percent' => 100, 'color' => '#732817'],
-            ]);
+        $total = $productos->sum('pedidos_count');
+
+        if ($total > 0) {
+            $data = $productos->values()->map(function ($p, $i) use ($total, $colors) {
+                return [
+                    'name' => $p->nombre,
+                    'percent' => round(($p->pedidos_count / $total) * 100),
+                    'color' => $colors[$i] ?? '#732817',
+                ];
+            });
+            return response()->json($data);
         }
 
-        return response()->json($data);
+        // Fallback: distribute equally by category
+        $byCategory = Producto::where('disponible', true)
+            ->selectRaw('categoria, COUNT(*) as cnt')
+            ->groupBy('categoria')
+            ->orderByDesc('cnt')
+            ->limit(4)
+            ->get();
+
+        if ($byCategory->isNotEmpty()) {
+            $catTotal = $byCategory->sum('cnt') ?: 1;
+            $data = $byCategory->values()->map(function ($row, $i) use ($catTotal, $colors) {
+                return [
+                    'name' => $row->categoria,
+                    'percent' => round(($row->cnt / $catTotal) * 100),
+                    'color' => $colors[$i] ?? '#732817',
+                ];
+            });
+            return response()->json($data);
+        }
+
+        return response()->json([
+            ['name' => 'Sin productos', 'percent' => 100, 'color' => '#732817'],
+        ]);
     }
 
     public function topWaiters()
