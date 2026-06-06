@@ -257,4 +257,8 @@ Route::middleware(['auth:sanctum', 'role:admin', 'throttle:admin-api'])->prefix(
 
     // Recompensas
     Route::apiResource('recompensas', App\Http\Controllers\Admin\RecompensaController::class);
+
+    // Mail diagnostics
+    Route::post('/mail/test', [App\Http\Controllers\Admin\MailTestController::class, 'send']);
+    Route::get('/mail/config', [App\Http\Controllers\Admin\MailTestController::class, 'config']);
 });

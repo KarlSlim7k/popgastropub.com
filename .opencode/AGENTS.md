@@ -145,7 +145,7 @@ NEXT_PUBLIC_FOODBOOKING_RESTAURANT_UID="499ca112-e4ea-46f4-8990-47d5b58748ae"
 ```dotenv
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://pop-perote.com
+APP_URL=https://api.popgastropub.com
 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -154,8 +154,20 @@ DB_DATABASE=pop_perote
 DB_USERNAME=pop_user
 DB_PASSWORD=<contraseña_real>
 
-SANCTUM_STATEFUL_DOMAINS=pop-perote.com
-SESSION_DOMAIN=.pop-perote.com
+SANCTUM_STATEFUL_DOMAINS=popgastropub.com
+SESSION_DOMAIN=.popgastropub.com
+
+MAIL_MAILER=smtp
+MAIL_SCHEME=tls
+MAIL_HOST=mail.popgastropub.com
+MAIL_PORT=587
+MAIL_AUTO_TLS=true
+MAIL_VERIFY_PEER=false
+MAIL_USERNAME=noreply@popgastropub.com
+MAIL_PASSWORD=<mailcow_password>
+MAIL_FROM_ADDRESS=noreply@popgastropub.com
+MAIL_FROM_NAME="POP Perote"
+FACTURACION_EMAIL=facturacion@popgastropub.com
 
 PAC_API_KEY=""
 PAC_API_URL=""
@@ -163,14 +175,6 @@ PAC_PROVIDER=facturama
 
 WHATSAPP_API_KEY=""
 WHATSAPP_API_URL=""
-
-MAIL_MAILER=smtp
-MAIL_HOST=mail.pop-perote.com
-MAIL_PORT=587
-MAIL_USERNAME=noreply@pop-perote.com
-MAIL_PASSWORD=<contraseña_correo>
-MAIL_FROM_ADDRESS=noreply@pop-perote.com
-MAIL_FROM_NAME="POP Perote"
 ```
 
 ## Datos del Restaurante

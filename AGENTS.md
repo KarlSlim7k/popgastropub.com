@@ -216,20 +216,24 @@ DB_PASSWORD=<real_password>
 SANCTUM_STATEFUL_DOMAINS=popgastropub.com
 SESSION_DOMAIN=.popgastropub.com
 
+MAIL_MAILER=smtp
+MAIL_SCHEME=tls
+MAIL_HOST=mail.popgastropub.com
+MAIL_PORT=587
+MAIL_AUTO_TLS=true
+MAIL_VERIFY_PEER=false
+MAIL_USERNAME=noreply@popgastropub.com
+MAIL_PASSWORD=<mailcow_password>
+MAIL_FROM_ADDRESS=noreply@popgastropub.com
+MAIL_FROM_NAME="POP Perote"
+FACTURACION_EMAIL=facturacion@popgastropub.com
+
 PAC_API_KEY=""
 PAC_API_URL=""
 PAC_PROVIDER=facturama
 
 WHATSAPP_API_KEY=""
 WHATSAPP_API_URL=""
-
-MAIL_MAILER=smtp
-MAIL_HOST=mail.popgastropub.com
-MAIL_PORT=587
-MAIL_USERNAME=noreply@popgastropub.com
-MAIL_PASSWORD=<mail_password>
-MAIL_FROM_ADDRESS=noreply@popgastropub.com
-MAIL_FROM_NAME="POP Perote"
 ```
 
 ---

@@ -6,13 +6,14 @@ return [
     'mailers' => [
         'smtp' => [
             'transport' => 'smtp',
-            'scheme' => env('MAIL_SCHEME'),
-            'host' => env('MAIL_HOST', 'postfix-mailcow'),
-            'port' => env('MAIL_PORT', 25),
-            'auto_tls' => env('MAIL_AUTO_TLS', false),
+            'scheme' => env('MAIL_SCHEME', 'tls'),
+            'host' => env('MAIL_HOST', 'mail.popgastropub.com'),
+            'port' => env('MAIL_PORT', 587),
+            'auto_tls' => env('MAIL_AUTO_TLS', true),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
-            'timeout' => 10,
+            'timeout' => 15,
+            'verify_peer' => env('MAIL_VERIFY_PEER', false),
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url(env('APP_URL', 'https://api.popgastropub.com'), PHP_URL_HOST)),
         ],
         'log' => [
