@@ -217,7 +217,7 @@ SANCTUM_STATEFUL_DOMAINS=popgastropub.com
 SESSION_DOMAIN=.popgastropub.com
 
 MAIL_MAILER=smtp
-MAIL_SCHEME=tls
+MAIL_SCHEME=smtp
 MAIL_HOST=mail.popgastropub.com
 MAIL_PORT=587
 MAIL_AUTO_TLS=true

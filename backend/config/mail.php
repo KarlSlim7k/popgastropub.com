@@ -6,7 +6,7 @@ return [
     'mailers' => [
         'smtp' => [
             'transport' => 'smtp',
-            'scheme' => env('MAIL_SCHEME', 'tls'),
+            'scheme' => env('MAIL_SCHEME', 'smtp'),
             'host' => env('MAIL_HOST', 'mail.popgastropub.com'),
             'port' => env('MAIL_PORT', 587),
             'auto_tls' => env('MAIL_AUTO_TLS', true),
