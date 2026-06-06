@@ -26,8 +26,6 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 COPY backend/ /var/www/html/
 
-RUN composer run-script post-autoload-dump
-
 RUN mkdir -p /var/www/html/storage/framework/{sessions,views,cache} \
     /var/www/html/storage/logs \
     /var/www/html/storage/app/public \
