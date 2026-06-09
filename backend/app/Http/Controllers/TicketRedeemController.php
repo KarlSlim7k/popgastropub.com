@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\LoyaltyTransaction;
 use App\Models\TicketRedeem;
+use App\Services\PuntosService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class TicketRedeemController extends Controller
 {
     private const EXPIRY_SECONDS = 72 * 3600;
+
+    public function __construct(private readonly PuntosService $puntosService)
+    {
+    }
 
     private function check(int $total, string $ref, int $ts, string $sig): ?array
     {
@@ -77,42 +81,26 @@ class TicketRedeemController extends Controller
         $user = $request->user();
         $puntos = intdiv($v['total'], 10);
 
-        return DB::transaction(function () use ($v, $user, $puntos, $request) {
-            $ticket = TicketRedeem::where('ref', $v['ref'])->lockForUpdate()->first();
+        try {
+            $ticket = TicketRedeem::where('ref', $v['ref'])->firstOrFail();
 
-            if ($ticket && $ticket->canjeado_at) {
-                return response()->json(['error' => 'Este ticket ya fue canjeado'], 409);
-            }
-
-            if (!$ticket) {
-                $ticket = new TicketRedeem([
-                    'ref' => $v['ref'],
-                    'total' => $v['total'],
-                    'puntos' => $puntos,
-                    'ts_emision' => $v['ts'],
-                ]);
-            }
-
-            $ticket->user_id = $user->id;
-            $ticket->canjeado_at = now();
-            $ticket->ip_canje = $request->ip();
-            $ticket->save();
-
-            $user->increment('points', $puntos);
-            $user->refresh();
-
-            LoyaltyTransaction::create([
-                'user_id' => $user->id,
-                'points' => $puntos,
-                'concept' => 'Ticket escaneado (' . $v['ref'] . ')',
-            ]);
+            $resultado = $this->puntosService->asignarPuntosPorCanje($ticket, $user);
 
             return response()->json([
                 'message' => 'Canje exitoso',
-                'puntos' => $puntos,
-                'balance' => $user->points,
-                'tier' => $user->tier,
+                'puntos' => $resultado['puntos_sumar'],
+                'balance' => $resultado['nuevo_saldo'],
+                'tier' => $resultado['tier'],
+                'mesero_asignado' => $resultado['mesero_asignado'],
+                'ticket' => [
+                    'folio' => $ticket->folio_ticket,
+                    'ref' => $ticket->ref,
+                    'monto' => $ticket->total,
+                ],
             ]);
-        });
+        } catch (\RuntimeException $e) {
+            $status = str_contains($e->getMessage(), 'ya fue canjeado') ? 409 : 422;
+            return response()->json(['error' => $e->getMessage()], $status);
+        }
     }
 }
