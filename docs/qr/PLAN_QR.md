@@ -1,7 +1,7 @@
 # Plan de Implementación — Sistema QR de Puntos POP Perote
 
-> **Estado:** Propuesta  
-> **Última actualización:** Junio 2026  
+> **Estado:** Propuesta — **Modelo B (independiente de Soft Restaurant)**
+> **Última actualización:** Junio 2026
 > **Responsable:** Equipo de desarrollo POP
 
 ---
@@ -11,10 +11,11 @@
 El sistema QR permite que los meseros generen códigos QR con puntos para los clientes tras una compra en el restaurante. El flujo actual requiere que el mesero ingrese manualmente el monto del ticket, lo cual es propenso a errores y lento.
 
 **Objetivo:** Optimizar el flujo de generación de QR implementando:
-- Verificación de autenticidad del ticket sin dependencias externas
+- Verificación de autenticidad del ticket **100% dentro de la plataforma Laravel** (sin conexiones a Soft Restaurant ni servicios externos)
 - Cantidades predefinidas para agilizar el ingreso de montos
 - Optimización de carga y rendimiento de la interfaz
 - Confirmación visual clara antes de generar el QR
+- Registro de canje con asignación automática de puntos al mesero (POP Bar Stars) y al cliente (POP Points)
 
 ---
 
@@ -22,21 +23,89 @@ El sistema QR permite que los meseros generen códigos QR con puntos para los cl
 
 ### Incluido
 - Interfaz de generación de QR en `/staff/qr`
-- Validación de autenticidad del ticket basada en patrones del POS (Soft Restaurant V1)
+- Validación de autenticidad del ticket basada en **patrones del POS + hash de integridad** (Soft Restaurant V1)
 - Botones de montos rápidos predefinidos
 - Historial miniatura de QRs generados en la misma página
 - Confirmación visual antes de generar el QR
 - Optimización de rendimiento de la página
+- **Asignación de puntos POP Bar Stars al mesero** cuando el QR es canjeado
+- **Asignación de puntos POP Points al cliente** cuando canjea el QR
+- Registro de auditoría (foto del ticket + hash) para evitar fraude
 
 ### No incluido (fuera de alcance)
-- Integración directa con Soft Restaurant (POS local sin API)
-- OCR o reconocimiento de imágenes de tickets
+- **Integración directa con Soft Restaurant** (se mantiene 100% desacoplado para evitar fallos operativos en el restaurante)
+- OCR o reconocimiento de imágenes de tickets (se valida por captura manual de folio + monto)
 - Conexiones a servicios externos del restaurante
 - Sincronización en tiempo real con FoodBooking
 
 ---
 
-## 3. Flujo Actual vs. Propuesto
+## 3. Arquitectura — Modelo B (Independiente)
+
+### Principio fundamental
+**Soft Restaurant es solo el sistema que imprime el ticket. La plataforma POP Perote es la fuente de verdad para la asignación de puntos.** Esto significa que:
+
+- Soft Restaurant **NO se acopla** al frontend ni al backend de POP
+- Si Soft Restaurant falla o está en mantenimiento, el sistema de puntos sigue funcionando
+- La validación de autenticidad se hace por **evidencia visual (foto del ticket) + hash de integridad + unicidad de folio + ventana de tiempo**
+
+### Diagrama de flujo
+
+```
+┌─────────────────────┐
+│   Soft Restaurant   │  (POS del restaurante — INDEPENDIENTE)
+│   Imprime ticket    │
+│   con folio + total │
+└──────────┬──────────┘
+           │ (papel)
+           ▼
+┌─────────────────────┐
+│   Mesero en mesa    │
+│   Cobra al cliente  │
+└──────────┬──────────┘
+           │ (1) Toma foto del ticket
+           │ (2) Captura folio + monto en la app
+           ▼
+┌─────────────────────────────────────────┐
+│  Frontend /staff/qr (Next.js)          │
+│  - Input de folio (5-6 dígitos)         │
+│  - Botones de monto rápido              │
+│  - Subida de foto del ticket            │
+│  - Modal de confirmación                │
+└──────────┬──────────────────────────────┘
+           │ POST /staff/qr/validar
+           ▼
+┌─────────────────────────────────────────┐
+│  Backend Laravel (API)                  │
+│  - Valida patrón de folio              │
+│  - Genera hash de integridad            │
+│  - Verifica unicidad (no duplicado)     │
+│  - Verifica ventana de tiempo (<24h)    │
+│  - Genera referencia firmada HMAC      │
+└──────────┬──────────────────────────────┘
+           │ 201 Created
+           ▼
+┌─────────────────────────────────────────┐
+│  Frontend muestra QR                   │
+│  - Referencia firmada                  │
+│  - Folio del ticket                    │
+│  - Monto y puntos a generar            │
+└──────────┬──────────────────────────────┘
+           │ (cliente escanea)
+           ▼
+┌─────────────────────────────────────────┐
+│  Cliente canjea en /puntos/canjear      │
+│  POST /puntos/canjear                   │
+│  - Valida firma HMAC                    │
+│  - Marca QR como canjeado               │
+│  - Suma puntos al cliente (POP Points)  │
+│  - Suma puntos al mesero (POP Bar Stars)│
+└─────────────────────────────────────────┘
+```
+
+---
+
+## 4. Flujo Actual vs. Propuesto
 
 ### Flujo Actual
 1. Mesero ingresa a `/staff/qr`
@@ -44,64 +113,129 @@ El sistema QR permite que los meseros generen códigos QR con puntos para los cl
 3. Sistema genera referencia firmada (HMAC-SHA256)
 4. Cliente escanea QR y canjea en `/puntos/canjear`
 
-### Flujo Propuesto
+### Flujo Propuesto (Modelo B)
 1. Mesero ingresa a `/staff/qr`
-2. Selecciona monto rápido O ingresa monto personalizado
-3. Sistema valida patrón de ticket auténtico (folio + formato)
-4. Pantalla de confirmación muestra monto + referencia en texto grande
-5. Mesero confirma y genera QR
-6. Cliente escanea QR y canjea con validación de firma y bloqueo de doble uso
+2. **Captura el folio del ticket** (5-6 dígitos) — input numérico con teclado
+3. **Toma foto del ticket** (evidencia visual, opcional pero recomendado)
+4. **Selecciona monto rápido** O ingresa monto personalizado
+5. Sistema valida:
+   - Patrón de folio (5-6 dígitos)
+   - Folio no registrado previamente (unicidad)
+   - Monto dentro de rango válido ($1 - $10,000 MXN)
+   - Ventana de tiempo (<24 hrs desde emisión)
+6. **Pantalla de confirmación** muestra: monto + folio + referencia en texto grande
+7. Mesero confirma y genera QR
+8. Cliente escanea QR y canjea con validación de firma y bloqueo de doble uso
+9. **Al canjear**: se asignan puntos al cliente (POP Points) Y al mesero (POP Bar Stars)
+
+**Tiempo objetivo del flujo: 20-40 segundos** (captura de folio + selección de monto + confirmación + generación de QR)
 
 ---
 
-## 4. Verificación de Autenticidad del Ticket
+## 5. Verificación de Autenticidad del Ticket
 
-### Estrategia: Validación por Patrones del POS
+### Estrategia: Validación por Patrones + Hash de Integridad + Unicidad
 
-Dado que no hay conexión externa con Soft Restaurant, el sistema verificará que el ticket sigue los patrones conocidos del POS del restaurante:
+Dado que no hay conexión externa con Soft Restaurant, el sistema verificará que el ticket es auténtico mediante **4 capas de validación independientes**:
 
-#### Patrones a validar:
+#### Capa 1: Patrón del folio
 - **Folio numérico:** 5-6 dígitos (ej: 48563)
-- **Formato de fecha:** `DD/MM/YYYY HH:MM:SS AM/PM`
+- Validado con regex `/^\d{5,6}$/`
+
+#### Capa 2: Validación matemática del IVA
+- El ticket de Soft Restaurant incluye desglose: SUBTOTAL + IVA
+- **Regla:** `IVA = SUBTOTAL × 0.16` (tolerancia ±$0.01 por redondeo)
+- Esto detecta tickets alterados donde alguien cambió el total
+
+#### Capa 3: Hash de integridad
+- Se genera un hash SHA-256 con: `folio + monto_total + subtotal + iva + fecha_registro`
+- Este hash se almacena en la BD al momento del registro
+- Si alguien intenta modificar el folio después, el hash no coincidirá
+
+#### Capa 4: Unicidad y ventana de tiempo
+- Un folio solo puede registrarse **UNA vez** en la plataforma
+- Si el mismo folio se intenta registrar nuevamente, el sistema lo rechaza
+- Solo se aceptan tickets con antigüedad menor a **24 horas**
+
+#### Patrones adicionales validados (opcionales, para mayor robustez):
 - **Dirección fija:** "JUSTO SIERRA #11 COLONIA AMADO N"
 - **Teléfono:** "2828253243" o "282-825-32-43"
-- **Total:** Formato `$XX.XX` con 2 decimales
 - **Sistema:** "SOFT RESTAURANT V1" al final del ticket
 
-#### Implementación:
-```typescript
-// Validación de patrón de ticket
-function validarTicketAutentico(data: {
-  folio: string;
-  fecha: string;
-  total: number;
-  direccion?: string;
-  telefono?: string;
-}): boolean {
-  const folioValido = /^\d{5,6}$/.test(data.folio);
-  const fechaValida = /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2} (AM|PM)$/.test(data.fecha);
-  const totalValido = data.total > 0 && data.total <= 10000;
-  
-  return folioValido && fechaValida && totalValido;
+#### Implementación backend (Laravel):
+```php
+// app/Services/TicketValidator.php
+class TicketValidator
+{
+    public function validar(array $data): array
+    {
+        $errores = [];
+        
+        // Capa 1: Patrón de folio
+        if (!preg_match('/^\d{5,6}$/', $data['folio'])) {
+            $errores[] = 'Folio inválido (debe ser 5-6 dígitos)';
+        }
+        
+        // Capa 2: Validación matemática del IVA
+        $ivaEsperado = round($data['subtotal'] * 0.16, 2);
+        if (abs($ivaEsperado - $data['iva']) > 0.01) {
+            $errores[] = 'Desglose de IVA no coincide con el subtotal';
+        }
+        
+        // Capa 3: Verificar unicidad
+        $existe = QrTicket::where('folio_ticket', $data['folio'])->exists();
+        if ($existe) {
+            $errores[] = 'Este folio ya fue registrado anteriormente';
+        }
+        
+        // Capa 4: Ventana de tiempo
+        $fechaEmision = Carbon::parse($data['fecha_emision']);
+        if ($fechaEmision->diffInHours(now()) > 24) {
+            $errores[] = 'El ticket tiene más de 24 horas de antigüedad';
+        }
+        
+        // Validar monto
+        if ($data['monto_total'] <= 0 || $data['monto_total'] > 10000) {
+            $errores[] = 'Monto fuera de rango válido';
+        }
+        
+        return $errores;
+    }
+    
+    public function generarHash(array $data): string
+    {
+        $payload = implode('|', [
+            $data['folio'],
+            $data['monto_total'],
+            $data['subtotal'],
+            $data['iva'],
+            now()->toDateTimeString()
+        ]);
+        
+        return hash('sha256', $payload);
+    }
 }
 ```
 
 #### Registro de tickets:
-- Cada ticket validado se guarda en la base de datos con:
-  - Folio
-  - Monto total
-  - Mesero que lo registró
-  - Timestamp de generación
-  - Hash de verificación (SHA-256 del folio + monto + fecha)
+Cada ticket validado se guarda en la tabla `qr_tickets` con:
+- Folio
+- Monto total, subtotal, IVA
+- Mesero que lo registró
+- Timestamp de generación
+- **Hash de verificación** (SHA-256 del folio + monto + subtotal + IVA + fecha)
+- **Ruta de la foto del ticket** (evidencia visual)
+- Estado del QR (pendiente/canjeado/expirado)
 
-#### Prevención de duplicados:
-- Un folio solo puede generar UN QR activo a la vez
-- Si el mismo folio se intenta registrar nuevamente, el sistema alerta al mesero
+#### Prevención de fraude:
+- **Un folio solo puede generar UN QR activo a la vez**
+- Si el mismo folio se intenta registrar nuevamente, el sistema lo rechaza
 - El historial muestra el estado del QR (pendiente/canjeado/expirado)
+- La foto del ticket queda como evidencia para auditoría del admin
 
 ---
 
-## 5. Cantidades Predefinidas
+## 6. Cantidades Predefinidas
 
 ### Botones de Montos Rápidos
 
@@ -148,7 +282,7 @@ Basado en el análisis de tickets reales del restaurante:
 
 ---
 
-## 6. Pantalla de Confirmación Visual
+## 7. Pantalla de Confirmación Visual
 
 ### Objetivo:
 Permitir al mesero cotejar el monto y la referencia con el ticket físico antes de generar el QR.
@@ -203,7 +337,7 @@ Permitir al mesero cotejar el monto y la referencia con el ticket físico antes 
 
 ---
 
-## 7. Historial Miniatura en la Misma Página
+## 8. Historial Miniatura en la Misma Página
 
 ### Componente:
 ```tsx
@@ -248,7 +382,7 @@ Permitir al mesero cotejar el monto y la referencia con el ticket físico antes 
 
 ---
 
-## 8. Optimización de Carga y Rendimiento
+## 9. Optimización de Carga y Rendimiento
 
 ### Estrategias:
 
@@ -334,7 +468,7 @@ useEffect(() => {
 
 ---
 
-## 9. Estructura de Archivos Propuesta
+## 10. Estructura de Archivos Propuesta
 
 ```
 frontend/
@@ -342,7 +476,9 @@ frontend/
 │   └── (staff)/
 │       └── qr/
 │           ├── page.tsx                    ← Página principal
-│           └── loading.tsx                 ← Skeleton loader
+│           ├── loading.tsx                 ← Skeleton loader
+│           └── historial/
+│               └── page.tsx                ← Historial completo
 ├── components/
 │   ── qr/
 │       ├── QRGenerator.tsx                 ← Generador principal
@@ -350,19 +486,44 @@ frontend/
 │       ├── ConfirmacionModal.tsx           ← Modal de confirmación
 │       ├── HistorialQRs.tsx                ← Historial miniatura
 │       ├── FormularioFolio.tsx             ← Input de folio
+│       ├── CapturaFoto.tsx                 ← Componente de cámara
+│       ├── DesgloseIVA.tsx                 ← Input subtotal + IVA
 │       └── QRCode.tsx                      ← Componente QR visual
 ├── lib/
-│   └── qr/
-│       ├── validacion.ts                   ← Validación de ticket
+│   ── qr/
+│       ├── validacion.ts                   ← Validación de ticket (frontend)
 │       ├── firma.ts                        ← Generación HMAC
-│       └── tipos.ts                        ← Tipos TypeScript
+│       ├── tipos.ts                        ← Tipos TypeScript
+│       └── api.ts                          ← Llamadas al backend
 └── hooks/
     ── useQR.ts                            ← Hook personalizado
+
+backend/
+├── app/
+│   ├── Http/
+│   │   └── Controllers/
+│   │       └── Staff/
+│   │           └── QrController.php        ← NUEVO: Validar, generar, historial
+│   ├── Services/
+│   │   ├── TicketValidator.php            ← NUEVO: Validación 4 capas
+│   │   ├── QrSignatureService.php         ← NUEVO: HMAC-SHA256
+│   │   └── PuntosService.php               ← Asignación dual de puntos
+│   └── Models/
+│       └── QrTicket.php                    ← NUEVO: Modelo del ticket
+├── database/
+│   ├── migrations/
+│   │   └── ..._create_qr_tickets_table.php ← NUEVO
+│   └── seeders/
+│       └── QrTicketSeeder.php              ← Datos de prueba
+└── storage/
+    └── app/
+        └── public/
+            └── tickets/                    ← Fotos de tickets
 ```
 
 ---
 
-## 10. Base de Datos
+## 11. Base de Datos
 
 ### Tabla: `qr_tickets`
 
@@ -371,35 +532,52 @@ CREATE TABLE qr_tickets (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     folio_ticket VARCHAR(10) NOT NULL,
     monto_total DECIMAL(10, 2) NOT NULL,
+    subtotal DECIMAL(10, 2) NOT NULL,
+    iva DECIMAL(10, 2) NOT NULL,
     puntos_generados INT NOT NULL,
     mesero_id BIGINT UNSIGNED NOT NULL,
     referencia_firmada VARCHAR(255) NOT NULL,
     hash_verificacion VARCHAR(64) NOT NULL,
-    estado ENUM('pendiente', 'canjeado', 'expirado') DEFAULT 'pendiente',
+    foto_ticket_path VARCHAR(255) NULL,
+    estado ENUM('pendiente', 'canjeado', 'expirado', 'rechazado') DEFAULT 'pendiente',
+    fecha_emision_ticket DATETIME NOT NULL,
     fecha_generacion DATETIME NOT NULL,
     fecha_expiracion DATETIME NOT NULL,
     fecha_canje DATETIME NULL,
     cliente_id BIGINT UNSIGNED NULL,
+    ip_generacion VARCHAR(45) NULL,
+    user_agent VARCHAR(255) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
-    INDEX idx_folio (folio_ticket),
+    UNIQUE INDEX uniq_folio (folio_ticket),
     INDEX idx_mesero (mesero_id),
     INDEX idx_estado (estado),
     INDEX idx_referencia (referencia_firmada),
+    INDEX idx_fecha_expiracion (fecha_expiracion),
+    INDEX idx_mesero_estado (mesero_id, estado),
     
     FOREIGN KEY (mesero_id) REFERENCES users(id),
     FOREIGN KEY (cliente_id) REFERENCES users(id)
 );
 ```
 
+### Campos nuevos respecto al plan original:
+- **`subtotal` e `iva`**: Para validación matemática de autenticidad (Capa 2)
+- **`foto_ticket_path`**: Ruta de la foto del ticket como evidencia visual
+- **`fecha_emision_ticket`**: Fecha impresa en el ticket (para validar ventana de 24h)
+- **`ip_generacion` y `user_agent`**: Para auditoría y detección de fraude
+- **`UNIQUE INDEX uniq_folio`**: Garantiza que un folio solo se registre una vez a nivel de BD
+- **`estado = 'rechazado'`**: Para tickets que fallaron validación
+
 ### Índices adicionales:
 - Índice compuesto: `(folio_ticket, estado)` para búsqueda rápida de folios activos
 - Índice en `fecha_expiracion` para limpieza automática de QRs vencidos
+- Índice `(mesero_id, estado)` para consultas de ranking y dashboard del mesero
 
 ---
 
-## 11. Seguridad
+## 12. Seguridad
 
 ### Firma HMAC-SHA256
 ```typescript
@@ -459,7 +637,202 @@ async function canjearQR(referencia: string, clienteId: number) {
 
 ---
 
-## 12. Métricas y Monitoreo
+## 13. Asignación de Puntos al Canjear
+
+### Flujo de puntos (dual)
+
+Cuando el cliente canjea el QR, se ejecutan **dos operaciones atómicas** dentro de una transacción Laravel:
+
+#### 1. Puntos al cliente (POP Points)
+```php
+// En PuntosController.php -> canjear()
+$cliente = User::find($clienteId);
+$cliente->puntos_fidelidad += $qr->puntos_generados;
+$cliente->save();
+
+// Registrar en historial
+HistorialPunto::create([
+    'user_id' => $clienteId,
+    'puntos' => $qr->puntos_generados,
+    'origen' => 'qr_canje',
+    'referencia_id' => $qr->id,
+    'descripcion' => "Canje de QR por ticket #{$qr->folio_ticket}"
+]);
+```
+
+#### 2. Puntos al mesero (POP Bar Stars)
+```php
+// Asignar puntos al mesero según reglas POP Bar Stars
+$reglas = [
+    'cocktail_points' => 10,      // Cóctel/margarita
+    'premium_points' => 15,        // Bebida premium
+    'pitcher_points' => 25,        // Jarra/compartido
+    'bottle_points' => 50,         // Botella completa
+    'combo_points' => 20,          // Combo comida+bebida
+];
+
+// Por defecto, el ticket genera puntos base de "venta de bebida"
+$mesero = Mesero::where('user_id', $qr->mesero_id)->first();
+$mesero->puntos += $qr->puntos_generados; // Mismos puntos que el cliente
+$mesero->save();
+
+HistorialPuntoMesero::create([
+    'mesero_id' => $mesero->id,
+    'qr_ticket_id' => $qr->id,
+    'puntos' => $qr->puntos_generados,
+    'categoria' => 'ticket_bebida',
+    'descripcion' => "Venta registrada por ticket #{$qr->folio_ticket}"
+]);
+```
+
+### Cálculo de puntos generados
+```php
+// Regla: 1 punto por cada $10 MXN gastados
+$puntosGenerados = (int) floor($qr->monto_total / 10);
+```
+
+### Transacción atómica
+```php
+DB::transaction(function () use ($qr, $clienteId) {
+    // Validar estado
+    if ($qr->estado !== 'pendiente') {
+        throw new \Exception('QR ya fue canjeado o expiró');
+    }
+    
+    // Marcar como canjeado
+    $qr->update([
+        'estado' => 'canjeado',
+        'cliente_id' => $clienteId,
+        'fecha_canje' => now()
+    ]);
+    
+    // Sumar puntos al cliente
+    $cliente = User::find($clienteId);
+    $cliente->increment('puntos_fidelidad', $qr->puntos_generados);
+    
+    // Sumar puntos al mesero
+    $mesero = Mesero::where('user_id', $qr->mesero_id)->first();
+    $mesero->increment('puntos', $qr->puntos_generados);
+    
+    // Registrar en historiales
+    HistorialPunto::create([...]);
+    HistorialPuntoMesero::create([...]);
+});
+```
+
+---
+
+## 14. Endpoints del Backend
+
+### Nuevos endpoints a crear
+
+```php
+// backend/routes/api.php (agregar al grupo de staff)
+Route::middleware(['auth:sanctum', 'role:mesero'])->prefix('staff')->group(function () {
+    // Validar ticket antes de generar QR
+    Route::post('/qr/validar', [QrController::class, 'validar']);
+    
+    // Generar QR después de validación
+    Route::post('/qr/generar', [QrController::class, 'generar']);
+    
+    // Historial de QRs del mesero
+    Route::get('/qr/historial', [QrController::class, 'historial']);
+    
+    // Detalle de un QR específico
+    Route::get('/qr/{id}', [QrController::class, 'show']);
+});
+
+// Endpoint público para cliente (canjear)
+Route::post('/puntos/canjear', [PuntosController::class, 'canjear']);
+```
+
+### Estructura de request/response
+
+#### POST /staff/qr/validar
+**Request:**
+```json
+{
+  "folio": "48563",
+  "monto_total": 95.00,
+  "subtotal": 81.90,
+  "iva": 13.10,
+  "fecha_emision": "2026-06-05T21:31:36",
+  "foto_ticket": "<base64 o multipart>"
+}
+```
+
+**Response 200 (válido):**
+```json
+{
+  "valido": true,
+  "puntos_a_generar": 9,
+  "hash_preview": "a3f5b8c9...",
+  "referencia_preview": "QR-48563-X7K9"
+}
+```
+
+**Response 422 (inválido):**
+```json
+{
+  "valido": false,
+  "errores": [
+    "Este folio ya fue registrado anteriormente",
+    "El desglose de IVA no coincide con el subtotal"
+  ]
+}
+```
+
+#### POST /staff/qr/generar
+**Request:**
+```json
+{
+  "folio": "48563",
+  "monto_total": 95.00,
+  "subtotal": 81.90,
+  "iva": 13.10,
+  "fecha_emision": "2026-06-05T21:31:36",
+  "hash_validacion": "a3f5b8c9..."
+}
+```
+
+**Response 201:**
+```json
+{
+  "id": 123,
+  "folio": "48563",
+  "referencia_firmada": "7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c...",
+  "qr_payload": "popperote://canjear?ref=7f8a9b0c...",
+  "puntos_generados": 9,
+  "fecha_expiracion": "2026-06-06T21:31:36",
+  "estado": "pendiente"
+}
+```
+
+#### POST /puntos/canjear
+**Request:**
+```json
+{
+  "referencia_firmada": "7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c..."
+}
+```
+
+**Response 200:**
+```json
+{
+  "exito": true,
+  "puntos_sumar": 9,
+  "nuevo_saldo": 487,
+  "mesero_asignado": "Fernando",
+  "ticket": {
+    "folio": "48563",
+    "monto": 95.00
+  }
+}
+```
+
+---
+
+## 15. Métricas y Monitoreo
 
 ### KPIs a跟踪:
 - **Tiempo promedio de generación de QR:** Objetivo < 15 segundos
@@ -475,7 +848,7 @@ async function canjearQR(referencia: string, clienteId: number) {
 
 ---
 
-## 13. Cronograma Estimado
+## 16. Cronograma Estimado
 
 | Fase | Tarea | Duración |
 |------|-------|----------|
@@ -492,7 +865,7 @@ async function canjearQR(referencia: string, clienteId: number) {
 
 ---
 
-## 14. Riesgos y Mitigación
+## 17. Riesgos y Mitigación
 
 | Riesgo | Probabilidad | Impacto | Mitigación |
 |--------|--------------|---------|------------|
@@ -504,7 +877,7 @@ async function canjearQR(referencia: string, clienteId: number) {
 
 ---
 
-## 15. Próximos Pasos
+## 18. Próximos Pasos
 
 1. **Revisión del plan** con el equipo de desarrollo
 2. **Aprobación** del diseño de UI/UX
@@ -515,7 +888,7 @@ async function canjearQR(referencia: string, clienteId: number) {
 
 ---
 
-## 16. Referencias
+## 19. Referencias
 
 - Ticket de ejemplo: `/home/karoldelgado/Descargas/TICKET.jpeg`
 - Documentación general: `docs/POP_WEB.md`

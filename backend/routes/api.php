@@ -139,6 +139,7 @@ Route::middleware(['auth:sanctum', 'role:mesero,admin', 'throttle:admin-api'])->
     Route::get('/mi-ranking', [App\Http\Controllers\Staff\StaffRankingController::class, 'miRanking']);
     Route::get('/configuracion', [App\Http\Controllers\Staff\StaffConfigController::class, 'index']);
     Route::put('/configuracion', [App\Http\Controllers\Staff\StaffConfigController::class, 'update']);
+    Route::post('/tickets/validate', [App\Http\Controllers\Staff\TicketGeneratorController::class, 'validar']);
     Route::post('/tickets/generate', [App\Http\Controllers\Staff\TicketGeneratorController::class, 'generate']);
     Route::get('/tickets', [App\Http\Controllers\Staff\TicketGeneratorController::class, 'historial']);
 
