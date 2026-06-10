@@ -338,10 +338,12 @@ export default function Home() {
                     className="min-w-[260px] md:min-w-0 snap-start bg-surface-container-low rounded-sm overflow-hidden border border-outline-variant/10"
                   >
                     <div className="relative aspect-square">
-                      <img
+                      <Image
                         src={producto.imagen || '/images/logopop.png'}
                         alt={producto.nombre}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="(max-width: 768px) 260px, 33vw"
+                        className="object-cover"
                       />
                       <span className="absolute top-3 left-3 bg-[#F2C166] text-[#234032] font-black text-[10px] px-2 py-1 tracking-widest">DESTACADO</span>
                     </div>

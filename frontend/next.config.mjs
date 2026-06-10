@@ -32,6 +32,11 @@ const nextConfig = {
         destination: '/promociones',
         permanent: true,
       },
+      {
+        source: '/orden',
+        destination: '/menu',
+        permanent: true,
+      },
     ];
   },
 }

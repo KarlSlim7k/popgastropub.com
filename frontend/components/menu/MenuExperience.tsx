@@ -1,6 +1,6 @@
 'use client';
 
-/* eslint-disable @next/next/no-img-element */
+import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import OrderPanel from '../order/OrderPanel';
 import { useOrderCart } from '../order/use-order-cart';
@@ -279,10 +279,12 @@ export default function MenuExperience() {
                   >
                     {/* ── Imagen ───────────────────────────────── */}
                     <div className="relative aspect-square md:aspect-[4/3] overflow-hidden flex-shrink-0">
-                      <img
+                      <Image
                         alt={item.name}
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
                         src={item.image}
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1280px) 50vw, 33vw"
                         onError={(e) => { e.currentTarget.src = '/images/logopop.png'; }}
                       />
                       {item.badge ? (

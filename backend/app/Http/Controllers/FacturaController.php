@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\SendFacturaToAccountant;
+use App\Http\Resources\FacturaResource;
 use App\Models\Factura;
 use App\Services\TicketStorage;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ class FacturaController extends Controller
         $paginated = $request->user()->facturas()->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json([
-            'data' => $paginated->items(),
+            'data' => FacturaResource::collection($paginated->items()),
             'meta' => [
                 'current_page' => $paginated->currentPage(),
                 'last_page' => $paginated->lastPage(),
@@ -66,7 +67,7 @@ class FacturaController extends Controller
         SendFacturaToAccountant::dispatch($factura);
 
         return response()->json([
-            'factura' => $factura->fresh(),
+            'factura' => new FacturaResource($factura->fresh()),
             'message' => 'Solicitud recibida. Tu factura está en proceso de envío al equipo de facturación.',
         ], 201);
     }
@@ -75,7 +76,7 @@ class FacturaController extends Controller
     {
         $factura = $request->user()->facturas()->findOrFail($id);
 
-        return response()->json($factura);
+        return response()->json(new FacturaResource($factura));
     }
 
     public function ticket($id, Request $request)

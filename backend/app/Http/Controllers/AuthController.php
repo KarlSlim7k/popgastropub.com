@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\LoyaltyTransaction;
+use App\Http\Resources\UserResource;
 use App\Mail\ResetPasswordCode;
 use App\Services\LoyaltyConfig;
 use Carbon\Carbon;
@@ -112,7 +113,7 @@ class AuthController extends Controller
         $token = $this->issueToken($user);
 
         return response()->json([
-            'user' => $user,
+            'user' => new UserResource($user),
             'token' => $token,
         ], 201);
     }
@@ -168,7 +169,7 @@ class AuthController extends Controller
         $token = $this->issueToken($user);
 
         return response()->json([
-            'user' => $user,
+            'user' => new UserResource($user),
             'token' => $token,
         ]);
     }
@@ -188,7 +189,7 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        return response()->json(new UserResource($request->user()));
     }
 
     public function updateProfile(Request $request)

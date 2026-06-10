@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { APIError, downloadAuthenticatedFile, fetchWithAuth } from "@/lib/api";
@@ -434,8 +435,8 @@ export default function AdminPromocionesPage() {
                   <tr key={promo.id} className="hover:bg-gray-800/30 transition-colors duration-200">
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-16 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800">
-                          {promo.image ? <img className="w-full h-full object-cover" src={promo.image} alt={promo.imageAlt || promo.name} loading="lazy" /> : <div className="w-full h-full bg-pop-gold/10" />}
+                        <div className="relative w-16 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800">
+                          {promo.image ? <Image className="object-cover" src={promo.image} alt={promo.imageAlt || promo.name} fill sizes="64px" /> : <div className="w-full h-full bg-pop-gold/10" />}
                         </div>
                         <div>
                           <p className="font-semibold text-white text-sm">{promo.name}</p>
