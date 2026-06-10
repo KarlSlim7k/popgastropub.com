@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { getAuthSession } from "@/lib/auth-session";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.popgastropub.com/api";
@@ -110,8 +111,7 @@ export function TwoFactorSection() {
         <div className="space-y-4 border-t border-white/5 pt-4">
           <p className="text-xs text-gray-400">1. Escanea este QR con Google Authenticator o Authy:</p>
           <div className="bg-white p-3 rounded-lg w-fit">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrUrl)}`} alt="QR 2FA" width={180} height={180} />
+            <QRCodeSVG value={qrUrl} size={180} />
           </div>
           <p className="text-[10px] text-gray-500 font-mono">Clave manual: <span className="text-white">{secret}</span></p>
           <p className="text-xs text-gray-400">2. Ingresa el código de 6 dígitos para confirmar:</p>

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Mesero;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -118,6 +119,29 @@ class AdminFormsTest extends TestCase
         $this->assertDatabaseHas('meseros', ['nombre' => 'Mesero Test', 'point_multiplier' => 2]);
     }
 
+    public function test_usuarios_export_csv_neutralizes_formula_injection(): void
+    {
+        User::create([
+            'name' => '=cmd|"/c calc"!A1',
+            'email' => 'csv-injection@test.com',
+            'password' => bcrypt('password'),
+            'role' => 'cliente',
+            'phone' => '+1234567890',
+            'rfc' => '@SUM(1+1)',
+        ]);
+
+        $response = $this->actingAs($this->admin)->get('/api/admin/usuarios-export');
+
+        $response->assertOk();
+
+        $csv = $response->streamedContent();
+
+        $this->assertStringContainsString("'=cmd", $csv);
+        $this->assertStringContainsString("'@SUM(1+1)", $csv);
+        $this->assertStringNotContainsString("\n=cmd", $csv);
+        $this->assertStringNotContainsString(",=cmd", $csv);
+    }
+
     public function test_public_image_route_only_serves_allowed_admin_images(): void
     {
         Storage::fake('public');
@@ -125,5 +149,30 @@ class AdminFormsTest extends TestCase
 
         $this->get('/api/storage/menu/00000000-0000-0000-0000-000000000000.webp')->assertOk();
         $this->get('/api/storage/tickets/private.webp')->assertNotFound();
+    }
+
+    public function test_upload_without_folder_defaults_to_whitelisted_menu_folder(): void
+    {
+        Storage::fake('public');
+
+        $response = $this->actingAs($this->admin)->postJson('/api/admin/upload', [
+            'file' => UploadedFile::fake()->image('producto.jpg'),
+        ]);
+
+        $response->assertCreated();
+        $path = $response->json('path');
+
+        $this->assertStringStartsWith('menu/', $path);
+        Storage::disk('public')->assertExists($path);
+    }
+
+    public function test_upload_rejects_non_whitelisted_folder(): void
+    {
+        Storage::fake('public');
+
+        $this->actingAs($this->admin)->postJson('/api/admin/upload', [
+            'file' => UploadedFile::fake()->image('producto.jpg'),
+            'folder' => '../../etc',
+        ])->assertUnprocessable()->assertJsonValidationErrors(['folder']);
     }
 }

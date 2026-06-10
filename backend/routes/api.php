@@ -57,6 +57,10 @@ Route::get('/auth/social/{provider}/callback', [SocialAuthController::class, 'ha
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::post('/auth/2fa/verify', [App\Http\Controllers\TwoFactorController::class, 'verify'])->middleware('throttle:auth-login');
+});
+
+Route::middleware(['auth:sanctum', 'token.full'])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
     Route::put('/auth/password', [AuthController::class, 'changePassword']);
@@ -66,7 +70,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/2fa/setup', [App\Http\Controllers\TwoFactorController::class, 'setup']);
     Route::post('/auth/2fa/enable', [App\Http\Controllers\TwoFactorController::class, 'enable']);
     Route::post('/auth/2fa/disable', [App\Http\Controllers\TwoFactorController::class, 'disable']);
-    Route::post('/auth/2fa/verify', [App\Http\Controllers\TwoFactorController::class, 'verify']);
 });
 
 /*
@@ -75,7 +78,7 @@ Route::middleware('auth:sanctum')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'token.full'])->group(function () {
     // Loyalty / POP Points
     Route::get('/loyalty/points', [LoyaltyController::class, 'points']);
     Route::get('/loyalty/tier', [LoyaltyController::class, 'tier']);
@@ -123,13 +126,13 @@ Route::middleware('auth:sanctum')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth:sanctum', 'role:mesero,admin', 'throttle:admin-api'])->group(function () {
+Route::middleware(['auth:sanctum', 'token.full', 'role:mesero,admin', 'throttle:admin-api'])->group(function () {
     Route::get('/ranking', [RankingController::class, 'index']);
     Route::post('/ranking/points', [RankingController::class, 'addPoints']);
     Route::get('/ranking/history', [RankingController::class, 'history']);
 });
 
-Route::middleware(['auth:sanctum', 'role:mesero,admin', 'throttle:admin-api'])->prefix('staff')->group(function () {
+Route::middleware(['auth:sanctum', 'token.full', 'role:mesero,admin', 'throttle:admin-api'])->prefix('staff')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Staff\StaffDashboardController::class, 'index']);
     Route::get('/analytics', [App\Http\Controllers\Staff\StaffAnalyticsController::class, 'index']);
     Route::get('/reservas', [App\Http\Controllers\Staff\StaffReservaController::class, 'index']);
@@ -155,7 +158,7 @@ Route::middleware(['auth:sanctum', 'role:mesero,admin', 'throttle:admin-api'])->
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth:sanctum', 'role:admin', 'throttle:admin-api'])->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum', 'token.full', 'role:admin', 'throttle:admin-api'])->prefix('admin')->group(function () {
     // Upload
     Route::post('/upload', [App\Http\Controllers\Admin\UploadController::class, 'store']);
 

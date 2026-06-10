@@ -16,7 +16,7 @@ class UploadController extends Controller
             'folder' => 'nullable|string|in:menu,promociones,recompensas',
         ]);
 
-        $folder = $request->input('folder', 'uploads');
+        $folder = $request->input('folder', 'menu');
         $file = $request->file('file');
         $name = Str::uuid() . '.' . $file->getClientOriginalExtension();
         $path = $file->storeAs($folder, $name, 'public');

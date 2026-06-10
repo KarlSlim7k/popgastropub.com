@@ -84,11 +84,15 @@ class TwoFactorController extends Controller
     }
 
     /**
-     * Verify TOTP code during login (called after password auth).
+     * Verify TOTP code during login (called with the temp token from login).
      */
     public function verify(Request $request)
     {
         $request->validate(['code' => 'required|string|size:6']);
+
+        $token = $request->user()->currentAccessToken();
+        abort_unless($token && ($token->can('2fa:pending') || $token->can('*')), 403);
+
         $user = $request->user();
 
         if (!$user->two_factor_enabled) {
@@ -101,7 +105,11 @@ class TwoFactorController extends Controller
             return response()->json(['message' => 'Código incorrecto'], 422);
         }
 
-        return response()->json(['message' => 'Verificado', 'verified' => true]);
+        $token->delete();
+        $user->tokens()->where('name', 'auth_token')->delete();
+        $newToken = $user->createToken('auth_token', ['*'])->plainTextToken;
+
+        return response()->json(['verified' => true, 'token' => $newToken, 'user' => $user]);
     }
 
     /**

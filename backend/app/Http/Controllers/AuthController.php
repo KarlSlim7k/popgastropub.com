@@ -138,6 +138,13 @@ class AuthController extends Controller
             'password' => 'contraseña',
         ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Los datos de inicio de sesión no son válidos.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
         $user = $this->findUserByIdentifier($payload['login']);
 
         if (!$user || !Hash::check($payload['password'], $user->password)) {
@@ -146,6 +153,16 @@ class AuthController extends Controller
 
         if ($user->status === 'inactivo') {
             return response()->json(['message' => 'La cuenta está inactiva.'], 403);
+        }
+
+        if ($user->two_factor_enabled) {
+            $user->tokens()->where('name', '2fa_pending')->delete();
+            $tempToken = $user->createToken('2fa_pending', ['2fa:pending'])->plainTextToken;
+
+            return response()->json([
+                'requires_2fa' => true,
+                'temp_token' => $tempToken,
+            ]);
         }
 
         $token = $this->issueToken($user);

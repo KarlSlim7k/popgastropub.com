@@ -139,14 +139,14 @@ class UsuarioController extends Controller
             foreach ($users as $user) {
                 fputcsv($output, [
                     $user->id,
-                    $user->name,
-                    $user->email,
-                    $user->phone,
+                    $this->csvSafe($user->name),
+                    $this->csvSafe($user->email),
+                    $this->csvSafe($user->phone),
                     $user->role,
                     $user->status,
                     $user->points,
                     $user->tier,
-                    $user->rfc,
+                    $this->csvSafe($user->rfc),
                     $user->created_at,
                 ]);
             }

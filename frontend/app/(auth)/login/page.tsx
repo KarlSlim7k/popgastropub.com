@@ -26,6 +26,19 @@ interface AuthResponse {
   token: string;
 }
 
+interface LoginResponse {
+  user?: AuthUser;
+  token?: string;
+  requires_2fa?: boolean;
+  temp_token?: string;
+}
+
+interface TwoFactorVerifyResponse {
+  verified: boolean;
+  token: string;
+  user: AuthUser;
+}
+
 interface LoginFormData {
   identifier: string;
   password: string;
@@ -144,6 +157,10 @@ export default function Login() {
     password: '',
   });
 
+  const [twoFactorTempToken, setTwoFactorTempToken] = useState<string | null>(null);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [isVerifying2FA, setIsVerifying2FA] = useState(false);
+
   const [registerForm, setRegisterForm] = useState<RegisterFormData>({
     name: '',
     phone: '',
@@ -244,13 +261,23 @@ export default function Login() {
     setIsSubmitting('login');
 
     try {
-      const response = await fetchAPI<AuthResponse>('/auth/login', {
+      const response = await fetchAPI<LoginResponse>('/auth/login', {
         method: 'POST',
         body: JSON.stringify({
           login: loginForm.identifier.trim(),
           password: loginForm.password,
         }),
       });
+
+      if (response.requires_2fa && response.temp_token) {
+        setTwoFactorTempToken(response.temp_token);
+        setStatusSuccess(null);
+        return;
+      }
+
+      if (!response.token || !response.user) {
+        throw new Error('Respuesta de inicio de sesión inválida.');
+      }
 
       saveAuthSession({ token: response.token, user: response.user, provider: 'password' });
       setStatusSuccess('Inicio de sesión exitoso. Redirigiendo...');
@@ -270,6 +297,39 @@ export default function Login() {
     } finally {
       setIsSubmitting(null);
     }
+  }
+
+  async function handleVerify2FA(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!twoFactorTempToken || twoFactorCode.length !== 6) return;
+
+    setStatusError(null);
+    setStatusSuccess(null);
+    setIsVerifying2FA(true);
+
+    try {
+      const response = await fetchWithAuth<TwoFactorVerifyResponse>('/auth/2fa/verify', twoFactorTempToken, {
+        method: 'POST',
+        body: JSON.stringify({ code: twoFactorCode }),
+      });
+
+      saveAuthSession({ token: response.token, user: response.user, provider: 'password' });
+      setStatusSuccess('Verificación exitosa. Redirigiendo...');
+      refreshSession();
+      redirectAfterAuth(response.user.role);
+    } catch (error) {
+      setStatusError(getErrorMessage(error));
+      setTwoFactorCode('');
+    } finally {
+      setIsVerifying2FA(false);
+    }
+  }
+
+  function cancelTwoFactor() {
+    setTwoFactorTempToken(null);
+    setTwoFactorCode('');
+    setStatusError(null);
+    setStatusSuccess(null);
   }
 
   async function handleRegisterSubmit(event: FormEvent<HTMLFormElement>) {
@@ -413,6 +473,48 @@ export default function Login() {
               </div>
             )}
 
+            {twoFactorTempToken ? (
+              <div className="space-y-6 animate-fade-in">
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-white">Verificación en dos pasos</p>
+                  <p className="text-xs text-on-surface/60 mt-2">
+                    Ingresa el código de 6 dígitos de tu app de autenticación.
+                  </p>
+                </div>
+                <form className="space-y-6" onSubmit={handleVerify2FA}>
+                  <div className="flex justify-center">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      autoFocus
+                      value={twoFactorCode}
+                      onChange={(event) => setTwoFactorCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="000000"
+                      className="w-40 bg-transparent border-0 border-b border-outline-variant py-3 text-center text-2xl font-mono tracking-[0.5em] text-on-surface focus:ring-0 focus:border-secondary outline-none"
+                    />
+                  </div>
+                  <button
+                    className="w-full bg-primary-container hover:bg-primary-container/80 text-on-primary-container font-headline font-extrabold py-4 px-8 rounded-md flex justify-between items-center group transition-all duration-300 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                    type="submit"
+                    disabled={isVerifying2FA || twoFactorCode.length !== 6}
+                  >
+                    <span className="uppercase tracking-widest text-sm">
+                      {isVerifying2FA ? 'VERIFICANDO...' : 'VERIFICAR'}
+                    </span>
+                    <span className="material-symbols-outlined text-white group-hover:translate-x-2 transition-transform">arrow_forward</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelTwoFactor}
+                    className="w-full text-center text-xs text-on-surface/50 hover:text-on-surface transition-colors"
+                  >
+                    Volver al inicio de sesión
+                  </button>
+                </form>
+              </div>
+            ) : (
+            <>
             <div className="flex space-x-8 mb-10 border-b border-outline-variant/10">
               <button
                 onClick={() => {
@@ -718,6 +820,8 @@ export default function Login() {
                   </p>
                 </div>
               </div>
+            )}
+            </>
             )}
           </div>
 

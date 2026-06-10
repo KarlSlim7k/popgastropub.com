@@ -32,5 +32,6 @@ return [
 
     'facturacion' => [
         'address' => env('FACTURACION_EMAIL', 'facturacion@popgastropub.com'),
+        'cc' => env('FACTURACION_CC'),
     ],
 ];
