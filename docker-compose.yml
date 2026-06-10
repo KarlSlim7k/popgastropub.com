@@ -36,6 +36,16 @@ services:
     networks:
       - pop_network
       - dokploy-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 768M
 
   backend:
     build:
@@ -92,6 +102,16 @@ services:
         condition: service_healthy
     networks:
       - pop_network
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm-healthcheck || pgrep php-fpm"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   scheduler:
     build:
@@ -112,6 +132,51 @@ services:
       - DB_USERNAME=pop_user
       - DB_PASSWORD=${DB_PASSWORD}
       - CACHE_STORE=${CACHE_STORE:-file}
+      - MAIL_MAILER=${MAIL_MAILER:-smtp}
+      - MAIL_SCHEME=${MAIL_SCHEME:-smtp}
+      - MAIL_HOST=${MAIL_HOST:-mail.popgastropub.com}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_AUTO_TLS=${MAIL_AUTO_TLS:-true}
+      - MAIL_VERIFY_PEER=${MAIL_VERIFY_PEER:-false}
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-noreply@popgastropub.com}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME:-POP Perote}
+      - FACTURACION_EMAIL=${FACTURACION_EMAIL:-facturacion@popgastropub.com}
+      - FACTURACION_CC=${FACTURACION_CC:-}
+    volumes:
+      - pop_backend_storage:/var/www/html/storage
+    depends_on:
+      backend:
+        condition: service_started
+      mariadb:
+        condition: service_healthy
+    networks:
+      - pop_network
+
+  queue:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: pop_perote_queue
+    restart: unless-stopped
+    command: php artisan queue:work --tries=3 --backoff=10 --max-time=3600
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - APP_KEY=${APP_KEY:?APP_KEY requerido}
+      - DB_CONNECTION=mysql
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_DATABASE=pop_perote
+      - DB_USERNAME=pop_user
+      - DB_PASSWORD=${DB_PASSWORD}
+      - CACHE_STORE=${CACHE_STORE:-file}
+      - SESSION_DRIVER=${SESSION_DRIVER:-file}
+      - APP_URL=${APP_URL:-https://api.popgastropub.com}
+      - FRONTEND_URL=${FRONTEND_URL:-https://popgastropub.com}
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY:?VAPID_PUBLIC_KEY requerido}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY:?VAPID_PRIVATE_KEY requerido}
       - MAIL_MAILER=${MAIL_MAILER:-smtp}
       - MAIL_SCHEME=${MAIL_SCHEME:-smtp}
       - MAIL_HOST=${MAIL_HOST:-mail.popgastropub.com}

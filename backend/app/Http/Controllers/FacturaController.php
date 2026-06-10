@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendFacturaToAccountant;
 use App\Models\Factura;
-use App\Services\FacturaAccountantMailer;
 use App\Services\TicketStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -14,12 +14,21 @@ class FacturaController extends Controller
 {
     public function index(Request $request)
     {
-        $facturas = $request->user()->facturas()->orderBy('created_at', 'desc')->get();
+        $perPage = min((int) $request->input('per_page', 20), 100);
+        $paginated = $request->user()->facturas()->orderBy('created_at', 'desc')->paginate($perPage);
 
-        return response()->json($facturas);
+        return response()->json([
+            'data' => $paginated->items(),
+            'meta' => [
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+            ],
+        ]);
     }
 
-    public function store(Request $request, FacturaAccountantMailer $mailer)
+    public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'rfc' => 'required|string|max:13',
@@ -54,14 +63,12 @@ class FacturaController extends Controller
             throw $exception;
         }
 
-        $sent = $mailer->deliver($factura);
+        SendFacturaToAccountant::dispatch($factura);
 
         return response()->json([
             'factura' => $factura->fresh(),
-            'message' => $sent
-                ? 'Solicitud recibida y enviada al equipo de facturación.'
-                : 'Solicitud recibida. El envío al equipo de facturación está en reintento automático.',
-        ], $sent ? 201 : 202);
+            'message' => 'Solicitud recibida. Tu factura está en proceso de envío al equipo de facturación.',
+        ], 201);
     }
 
     public function show($id, Request $request)

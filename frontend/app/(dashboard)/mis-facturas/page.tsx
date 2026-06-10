@@ -14,6 +14,11 @@ interface Factura {
   email?: string;
 }
 
+interface FacturasResponse {
+  data: Factura[];
+  meta: { current_page: number; last_page: number; per_page: number; total: number };
+}
+
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
   recibida: { label: "Recibida", color: "bg-pop-gold/10 text-pop-gold border-pop-gold/20" },
   en_proceso: { label: "En Proceso", color: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
@@ -28,8 +33,10 @@ export default function MisFacturasPage() {
 
   const [facturas, setFacturas] = useState<Factura[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [visibleCount, setVisibleCount] = useState(10);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
 
   useEffect(() => {
     if (!token) return;
@@ -37,8 +44,10 @@ export default function MisFacturasPage() {
     async function fetchFacturas() {
       try {
         setLoading(true);
-        const data = await fetchWithAuth<Factura[]>("/facturas", token);
-        setFacturas(data ?? []);
+        const data = await fetchWithAuth<FacturasResponse>("/facturas?page=1", token);
+        setFacturas(data?.data ?? []);
+        setPage(data?.meta?.current_page ?? 1);
+        setLastPage(data?.meta?.last_page ?? 1);
       } catch (err: any) {
         setError(err?.message || "Error al cargar facturas");
       } finally {
@@ -48,6 +57,22 @@ export default function MisFacturasPage() {
 
     fetchFacturas();
   }, [token]);
+
+  const loadMore = async () => {
+    if (!token || page >= lastPage) return;
+    try {
+      setLoadingMore(true);
+      const nextPage = page + 1;
+      const data = await fetchWithAuth<FacturasResponse>(`/facturas?page=${nextPage}`, token);
+      setFacturas((prev) => [...prev, ...(data?.data ?? [])]);
+      setPage(data?.meta?.current_page ?? nextPage);
+      setLastPage(data?.meta?.last_page ?? lastPage);
+    } catch (err: any) {
+      setError(err?.message || "Error al cargar más facturas");
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -104,7 +129,7 @@ export default function MisFacturasPage() {
              </div>
            ) : (
              <div className="space-y-4">
-                {facturas.slice(0, visibleCount).map((inv) => (
+                {facturas.map((inv) => (
                   <article key={inv.id} className="bg-pop-cardGreen p-6 rounded-2xl border border-white/5 hover:border-pop-gold/10 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6">
                      <div className="flex items-start gap-5">
                         <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-gray-500">
@@ -134,9 +159,9 @@ export default function MisFacturasPage() {
                      </div>
                   </article>
                 ))}
-                {facturas.length > visibleCount && (
-                  <button onClick={() => setVisibleCount((v) => v + 10)} className="w-full py-4 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-pop-gold hover:border-pop-gold/20 transition-all">
-                    Ver más ({facturas.length - visibleCount} restantes)
+                {page < lastPage && (
+                  <button onClick={loadMore} disabled={loadingMore} className="w-full py-4 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-pop-gold hover:border-pop-gold/20 transition-all disabled:opacity-50">
+                    {loadingMore ? "Cargando..." : "Ver más"}
                   </button>
                 )}
              </div>

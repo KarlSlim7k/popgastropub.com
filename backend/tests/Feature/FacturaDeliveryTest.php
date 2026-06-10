@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Jobs\SendFacturaToAccountant;
 use App\Models\Factura;
 use App\Models\User;
+use App\Services\FacturaAccountantMailer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -38,16 +41,34 @@ class FacturaDeliveryTest extends TestCase
         ]);
     }
 
-    public function test_factura_request_is_persisted_and_delivered_to_accountants(): void
+    public function test_factura_request_is_persisted_and_dispatches_accountant_job(): void
     {
+        Queue::fake();
+
         $response = $this->actingAs($this->cliente)->post('/api/facturas', $this->payload());
 
-        $response->assertCreated()->assertJsonPath('factura.estado', 'recibida');
+        $response->assertCreated()
+            ->assertJsonPath('factura.estado', 'recibida')
+            ->assertJsonPath('message', 'Solicitud recibida. Tu factura está en proceso de envío al equipo de facturación.');
 
         $factura = Factura::firstOrFail();
+        Storage::disk('local')->assertExists($factura->ticket_path);
+
+        Queue::assertPushed(SendFacturaToAccountant::class, fn($job) => $job->factura->id === $factura->id);
+    }
+
+    public function test_accountant_job_delivers_email_with_attachment(): void
+    {
+        $response = $this->actingAs($this->cliente)->post('/api/facturas', $this->payload());
+        $response->assertCreated();
+
+        $factura = Factura::firstOrFail();
+
+        (new SendFacturaToAccountant($factura))->handle(app(FacturaAccountantMailer::class));
+
+        $factura->refresh();
         $this->assertNotNull($factura->contadores_email_enviado_at);
         $this->assertSame(1, $factura->contadores_email_intentos);
-        Storage::disk('local')->assertExists($factura->ticket_path);
 
         $transport = app('mail.manager')->mailer()->getSymfonyTransport();
         $this->assertCount(1, $transport->messages());
@@ -61,6 +82,10 @@ class FacturaDeliveryTest extends TestCase
 
     public function test_failed_delivery_is_preserved_and_admin_can_retry(): void
     {
+        $response = $this->actingAs($this->cliente)->post('/api/facturas', $this->payload());
+        $response->assertCreated();
+        $factura = Factura::firstOrFail();
+
         config([
             'mail.default' => 'smtp',
             'mail.mailers.smtp.host' => '127.0.0.1',
@@ -69,10 +94,9 @@ class FacturaDeliveryTest extends TestCase
         ]);
         app('mail.manager')->purge();
 
-        $response = $this->actingAs($this->cliente)->post('/api/facturas', $this->payload());
+        app(FacturaAccountantMailer::class)->deliver($factura);
 
-        $response->assertAccepted();
-        $factura = Factura::firstOrFail();
+        $factura->refresh();
         $this->assertNull($factura->contadores_email_enviado_at);
         $this->assertNotNull($factura->contadores_email_error);
         $this->assertNotNull($factura->contadores_email_siguiente_intento_at);
@@ -88,13 +112,26 @@ class FacturaDeliveryTest extends TestCase
         $this->assertNotNull($factura->fresh()->contadores_email_enviado_at);
     }
 
+    public function test_index_returns_paginated_facturas(): void
+    {
+        $this->actingAs($this->cliente)->post('/api/facturas', $this->payload())->assertCreated();
+
+        $response = $this->actingAs($this->cliente)->getJson('/api/facturas');
+
+        $response->assertOk()
+            ->assertJsonStructure(['data', 'meta' => ['current_page', 'last_page', 'per_page', 'total']])
+            ->assertJsonCount(1, 'data');
+    }
+
     public function test_accountant_cc_is_only_added_when_configured(): void
     {
         config(['mail.facturacion.cc' => 'contador@popgastropub.com']);
 
         $response = $this->actingAs($this->cliente)->post('/api/facturas', $this->payload());
-
         $response->assertCreated();
+
+        $factura = Factura::firstOrFail();
+        app(FacturaAccountantMailer::class)->deliver($factura);
 
         $transport = app('mail.manager')->mailer()->getSymfonyTransport();
         $message = $transport->messages()[0]->getOriginalMessage();
