@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
+            'token.full' => \App\Http\Middleware\EnsureTokenIsFull::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

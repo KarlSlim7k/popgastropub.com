@@ -399,11 +399,4 @@ class PromocionController extends Controller
     {
         return $total > 0 ? round(($value / $total) * 100, 2) : 0;
     }
-
-    private function csvSafe(mixed $value): string
-    {
-        $value = (string) ($value ?? '');
-
-        return preg_match('/^[=+\-@]/', $value) ? "'" . $value : $value;
-    }
 }

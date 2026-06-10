@@ -84,6 +84,7 @@ services:
       - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-noreply@popgastropub.com}
       - MAIL_FROM_NAME=${MAIL_FROM_NAME:-POP Perote}
       - FACTURACION_EMAIL=${FACTURACION_EMAIL:-facturacion@popgastropub.com}
+      - FACTURACION_CC=${FACTURACION_CC:-}
     volumes:
       - pop_backend_storage:/var/www/html/storage
     depends_on:
@@ -122,6 +123,7 @@ services:
       - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-noreply@popgastropub.com}
       - MAIL_FROM_NAME=${MAIL_FROM_NAME:-POP Perote}
       - FACTURACION_EMAIL=${FACTURACION_EMAIL:-facturacion@popgastropub.com}
+      - FACTURACION_CC=${FACTURACION_CC:-}
     volumes:
       - pop_backend_storage:/var/www/html/storage
     depends_on:

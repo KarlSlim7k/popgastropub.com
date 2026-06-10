@@ -88,6 +88,23 @@ class FacturaDeliveryTest extends TestCase
         $this->assertNotNull($factura->fresh()->contadores_email_enviado_at);
     }
 
+    public function test_accountant_cc_is_only_added_when_configured(): void
+    {
+        config(['mail.facturacion.cc' => 'contador@popgastropub.com']);
+
+        $response = $this->actingAs($this->cliente)->post('/api/facturas', $this->payload());
+
+        $response->assertCreated();
+
+        $transport = app('mail.manager')->mailer()->getSymfonyTransport();
+        $message = $transport->messages()[0]->getOriginalMessage();
+
+        $this->assertSame(
+            ['contador@popgastropub.com'],
+            array_map(fn($address) => $address->getAddress(), $message->getCc())
+        );
+    }
+
     private function payload(): array
     {
         return [
