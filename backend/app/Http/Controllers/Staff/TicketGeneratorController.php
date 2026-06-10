@@ -65,10 +65,11 @@ class TicketGeneratorController extends Controller
         }
 
         $total = (float) $v['total'];
+        $totalInt = (int) $total;
         $puntos = (int) floor($total / 10);
         $ref = 'TKT-' . date('Ymd') . '-' . strtoupper(Str::random(6));
         $ts = now()->timestamp;
-        $sig = hash_hmac('sha256', $total . $ref . $ts, config('app.qr_secret'));
+        $sig = hash_hmac('sha256', $totalInt . $ref . $ts, config('app.qr_secret'));
         $hashVerificacion = $this->validator->generarHash($v);
 
         $mesero = $request->user()->mesero;
@@ -81,10 +82,12 @@ class TicketGeneratorController extends Controller
             );
         }
 
+        $fechaExpiracion = now()->addHours(TicketValidator::WINDOW_HOURS);
+
         TicketRedeem::create([
             'ref' => $ref,
             'folio_ticket' => $v['folio'],
-            'total' => (int) round($total),
+            'total' => $totalInt,
             'subtotal' => (float) $v['subtotal'],
             'iva' => (float) $v['iva'],
             'puntos' => $puntos,
@@ -93,14 +96,14 @@ class TicketGeneratorController extends Controller
             'mesero_id' => $mesero?->id,
             'ts_emision' => $ts,
             'fecha_emision_ticket' => $v['fecha_emision'] ?? null,
-            'fecha_expiracion' => now()->addHours(TicketValidator::WINDOW_HOURS),
+            'fecha_expiracion' => $fechaExpiracion,
             'ip_generacion' => $request->ip(),
             'user_agent' => substr((string) $request->userAgent(), 0, 255),
             'estado_validacion' => 'valido',
         ]);
 
         $url = config('app.frontend_url', 'https://popgastropub.com')
-            . "/puntos/canjear?total={$total}&ref={$ref}&ts={$ts}&sig={$sig}";
+            . "/puntos/canjear?total={$totalInt}&ref={$ref}&ts={$ts}&sig={$sig}";
 
         return response()->json([
             'url' => $url,
@@ -108,7 +111,7 @@ class TicketGeneratorController extends Controller
             'ref' => $ref,
             'folio' => $v['folio'],
             'foto_url' => $fotoPath ? Storage::url($fotoPath) : null,
-            'fecha_expiracion' => now()->addHours(TicketValidator::WINDOW_HOURS)->toDateTimeString(),
+            'fecha_expiracion' => $fechaExpiracion->toDateTimeString(),
         ]);
     }
 
@@ -134,10 +137,7 @@ class TicketGeneratorController extends Controller
                 'estado_validacion',
                 'created_at',
             ])
-            ->map(function ($t) {
-                $t->estado_legible = $t->estado_legible;
-                return $t;
-            });
+            ->append('estado_legible');
 
         return response()->json($tickets);
     }
