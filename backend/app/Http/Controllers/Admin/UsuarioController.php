@@ -130,13 +130,11 @@ class UsuarioController extends Controller
 
     public function export()
     {
-        $users = User::orderBy('name')->get();
-
-        return response()->streamDownload(function () use ($users) {
+        return response()->streamDownload(function () {
             $output = fopen('php://output', 'w');
             fputcsv($output, ['ID', 'Nombre', 'Email', 'Teléfono', 'Rol', 'Estado', 'Puntos', 'Tier', 'RFC', 'Registro']);
 
-            foreach ($users as $user) {
+            foreach (User::orderBy('name')->cursor() as $user) {
                 fputcsv($output, [
                     $user->id,
                     $this->csvSafe($user->name),
