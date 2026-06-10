@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { fetchWithAuth } from "@/lib/api";
@@ -38,8 +39,6 @@ interface DrinkType {
 }
 
 const BEVERAGE_CATEGORIES = ["BEBIDAS.", "MIXOLOGIA", "Bebidas", "Mixología", "Coctelería"];
-
-const PLACEHOLDER_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%231a1a1a'/%3E%3Ctext x='75' y='75' text-anchor='middle' dy='.3em' fill='%23555' font-family='sans-serif' font-size='14'%3ESin imagen%3C/text%3E%3C/svg%3E";
 
 export default function AdminGestionMenuPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -302,12 +301,14 @@ export default function AdminGestionMenuPage() {
             className="bg-pop-cardGreen lg:bg-transparent rounded-2xl lg:rounded-none p-5 lg:p-0 border border-white/5 lg:border-none lg:grid lg:grid-cols-7 lg:gap-4 lg:px-8 lg:py-6 lg:items-center hover:bg-white/[0.02] transition-all"
           >
             <div className="lg:col-span-2 flex items-center gap-4 mb-4 lg:mb-0">
-              <div className="w-20 h-16 lg:w-16 lg:h-12 rounded-xl bg-pop-black border border-white/10 overflow-hidden shadow-lg">
-                <img
-                  src={item.image || PLACEHOLDER_SVG}
-                  alt={item.name}
-                  className="w-full h-full object-cover"
-                />
+              <div className="relative w-20 h-16 lg:w-16 lg:h-12 rounded-xl bg-pop-black border border-white/10 overflow-hidden shadow-lg">
+                {item.image ? (
+                  <Image src={item.image} alt={item.name} fill sizes="80px" className="object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-[8px] font-black uppercase text-gray-600">
+                    Sin imagen
+                  </div>
+                )}
               </div>
               <div>
                 <p className="text-base lg:text-sm font-black text-white uppercase leading-none">{item.name}</p>

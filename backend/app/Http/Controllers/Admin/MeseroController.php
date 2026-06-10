@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Mesero;
+use App\Models\MeseroPointsLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -147,6 +148,13 @@ class MeseroController extends Controller
             'message' => $points > 0 ? "Puntos añadidos: +{$points}" : "Puntos restados: {$points}",
             'mesero' => $this->toFrontend($mesero->fresh()->load('user')),
         ]);
+    }
+
+    public function pointsLog($id)
+    {
+        return response()->json(
+            MeseroPointsLog::where('mesero_id', $id)->orderByDesc('created_at')->limit(100)->get()
+        );
     }
 
     private function toFrontend(Mesero $m): array

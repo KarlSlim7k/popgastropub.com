@@ -349,6 +349,16 @@ NO tocar (blob/data URLs locales, justificados): `ImageUpload.tsx:61`, `staff/qr
 - `RankingController::addPoints`: mesero se auto-asigna puntos sin evidencia. Opciones: (a) deprecar y dejar solo flujo QR, (b) cola de aprobación admin, (c) dashboard de anomalías sobre `MeseroPointsLog`. **Requiere decisión del negocio antes de implementar.**
 - `LoyaltyController::checkin`: sin verificación de presencia. Opción barata: QR de mesa firmado con `QrSignatureService` (reutilizar infra de 3.3/1.3) con TTL de 5 min.
 
+**Decisión (2026-06):** NO se implementa en Fase 4. Ambos puntos requieren una decisión de negocio (qué tan estricto debe ser el control anti-fraude vs. la fricción operativa para meseros/clientes) antes de tocar código — no son limpieza mecánica.
+
+**Riesgo aceptado:**
+- `RankingController::addPoints` permite a un mesero autenticado asignarse puntos de ranking (POP Bar Stars) por categoría + cantidad, sin evidencia de venta real. Puede inflar el ranking y los premios asociados sin una venta real detrás.
+- `LoyaltyController::checkin` otorga 25 pts/día por check-in sin verificar presencia física en el restaurante (un cliente puede hacer check-in remoto).
+
+**Próximos pasos (cuando exista decisión de negocio):**
+- Anti-fraude de puntos de mesero: (a) deprecar `addPoints` y dejar solo el flujo QR (`TicketRedeemController`, ya audita por folio único vía `ticket_redeems`); (b) cola de aprobación admin sobre `MeseroPointsLog`; (c) dashboard de anomalías (picos de auto-asignación) sobre `MeseroPointsLog`.
+- Check-in con verificación de presencia: QR de mesa firmado con `QrSignatureService` (TTL 5 min, reutiliza infraestructura de 1.3/3.3), escaneado en sitio para habilitar el botón de check-in.
+
 ---
 
 ## Checklist de verificación por fase

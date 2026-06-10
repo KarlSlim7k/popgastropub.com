@@ -26,7 +26,7 @@
 - **Customer loyalty (POP Points)** — Points are earned from all purchases (tracked via QR tickets in-restaurant), but the admin menu CRUD only manages beverages for ranking purposes.
 - **CFDI invoicing, promotions, reservations** — These modules operate independently of FoodBooking.
 
-The internal `/orden` page and `OrderPanel` component are **legacy/deprecated** — they should not be used for new features. All ordering goes through FoodBooking.
+The standalone `/orden` page was removed (redirects 301 → `/menu`). The `OrderPanel` component (`frontend/components/order/`) lives on as the cart/order modal embedded in `/menu` — it is NOT legacy. It is purely informational (no checkout); actual ordering goes through FoodBooking.
 
 ---
 
@@ -76,10 +76,15 @@ The internal `/orden` page and `OrderPanel` component are **legacy/deprecated** 
 2. **Menu** — Beverage catalog (drinks, bottles, mixology) for ranking, product cards, FoodBooking link for full menu
 3. **Promotions** — Active promos, weekly calendar, FOMO
 4. **POP Points** — Loyalty system with tiers (Fan → Lover → VIP → Elite)
-5. **CFDI Invoicing** — Ticket upload, tax data, PAC integration, tracking
+5. **CFDI Invoicing** — Ticket upload, tax data, manual review/status tracking by admin + accountant email
 6. **POP Bar Stars** — Internal waiter ranking by beverage sales
 7. **Admin Panel** — Dashboard, CRUD for menu (beverages only)/promos/users/waiters/invoices
 8. **Location & Contact** — Map, hours, WhatsApp, reservations
+9. **Two-Factor Authentication (2FA)** — TOTP-based login second factor (`TwoFactorController`, `two_factor_secret`/`two_factor_enabled` on `User`)
+10. **Push Notifications** — Web Push (VAPID) for order/factura status updates (`PushNotificationController`, `SendPushNotification` job)
+11. **QR Ticket Redemption** — In-restaurant tickets signed with `QrSignatureService`, redeemed for POP Points and waiter credit (`TicketRedeemController`, `Staff/TicketGeneratorController`, `TicketValidator`)
+12. **Referral Program** — Referral codes, pending/confirmed referrals, bonus points (`ReferralController`)
+13. **Social Auth** — Login/registration via Google, Facebook and X (Twitter) OAuth2 (`SocialAuthController`)
 
 ---
 
@@ -168,10 +173,15 @@ pop_web/
 │   │   │   └── Resources/
 │   │   ├── Models/
 │   │   ├── Services/
-│   │   │   ├── PacService.php         ← PAC invoicing integration
-│   │   │   └── WhatsAppService.php    ← Notifications
+│   │   │   ├── FacturaAccountantMailer.php  ← Sends ticket + datos fiscales to accountant
+│   │   │   ├── QrSignatureService.php       ← Signs/validates ticket & 2FA QR codes
+│   │   │   ├── TicketValidator.php          ← Validates redeemed ticket QRs (4 layers)
+│   │   │   ├── TicketStorage.php            ← Resolves ticket file disk/path
+│   │   │   ├── LoyaltyConfig.php            ← Reads loyalty Settings (cached)
+│   │   │   └── PuntosService.php            ← POP Points awarding logic
 │   │   └── Jobs/
-│   │       └── TimbrarFactura.php     ← Invoice queue
+│   │       ├── SendFacturaToAccountant.php  ← Async dispatch to FacturaAccountantMailer
+│   │       └── SendPushNotification.php     ← Async Web Push delivery
 │   ├── routes/
 │   │   ├── api.php                    ← REST API routes
 │   │   └── web.php                    ← Only if Laravel admin views needed
@@ -227,13 +237,21 @@ MAIL_PASSWORD=<mailcow_password>
 MAIL_FROM_ADDRESS=noreply@popgastropub.com
 MAIL_FROM_NAME="POP Perote"
 FACTURACION_EMAIL=facturacion@popgastropub.com
+FACTURACION_CC=
 
-PAC_API_KEY=""
-PAC_API_URL=""
-PAC_PROVIDER=facturama
+QR_SECRET=                   # 64+ chars, signs ticket & 2FA QR codes — NEVER rotate live secrets
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
 
-WHATSAPP_API_KEY=""
-WHATSAPP_API_URL=""
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=
+FACEBOOK_CLIENT_ID=
+FACEBOOK_CLIENT_SECRET=
+FACEBOOK_REDIRECT_URI=
+X_CLIENT_ID=
+X_CLIENT_SECRET=
+X_REDIRECT_URI=
 ```
 
 ---
@@ -253,8 +271,8 @@ WHATSAPP_API_URL=""
 ## Key Integrations
 
 - **FoodBooking:** Restaurant's primary platform for ALL food & beverage orders. POP links to it for ordering; POP does NOT manage orders internally
-- **WhatsApp Business API:** Primary notification channel in Mexico
-- **PAC (CFDI):** Facturama (recommended), SW Sapien, Finkok, or Diverza
+- **Social Auth:** Google, Facebook and X (Twitter) OAuth2 login/registration (`SocialAuthController`)
+- **Web Push (VAPID):** Push notifications for order/factura status updates
 - **Google Maps:** Location embed
 - **Analytics:** Google Analytics 4 + Hotjar
 
@@ -305,8 +323,11 @@ WHATSAPP_API_URL=""
 
 - **CFDI 4.0** — only valid version since April 1, 2023
 - **Required fields:** RFC, exact Name/Razón Social (must match SAT records), Tax Regime, CFDI Usage, Postal Code
-- **SLA:** 1-5 min stamping (automatic via PAC), 24 hr max internal SLA
-- **States:** pendiente → procesando → timbrado → enviado → error → cancelado
+- **Real flow (no PAC integration):**
+  1. Customer uploads ticket + datos fiscales (`FacturaController::store`).
+  2. `SendFacturaToAccountant` job (queued) calls `FacturaAccountantMailer`, which emails the ticket and fiscal data to `FACTURACION_EMAIL`/`FACTURACION_CC`. Failed sends are retried via `facturas:retry-accountant-emails` (scheduled every minute).
+  3. Accountant stamps the CFDI externally and the admin updates the `Factura.estado` manually from the admin panel.
+- **States:** `recibida` → `en_proceso` → `enviada_contadores` → `completada` | `rechazada` (each transition logged in `FacturaStatusLog` and notified to the client by email + push)
 - **Important:** System must NOT auto-reject late requests — human decision required (admin + accountant)
 
 ---

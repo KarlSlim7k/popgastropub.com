@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\Mesero;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -156,12 +157,6 @@ class UsuarioController extends Controller
     private function toFrontend(User $u): array
     {
         $tier = $u->tier ?? 'fan';
-        $tierColors = [
-            'fan'   => '#F2C777',
-            'lover' => '#D96725',
-            'vip'   => '#732817',
-            'elite' => '#0D0D0D',
-        ];
 
         return [
             'id' => (string) $u->id,
@@ -173,7 +168,7 @@ class UsuarioController extends Controller
             'status' => $u->status ?? 'activo',
             'points' => $u->points ?? 0,
             'tier' => $tier,
-            'tierColor' => $tierColors[$tier] ?? '#F2C777',
+            'tierColor' => UserResource::tierColor($tier),
             'joinDate' => $u->created_at?->toISOString() ?? '',
             'lastVisit' => $u->last_visit?->diffForHumans() ?? 'Nunca',
             'orders' => $u->orders_count ?? 0,

@@ -10,8 +10,6 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libonig-dev \
     zip \
-    nginx \
-    supervisor \
     procps \
     && rm -rf /var/lib/apt/lists/*
 
@@ -38,9 +36,6 @@ RUN mkdir -p /var/www/html/storage/framework/{sessions,views,cache} \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-COPY docker/nginx.conf /etc/nginx/nginx.conf
-COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+EXPOSE 9000
 
-EXPOSE 80
-
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["php-fpm"]
