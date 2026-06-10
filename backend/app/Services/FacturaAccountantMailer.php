@@ -6,7 +6,6 @@ use App\Models\Factura;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -34,7 +33,7 @@ class FacturaAccountantMailer
         $attempts = $claimed->contadores_email_intentos;
 
         try {
-            $disk = Storage::disk('public');
+            $disk = TicketStorage::diskFor($claimed->ticket_path);
             abort_unless($disk->exists($claimed->ticket_path), 404, 'Ticket no encontrado.');
 
             Mail::raw($this->buildEmailBody($claimed), function ($message) use ($claimed, $disk) {

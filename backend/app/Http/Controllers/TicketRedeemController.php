@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\TicketRedeem;
 use App\Services\PuntosService;
+use App\Services\QrSignatureService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -11,8 +12,10 @@ class TicketRedeemController extends Controller
 {
     private const EXPIRY_SECONDS = 72 * 3600;
 
-    public function __construct(private readonly PuntosService $puntosService)
-    {
+    public function __construct(
+        private readonly PuntosService $puntosService,
+        private readonly QrSignatureService $qrSignature,
+    ) {
     }
 
     private function check(int $total, string $ref, int $ts, string $sig): ?array
@@ -21,8 +24,7 @@ class TicketRedeemController extends Controller
             return ['error' => 'Monto inválido', 'status' => 422];
         }
 
-        $expected = hash_hmac('sha256', $total . $ref . $ts, config('app.qr_secret'));
-        if (!hash_equals($expected, $sig)) {
+        if (!$this->qrSignature->verify($total, $ref, $ts, $sig)) {
             return ['error' => 'QR inválido', 'status' => 422];
         }
 

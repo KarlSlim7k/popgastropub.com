@@ -20,7 +20,7 @@ class FacturaDeliveryTest extends TestCase
     {
         parent::setUp();
 
-        Storage::fake('public');
+        Storage::fake('local');
         config(['mail.default' => 'array']);
 
         $this->cliente = User::create([
@@ -47,7 +47,7 @@ class FacturaDeliveryTest extends TestCase
         $factura = Factura::firstOrFail();
         $this->assertNotNull($factura->contadores_email_enviado_at);
         $this->assertSame(1, $factura->contadores_email_intentos);
-        Storage::disk('public')->assertExists($factura->ticket_path);
+        Storage::disk('local')->assertExists($factura->ticket_path);
 
         $transport = app('mail.manager')->mailer()->getSymfonyTransport();
         $this->assertCount(1, $transport->messages());

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Factura;
 use App\Services\FacturaAccountantMailer;
+use App\Services\TicketStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -34,7 +35,7 @@ class FacturaController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $path = $request->file('ticket')->store('tickets', 'public');
+        $path = $request->file('ticket')->store('tickets', 'local');
 
         try {
             $factura = Factura::create([
@@ -49,7 +50,7 @@ class FacturaController extends Controller
                 'estado' => 'recibida',
             ]);
         } catch (Throwable $exception) {
-            Storage::disk('public')->delete($path);
+            Storage::disk('local')->delete($path);
             throw $exception;
         }
 
@@ -79,7 +80,7 @@ class FacturaController extends Controller
 
     private function ticketResponse(Factura $factura, bool $download)
     {
-        $disk = Storage::disk('public');
+        $disk = TicketStorage::diskFor($factura->ticket_path);
 
         abort_unless($disk->exists($factura->ticket_path), 404, 'Ticket no encontrado.');
 

@@ -4,15 +4,17 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Models\TicketRedeem;
+use App\Services\QrSignatureService;
 use App\Services\TicketValidator;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class TicketGeneratorController extends Controller
 {
-    public function __construct(private readonly TicketValidator $validator)
-    {
+    public function __construct(
+        private readonly TicketValidator $validator,
+        private readonly QrSignatureService $qrSignature,
+    ) {
     }
 
     public function validar(Request $request)
@@ -69,7 +71,7 @@ class TicketGeneratorController extends Controller
         $puntos = (int) floor($total / 10);
         $ref = 'TKT-' . date('Ymd') . '-' . strtoupper(Str::random(6));
         $ts = now()->timestamp;
-        $sig = hash_hmac('sha256', $totalInt . $ref . $ts, config('app.qr_secret'));
+        $sig = $this->qrSignature->sign($totalInt, $ref, $ts);
         $hashVerificacion = $this->validator->generarHash($v);
 
         $mesero = $request->user()->mesero;
@@ -78,7 +80,7 @@ class TicketGeneratorController extends Controller
         if ($request->hasFile('foto')) {
             $fotoPath = $request->file('foto')->store(
                 'tickets/' . date('Y/m'),
-                'public'
+                'local'
             );
         }
 
@@ -110,7 +112,6 @@ class TicketGeneratorController extends Controller
             'puntos' => $puntos,
             'ref' => $ref,
             'folio' => $v['folio'],
-            'foto_url' => $fotoPath ? Storage::url($fotoPath) : null,
             'fecha_expiracion' => $fechaExpiracion->toDateTimeString(),
         ]);
     }
