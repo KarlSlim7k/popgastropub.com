@@ -33,8 +33,17 @@ Thumbs.db
 
 # Cache
 .phpunit.result.cache
+.ruff_cache/
 Homestead.json
 Homestead.yaml
+
+# AI tools
+.commandcode/
+.qwen/
+.claude/
+
+# Test results
+test-results/
 
 # Docker (if any)
 *.pem
@@ -45,7 +54,6 @@ docker-compose.yml.bak.*
 # Runtime server artifacts
 backend/storage/
 
-# Documentacion / Base de datos
-docs/
+# Base de datos (docs del proyecto SI se trackean)
 database/docs/
 database/mariadb/
