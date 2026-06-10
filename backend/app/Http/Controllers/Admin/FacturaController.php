@@ -7,9 +7,9 @@ use App\Http\Controllers\PushNotificationController;
 use App\Models\Factura;
 use App\Models\FacturaStatusLog;
 use App\Services\FacturaAccountantMailer;
+use App\Services\TicketStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 
 class FacturaController extends Controller
 {
@@ -90,7 +90,7 @@ class FacturaController extends Controller
     public function ticket($id, Request $request)
     {
         $factura = Factura::findOrFail($id);
-        $disk = Storage::disk('public');
+        $disk = TicketStorage::diskFor($factura->ticket_path);
 
         abort_unless($disk->exists($factura->ticket_path), 404, 'Ticket no encontrado.');
 

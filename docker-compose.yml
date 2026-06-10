@@ -46,11 +46,11 @@ services:
     expose:
       - "9000"
     command: >
-      sh -c "if [ -z \"$$APP_KEY\" ]; then export APP_KEY=$$(php -r 'echo \"base64:\".base64_encode(random_bytes(32));'); fi; mkdir -p /var/www/html/storage/app/private /var/www/html/storage/app/public /var/www/html/storage/framework/cache/data /var/www/html/storage/framework/sessions /var/www/html/storage/framework/views /var/www/html/storage/logs /var/www/html/bootstrap/cache && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && chmod -R ug+rwX /var/www/html/storage /var/www/html/bootstrap/cache && php artisan migrate --force && php artisan storage:link --force 2>/dev/null || true && php-fpm"
+      sh -c "mkdir -p /var/www/html/storage/app/private /var/www/html/storage/app/public /var/www/html/storage/framework/cache/data /var/www/html/storage/framework/sessions /var/www/html/storage/framework/views /var/www/html/storage/logs /var/www/html/bootstrap/cache && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && chmod -R ug+rwX /var/www/html/storage /var/www/html/bootstrap/cache && php artisan migrate --force && php artisan tickets:migrate-to-private && php artisan storage:link --force 2>/dev/null || true && php-fpm"
     environment:
       - APP_ENV=production
       - APP_DEBUG=${APP_DEBUG:-false}
-      - APP_KEY=${APP_KEY:-}
+      - APP_KEY=${APP_KEY:?APP_KEY requerido}
       - DB_CONNECTION=mysql
       - DB_HOST=mariadb
       - DB_PORT=3306
@@ -61,7 +61,7 @@ services:
       - SESSION_DRIVER=${SESSION_DRIVER:-file}
       - APP_URL=${APP_URL:-https://api.popgastropub.com}
       - FRONTEND_URL=${FRONTEND_URL:-https://popgastropub.com}
-      - QR_SECRET=${QR_SECRET:-}
+      - QR_SECRET=${QR_SECRET:?QR_SECRET requerido}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
       - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI:-https://api.popgastropub.com/api/auth/social/google/callback}
@@ -71,8 +71,8 @@ services:
       - X_CLIENT_ID=${X_CLIENT_ID:-}
       - X_CLIENT_SECRET=${X_CLIENT_SECRET:-}
       - X_REDIRECT_URI=${X_REDIRECT_URI:-https://api.popgastropub.com/api/auth/social/x/callback}
-      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY:-BHfYAkjbS1RS5qmckWS1mLShh4npH20RJzoSe7JgmymxOYzg2LvaJzC2I5UGBFTUC4DETG5V1C4JDjSk8MU7Jlc}
-      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY:-cqQFi7rVIp4RmJdx_kGJtWfeNpBJ2Lk6ZYwjG1IwGDI}
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY:?VAPID_PUBLIC_KEY requerido}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY:?VAPID_PRIVATE_KEY requerido}
       - MAIL_MAILER=${MAIL_MAILER:-smtp}
       - MAIL_SCHEME=${MAIL_SCHEME:-smtp}
       - MAIL_HOST=${MAIL_HOST:-mail.popgastropub.com}
@@ -102,7 +102,7 @@ services:
     environment:
       - APP_ENV=production
       - APP_DEBUG=${APP_DEBUG:-false}
-      - APP_KEY=${APP_KEY:-}
+      - APP_KEY=${APP_KEY:?APP_KEY requerido}
       - APP_URL=${APP_URL:-https://api.popgastropub.com}
       - DB_CONNECTION=mysql
       - DB_HOST=mariadb
