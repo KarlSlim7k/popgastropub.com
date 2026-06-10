@@ -91,7 +91,6 @@ services:
         condition: service_healthy
     networks:
       - pop_network
-      - mailcow-network
 
   scheduler:
     build:
@@ -132,7 +131,6 @@ services:
         condition: service_healthy
     networks:
       - pop_network
-      - mailcow-network
 
   nginx:
     build:
@@ -180,9 +178,6 @@ networks:
     driver: bridge
   dokploy-network:
     external: true
-  mailcow-network:
-    external: true
-    name: mailcowdockerized_mailcow-network
 
 volumes:
   pop_db_data:
