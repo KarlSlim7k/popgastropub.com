@@ -31,15 +31,7 @@ class DbBackup extends Command
         $sqlPath = $directory.'/pop_'.now()->format('Ymd_His').'.sql';
         $gzPath = $sqlPath.'.gz';
 
-        $dumpCommand = sprintf(
-            'mariadb-dump -h%s -P%s -u%s -p%s %s > %s',
-            escapeshellarg((string) $connection['host']),
-            escapeshellarg((string) $connection['port']),
-            escapeshellarg((string) $connection['username']),
-            escapeshellarg((string) $connection['password']),
-            escapeshellarg((string) $connection['database']),
-            escapeshellarg($sqlPath)
-        );
+        $dumpCommand = $this->buildDumpCommand($connection, $sqlPath);
 
         $dump = Process::fromShellCommandline($dumpCommand);
         $dump->setTimeout(300);
@@ -71,6 +63,23 @@ class DbBackup extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    private function buildDumpCommand(array $connection, string $sqlPath): string
+    {
+        // --skip-ssl: la conexión es interna (red docker pop_network) y el
+        // servidor MariaDB no tiene TLS habilitado. mariadb-dump >= 10.11
+        // intenta SSL por defecto y falla con "SSL is required, but the
+        // server does not support it" si no se desactiva explícitamente.
+        return sprintf(
+            'mariadb-dump --skip-ssl -h%s -P%s -u%s -p%s %s > %s',
+            escapeshellarg((string) $connection['host']),
+            escapeshellarg((string) $connection['port']),
+            escapeshellarg((string) $connection['username']),
+            escapeshellarg((string) $connection['password']),
+            escapeshellarg((string) $connection['database']),
+            escapeshellarg($sqlPath)
+        );
     }
 
     private function rotate(string $directory, int $keepDays): int
