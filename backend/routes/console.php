@@ -21,3 +21,8 @@ Schedule::command('loyalty:expire-inactive-points --months=2')
     ->dailyAt('03:00')
     ->withoutOverlapping()
     ->onOneServer();
+
+Schedule::command('db:backup')
+    ->dailyAt('04:00')
+    ->withoutOverlapping()
+    ->onOneServer();
