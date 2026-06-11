@@ -75,5 +75,11 @@ class AppServiceProvider extends ServiceProvider
                     ->response(fn () => response()->json(['message' => 'Demasiadas solicitudes. Espera un momento.'], 429)),
             ];
         });
+
+        RateLimiter::for('csp-report', function (Request $request) {
+            return [
+                Limit::perMinute(60)->by($request->ip()),
+            ];
+        });
     }
 }
