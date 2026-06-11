@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\LoyaltyTransaction;
 use App\Models\User;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
@@ -16,6 +18,9 @@ use Throwable;
 class SocialAuthController extends Controller
 {
     private const WELCOME_POINTS = 50;
+
+    /** Vigencia del parámetro `state` firmado (anti login-CSRF). */
+    private const STATE_TTL_MINUTES = 10;
 
     private const PROVIDER_MAP = [
         'google' => 'google',
@@ -54,7 +59,13 @@ class SocialAuthController extends Controller
         }
 
         try {
-            return $this->resolveProvider($driver)->redirect();
+            $resolved = $this->resolveProvider($driver);
+
+            if ($resolved instanceof SocialiteOAuth2Provider) {
+                $resolved = $resolved->with(['state' => $this->generateSignedState()]);
+            }
+
+            return $resolved->redirect();
         } catch (Throwable $exception) {
             report($exception);
 
@@ -80,8 +91,17 @@ class SocialAuthController extends Controller
             ]);
         }
 
+        $resolved = $this->resolveProvider($driver);
+
+        if ($resolved instanceof SocialiteOAuth2Provider && !$this->verifySignedState(request('state'))) {
+            return $this->redirectToFrontend([
+                'error' => 'invalid_state',
+                'provider' => $provider,
+            ]);
+        }
+
         try {
-            $socialUser = $this->resolveProvider($driver)->user();
+            $socialUser = $resolved->user();
         } catch (Throwable $exception) {
             report($exception);
 
@@ -181,6 +201,39 @@ class SocialAuthController extends Controller
         }
 
         return $provider;
+    }
+
+    /**
+     * Genera un `state` autocontenido (sin sesión): payload cifrado con
+     * APP_KEY que incluye un nonce y una expiración corta. `handleProviderCallback`
+     * lo verifica antes de canjear el `code`, evitando que se acepte cualquier
+     * `code` sin pasar primero por `redirectToProvider` (login CSRF).
+     */
+    private function generateSignedState(): string
+    {
+        return Crypt::encryptString(json_encode([
+            'nonce' => Str::random(32),
+            'exp' => now()->addMinutes(self::STATE_TTL_MINUTES)->getTimestamp(),
+        ]));
+    }
+
+    private function verifySignedState(?string $state): bool
+    {
+        if (!$state) {
+            return false;
+        }
+
+        try {
+            $payload = json_decode(Crypt::decryptString($state), true);
+        } catch (DecryptException) {
+            return false;
+        }
+
+        if (!is_array($payload) || !isset($payload['exp'])) {
+            return false;
+        }
+
+        return now()->getTimestamp() <= (int) $payload['exp'];
     }
 
     private function redirectToFrontend(array $payload): RedirectResponse
