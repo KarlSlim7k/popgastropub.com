@@ -29,7 +29,8 @@ Route::post('/promociones/{slug}/click', [PromocionController::class, 'click'])-
 Route::post('/promociones/{slug}/view', [PromocionController::class, 'view'])->middleware('throttle:30,1');
 Route::get('/storage/{path}', [PublicImageController::class, 'show'])->where('path', '.*');
 Route::get('/ubicacion', [UbicacionController::class, 'show']);
-Route::get('/tickets/validate', [\App\Http\Controllers\TicketRedeemController::class, 'validate']);
+Route::get('/tickets/validate', [\App\Http\Controllers\TicketRedeemController::class, 'validate'])
+    ->middleware('throttle:tickets');
 
 // Public reservation (works with or without auth - controller checks $request->user())
 Route::post('/reservas/public', [ReservaController::class, 'store'])->middleware('throttle:6,1');
@@ -113,7 +114,8 @@ Route::middleware(['auth:sanctum', 'token.full'])->group(function () {
     Route::post('/recompensas/{id}/canjear', [RecompensaController::class, 'redeem']);
 
     // Tickets — canje de puntos por QR
-    Route::post('/tickets/redeem', [\App\Http\Controllers\TicketRedeemController::class, 'redeem']);
+    Route::post('/tickets/redeem', [\App\Http\Controllers\TicketRedeemController::class, 'redeem'])
+        ->middleware('throttle:tickets');
 
     // Mesero ratings (client → waiter)
     Route::get('/meseros/para-calificar', [\App\Http\Controllers\MeseroRatingController::class, 'meseros']);

@@ -76,6 +76,16 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        RateLimiter::for('tickets', function (Request $request) {
+            $userId = $request->user()?->id ?? $request->ip();
+
+            return [
+                Limit::perMinute(20)
+                    ->by("{$userId}|{$request->ip()}")
+                    ->response(fn () => response()->json(['message' => 'Demasiadas solicitudes. Espera un momento.'], 429)),
+            ];
+        });
+
         RateLimiter::for('csp-report', function (Request $request) {
             return [
                 Limit::perMinute(60)->by($request->ip()),
