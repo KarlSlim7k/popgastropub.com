@@ -9,10 +9,18 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 
 class MeseroController extends Controller
 {
+    /**
+     * Categorías con columna propia *_points en la tabla meseros. Cualquier
+     * otra categoría (drink types nuevos creados por el admin) solo se
+     * registra en mesero_points_log.
+     */
+    private const CORE_CATEGORIES = ['cocktail', 'premium', 'pitcher', 'bottle', 'combo', 'upsell', 'rating'];
+
     public function index(Request $request)
     {
         $query = Mesero::with('user');
@@ -30,7 +38,9 @@ class MeseroController extends Controller
 
         $meseros = $query->orderByRaw('(cocktail_points + premium_points + pitcher_points + bottle_points + combo_points + upsell_points + rating_points) DESC')->get();
 
-        return response()->json($meseros->map(fn($m) => $this->toFrontend($m)));
+        $extraPoints = $this->extraPointsByMesero($meseros->pluck('id'));
+
+        return response()->json($meseros->map(fn($m) => $this->toFrontend($m, $extraPoints[$m->id] ?? 0)));
     }
 
     public function store(Request $request)
@@ -57,7 +67,9 @@ class MeseroController extends Controller
 
     public function show($id)
     {
-        return response()->json($this->toFrontend(Mesero::with('user')->findOrFail($id)));
+        $mesero = Mesero::with('user')->findOrFail($id);
+
+        return response()->json($this->toFrontend($mesero, $this->extraPointsForMesero($mesero->id)));
     }
 
     public function update(Request $request, $id)
@@ -121,19 +133,26 @@ class MeseroController extends Controller
         $description = $request->input('description', 'Ajuste manual admin');
 
         $categoryField = $category . '_points';
+        $hasColumn = Schema::hasColumn('meseros', $categoryField);
 
         if ($points > 0) {
-            $mesero->increment($categoryField, $points);
+            if ($hasColumn) {
+                $mesero->increment($categoryField, $points);
+            }
             $mesero->increment('puntos', $points);
         } else {
             $absPoints = abs($points);
-            $currentCategoryPoints = (int) $mesero->{$categoryField};
-            
+            $currentCategoryPoints = $hasColumn
+                ? (int) $mesero->{$categoryField}
+                : (int) MeseroPointsLog::where('mesero_id', $mesero->id)->where('category', $category)->sum('points');
+
             if ($currentCategoryPoints < $absPoints) {
                 abort(422, "Puntos insuficientes en categoría {$category}. Tiene {$currentCategoryPoints}, intenta restar {$absPoints}");
             }
 
-            $mesero->decrement($categoryField, $absPoints);
+            if ($hasColumn) {
+                $mesero->decrement($categoryField, $absPoints);
+            }
             $mesero->decrement('puntos', $absPoints);
         }
 
@@ -144,9 +163,11 @@ class MeseroController extends Controller
             'multiplier' => 1.0,
         ]);
 
+        $mesero = $mesero->fresh()->load('user');
+
         return response()->json([
             'message' => $points > 0 ? "Puntos añadidos: +{$points}" : "Puntos restados: {$points}",
-            'mesero' => $this->toFrontend($mesero->fresh()->load('user')),
+            'mesero' => $this->toFrontend($mesero, $this->extraPointsForMesero($mesero->id)),
         ]);
     }
 
@@ -157,10 +178,39 @@ class MeseroController extends Controller
         );
     }
 
-    private function toFrontend(Mesero $m): array
+    /**
+     * Suma de mesero_points_log para categorías sin columna *_points propia
+     * (drink types nuevos creados por el admin), agrupada por mesero.
+     *
+     * @param  \Illuminate\Support\Collection<int, int>  $meseroIds
+     * @return array<int, int>
+     */
+    private function extraPointsByMesero($meseroIds): array
+    {
+        if ($meseroIds->isEmpty()) {
+            return [];
+        }
+
+        return MeseroPointsLog::whereIn('mesero_id', $meseroIds)
+            ->whereNotIn('category', self::CORE_CATEGORIES)
+            ->selectRaw('mesero_id, SUM(points) as extra')
+            ->groupBy('mesero_id')
+            ->pluck('extra', 'mesero_id')
+            ->map(fn ($v) => (int) $v)
+            ->toArray();
+    }
+
+    private function extraPointsForMesero(int $meseroId): int
+    {
+        return (int) MeseroPointsLog::where('mesero_id', $meseroId)
+            ->whereNotIn('category', self::CORE_CATEGORIES)
+            ->sum('points');
+    }
+
+    private function toFrontend(Mesero $m, int $extraPoints = 0): array
     {
         $total = $m->cocktail_points + $m->premium_points + $m->pitcher_points +
-                 $m->bottle_points + $m->combo_points + $m->upsell_points + $m->rating_points;
+                 $m->bottle_points + $m->combo_points + $m->upsell_points + $m->rating_points + $extraPoints;
 
         return [
             'id' => $m->id,
