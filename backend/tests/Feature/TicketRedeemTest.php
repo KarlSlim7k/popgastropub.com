@@ -154,6 +154,38 @@ class TicketRedeemTest extends TestCase
         $response->assertStatus(503);
     }
 
+    public function test_validate_endpoint_is_throttled(): void
+    {
+        $payload = [
+            'total' => 100,
+            'ref' => 'TKT-THROTTLE-VALIDATE',
+            'ts' => now()->timestamp,
+            'sig' => 'firma-invalida',
+        ];
+
+        for ($i = 0; $i < 20; $i++) {
+            $this->getJson('/api/tickets/validate?' . http_build_query($payload))->assertStatus(422);
+        }
+
+        $this->getJson('/api/tickets/validate?' . http_build_query($payload))->assertStatus(429);
+    }
+
+    public function test_redeem_endpoint_is_throttled(): void
+    {
+        $payload = [
+            'total' => 100,
+            'ref' => 'TKT-THROTTLE-REDEEM',
+            'ts' => now()->timestamp,
+            'sig' => 'firma-invalida',
+        ];
+
+        for ($i = 0; $i < 20; $i++) {
+            $this->actingAs($this->cliente)->postJson('/api/tickets/redeem', $payload)->assertStatus(422);
+        }
+
+        $this->actingAs($this->cliente)->postJson('/api/tickets/redeem', $payload)->assertStatus(429);
+    }
+
     public function test_folio_ticket_has_unique_constraint_at_db_level(): void
     {
         TicketRedeem::create([
