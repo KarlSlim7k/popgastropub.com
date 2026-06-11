@@ -6,6 +6,7 @@ use App\Models\DrinkType;
 use App\Models\Mesero;
 use App\Models\MeseroPointsLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class RankingController extends Controller
 {
@@ -44,7 +45,13 @@ class RankingController extends Controller
         $basePoints = $types[$category] * $validated['quantity'];
         $points = (int) round($basePoints * $multiplier);
 
-        $mesero->increment($category . '_points', $points);
+        // Las columnas *_points solo existen para los tipos de bebida originales
+        // (cocktail, premium, pitcher, bottle, combo, upsell). Tipos nuevos creados
+        // por el admin no tienen columna propia y se reflejan solo en `puntos` y
+        // en MeseroPointsLog (ver StaffAnalyticsController).
+        if (Schema::hasColumn('meseros', $category . '_points')) {
+            $mesero->increment($category . '_points', $points);
+        }
         $mesero->increment('puntos', $points);
         $mesero->increment('orders_served', $validated['quantity']);
 

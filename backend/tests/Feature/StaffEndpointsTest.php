@@ -129,6 +129,25 @@ class StaffEndpointsTest extends TestCase
         $response->assertStatus(422);
     }
 
+    public function test_add_points_with_drink_type_without_dedicated_column(): void
+    {
+        DrinkType::create([
+            'slug' => 'mezcal',
+            'label' => 'Mezcal',
+            'points' => 30,
+            'icon' => 'local_bar',
+            'active' => true,
+        ]);
+
+        $response = $this->actingAs($this->meseroUser)->postJson('/api/ranking/points', [
+            'category' => 'mezcal',
+            'quantity' => 1,
+        ]);
+
+        $response->assertStatus(200)->assertJsonFragment(['message' => 'Puntos añadidos: +30']);
+        $this->assertDatabaseHas('meseros', ['id' => $this->mesero->id, 'puntos' => 130]);
+    }
+
     // --- Mi Ranking Tests ---
 
     public function test_mi_ranking_returns_personal_stats(): void
