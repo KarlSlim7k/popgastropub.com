@@ -38,6 +38,10 @@ Route::post('/reservas/public', [ReservaController::class, 'store'])->middleware
 // Public push key
 Route::get('/push/vapid-public-key', [App\Http\Controllers\PushNotificationController::class, 'vapidPublicKey']);
 
+// CSP violation reports (Report-Only, telemetría V3-07)
+Route::post('/csp-report', [App\Http\Controllers\CspReportController::class, 'store'])
+    ->middleware('throttle:csp-report');
+
 /*
 |--------------------------------------------------------------------------
 | Auth Routes (Sanctum)
