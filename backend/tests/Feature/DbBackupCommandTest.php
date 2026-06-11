@@ -42,6 +42,22 @@ class DbBackupCommandTest extends TestCase
         File::deleteDirectory($directory);
     }
 
+    public function test_dump_command_disables_ssl(): void
+    {
+        $build = new ReflectionMethod(DbBackup::class, 'buildDumpCommand');
+        $build->setAccessible(true);
+
+        $command = $build->invoke(new DbBackup(), [
+            'host' => '127.0.0.1',
+            'port' => '3306',
+            'username' => 'root',
+            'password' => 'secret',
+            'database' => 'pop_perote',
+        ], '/tmp/pop_test.sql');
+
+        $this->assertStringStartsWith('mariadb-dump --skip-ssl ', $command);
+    }
+
     public function test_rotate_deletes_only_old_pop_backups(): void
     {
         $directory = storage_path('app/backups_rotate_test');
