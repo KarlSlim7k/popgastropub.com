@@ -13,6 +13,7 @@
     "laravel/tinker": "^3.0",
     "minishlink/web-push": "^9.0",
     "pragmarx/google2fa-laravel": "^2.0",
+    "sentry/sentry-laravel": "^4.25",
     "spatie/laravel-activitylog": "^5.0"
   },
   "require-dev": {
