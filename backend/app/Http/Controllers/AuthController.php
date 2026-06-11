@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -257,7 +258,18 @@ class AuthController extends Controller
             'created_at' => Carbon::now(),
         ]);
 
-        Mail::to($user->email)->send(new ResetPasswordCode($user->name, $code));
+        try {
+            Mail::to($user->email)->send(new ResetPasswordCode($user->name, $code));
+        } catch (\Throwable $e) {
+            Log::error('forgotPassword: failed to send reset code email', [
+                'email' => $email,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'No pudimos enviar el código por correo. Intenta de nuevo más tarde.',
+            ], 503);
+        }
 
         return response()->json(['message' => 'Si el correo está registrado, recibirás un código.']);
     }
