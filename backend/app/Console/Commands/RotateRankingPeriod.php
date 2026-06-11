@@ -39,6 +39,7 @@ class RotateRankingPeriod extends Command
         }
 
         foreach ($meseros as $pos => $mesero) {
+            $position = $pos + 1;
             $tier = 'Rookie';
             if ($mesero->puntos >= 5000) $tier = 'Legend';
             elseif ($mesero->puntos >= 3000) $tier = 'Master';
@@ -49,7 +50,7 @@ class RotateRankingPeriod extends Command
                 'period_id' => $periodForSnapshot->id,
                 'mesero_id' => $mesero->id,
                 'puntos' => $mesero->puntos,
-                'position' => $pos + 1,
+                'position' => $position,
                 'tier' => $tier,
             ]);
 
@@ -57,8 +58,8 @@ class RotateRankingPeriod extends Command
                 $mesero->id,
                 'period_end',
                 '¡Periodo finalizado!',
-                "Terminaste en posición #{$pos + 1} con {$mesero->puntos} pts. ¡Nuevo periodo iniciado!",
-                ['position' => $pos + 1, 'puntos' => $mesero->puntos, 'tier' => $tier]
+                "Terminaste en posición #{$position} con {$mesero->puntos} pts. ¡Nuevo periodo iniciado!",
+                ['position' => $position, 'puntos' => $mesero->puntos, 'tier' => $tier]
             );
         }
 
