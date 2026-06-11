@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\TicketRedeem;
 use App\Services\QrSignatureService;
 use App\Services\TicketValidator;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -86,23 +87,33 @@ class TicketGeneratorController extends Controller
 
         $fechaExpiracion = now()->addHours(TicketValidator::WINDOW_HOURS);
 
-        TicketRedeem::create([
-            'ref' => $ref,
-            'folio_ticket' => $v['folio'],
-            'total' => $totalInt,
-            'subtotal' => (float) $v['subtotal'],
-            'iva' => (float) $v['iva'],
-            'puntos' => $puntos,
-            'hash_verificacion' => $hashVerificacion,
-            'foto_ticket_path' => $fotoPath,
-            'mesero_id' => $mesero?->id,
-            'ts_emision' => $ts,
-            'fecha_emision_ticket' => $v['fecha_emision'] ?? null,
-            'fecha_expiracion' => $fechaExpiracion,
-            'ip_generacion' => $request->ip(),
-            'user_agent' => substr((string) $request->userAgent(), 0, 255),
-            'estado_validacion' => 'valido',
-        ]);
+        try {
+            TicketRedeem::create([
+                'ref' => $ref,
+                'folio_ticket' => $v['folio'],
+                'total' => $totalInt,
+                'subtotal' => (float) $v['subtotal'],
+                'iva' => (float) $v['iva'],
+                'puntos' => $puntos,
+                'hash_verificacion' => $hashVerificacion,
+                'foto_ticket_path' => $fotoPath,
+                'mesero_id' => $mesero?->id,
+                'ts_emision' => $ts,
+                'fecha_emision_ticket' => $v['fecha_emision'] ?? null,
+                'fecha_expiracion' => $fechaExpiracion,
+                'ip_generacion' => $request->ip(),
+                'user_agent' => substr((string) $request->userAgent(), 0, 255),
+                'estado_validacion' => 'valido',
+            ]);
+        } catch (QueryException $e) {
+            if (($e->errorInfo[0] ?? null) === '23000') {
+                return response()->json([
+                    'valido' => false,
+                    'errores' => ['Este folio ya fue registrado anteriormente'],
+                ], 422);
+            }
+            throw $e;
+        }
 
         $url = config('app.frontend_url', 'https://popgastropub.com')
             . "/puntos/canjear?total={$totalInt}&ref={$ref}&ts={$ts}&sig={$sig}";
