@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\DrinkType;
 use App\Models\Mesero;
 use App\Models\MeseroRating;
 use App\Models\StaffNotification;
@@ -49,6 +50,14 @@ class StaffEndpointsTest extends TestCase
             'iniciales' => 'TM',
             'puntos' => 100,
             'activo' => true,
+        ]);
+
+        DrinkType::create([
+            'slug' => 'cocktail',
+            'label' => 'Cóctel',
+            'points' => 10,
+            'icon' => 'local_bar',
+            'active' => true,
         ]);
     }
 
