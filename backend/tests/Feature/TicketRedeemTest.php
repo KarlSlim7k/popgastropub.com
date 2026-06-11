@@ -6,6 +6,7 @@ use App\Models\Mesero;
 use App\Models\TicketRedeem;
 use App\Models\User;
 use App\Services\QrSignatureService;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -151,5 +152,30 @@ class TicketRedeemTest extends TestCase
         ]);
 
         $response->assertStatus(503);
+    }
+
+    public function test_folio_ticket_has_unique_constraint_at_db_level(): void
+    {
+        TicketRedeem::create([
+            'ref' => 'TKT-FOLIO-1',
+            'folio_ticket' => '88888',
+            'total' => 100,
+            'puntos' => 10,
+            'ts_emision' => now()->timestamp,
+            'fecha_expiracion' => now()->addHours(72),
+            'estado_validacion' => 'valido',
+        ]);
+
+        $this->expectException(QueryException::class);
+
+        TicketRedeem::create([
+            'ref' => 'TKT-FOLIO-2',
+            'folio_ticket' => '88888',
+            'total' => 100,
+            'puntos' => 10,
+            'ts_emision' => now()->timestamp,
+            'fecha_expiracion' => now()->addHours(72),
+            'estado_validacion' => 'valido',
+        ]);
     }
 }
