@@ -32,14 +32,10 @@ class PuntosController extends Controller
     {
         $tiers = LoyaltyTier::active()->ordered()->get();
 
-        return response()->json($tiers->map(function ($tier) {
-            $members = User::where('role', 'cliente')
-                ->where('points', '>=', $tier->min_points)
-                ->where(function ($q) use ($tier) {
-                    if ($tier->max_points) {
-                        $q->where('points', '<=', $tier->max_points);
-                    }
-                })->count();
+        $memberCounts = $this->memberCountsByTier($tiers);
+
+        return response()->json($tiers->map(function ($tier) use ($memberCounts) {
+            $members = $memberCounts[$tier->id] ?? 0;
 
             return [
                 'id' => $tier->id,
@@ -61,6 +57,31 @@ class PuntosController extends Controller
                 'sort_order' => $tier->sort_order,
             ];
         }));
+    }
+
+    /**
+     * Cuenta clientes por nivel en una sola query (evita N counts, uno por tier).
+     *
+     * @return array<int, int> conteo de miembros indexado por id de tier
+     */
+    private function memberCountsByTier($tiers): array
+    {
+        if ($tiers->isEmpty()) {
+            return [];
+        }
+
+        $selects = $tiers->map(function ($tier) {
+            $condition = 'points >= ' . (int) $tier->min_points;
+            if ($tier->max_points !== null) {
+                $condition .= ' AND points <= ' . (int) $tier->max_points;
+            }
+
+            return "SUM(CASE WHEN {$condition} THEN 1 ELSE 0 END) AS tier_{$tier->id}";
+        })->implode(', ');
+
+        $counts = User::where('role', 'cliente')->selectRaw($selects)->first();
+
+        return $tiers->mapWithKeys(fn ($tier) => [$tier->id => (int) ($counts->{"tier_{$tier->id}"} ?? 0)])->toArray();
     }
 
     public function storeTier(Request $request)
@@ -241,13 +262,15 @@ class PuntosController extends Controller
 
         $tierColors = ['fan' => 'text-gray-300', 'lover' => 'text-pop-light-gold', 'vip' => 'text-pop-orange', 'elite' => 'text-pop-gold'];
 
-        return response()->json($users->values()->map(function ($u, $i) use ($tierColors) {
-            $tier = LoyaltyTier::where('min_points', '<=', $u->points)
-                ->where(function ($q) use ($u) {
-                    $q->whereNull('max_points')->orWhere('max_points', '>=', $u->points);
-                })
-                ->orderBy('min_points', 'desc')
-                ->first();
+        $tiers = LoyaltyTier::orderBy('min_points', 'desc')->get();
+
+        $redemptionCounts = RewardRedemption::whereIn('user_id', $users->pluck('id'))
+            ->selectRaw('user_id, COUNT(*) as total')
+            ->groupBy('user_id')
+            ->pluck('total', 'user_id');
+
+        return response()->json($users->values()->map(function ($u, $i) use ($tierColors, $tiers, $redemptionCounts) {
+            $tier = $tiers->first(fn ($t) => $t->min_points <= $u->points && ($t->max_points === null || $t->max_points >= $u->points));
 
             return [
                 'rank' => $i + 1,
@@ -258,7 +281,7 @@ class PuntosController extends Controller
                 'tierColor' => $tierColors[$tier->slug ?? 'fan'] ?? 'text-gray-300',
                 'visits' => $u->orders_count ?? 0,
                 'orders' => $u->orders_count ?? 0,
-                'redeemed' => RewardRedemption::where('user_id', $u->id)->count(),
+                'redeemed' => (int) ($redemptionCounts[$u->id] ?? 0),
             ];
         }));
     }
