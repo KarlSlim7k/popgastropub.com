@@ -18,9 +18,11 @@ interface TierData {
   border_color: string;
   icon: string;
   benefits: string[];
+  investment_text: string | null;
   config: Record<string, unknown>;
   members: number;
   is_active: boolean;
+  is_featured: boolean;
   sort_order: number;
 }
 
@@ -80,7 +82,9 @@ const defaultTierForm = {
   border_color: "#F2C777",
   icon: "person",
   benefits: "",
+  investment_text: "",
   is_active: true,
+  is_featured: false,
   sort_order: 0,
 };
 
@@ -174,7 +178,9 @@ export default function AdminPuntosPage() {
       border_color: tier.border_color,
       icon: tier.icon,
       benefits: tier.benefits.join(", "),
+      investment_text: tier.investment_text ?? "",
       is_active: tier.is_active,
+      is_featured: tier.is_featured,
       sort_order: tier.sort_order,
     });
     setActiveModal("tier");
@@ -211,7 +217,9 @@ export default function AdminPuntosPage() {
         border_color: tierForm.border_color,
         icon: tierForm.icon,
         benefits: tierForm.benefits.split(",").map((b) => b.trim()).filter(Boolean),
+        investment_text: tierForm.investment_text || null,
         is_active: tierForm.is_active,
+        is_featured: tierForm.is_featured,
         sort_order: tierForm.sort_order,
       };
       if (editingId) {
@@ -378,6 +386,9 @@ export default function AdminPuntosPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {tiers.map((tier) => (
             <article key={tier.id} className="rounded-xl p-6 border transition-all relative group" style={{ backgroundColor: `${tier.bg_color}15`, borderColor: `${tier.border_color}50` }}>
+              {tier.is_featured && (
+                <span className="absolute top-3 left-3 bg-pop-gold text-pop-black text-[9px] font-black tracking-[0.2em] px-2 py-0.5 rounded-sm">DESTACADO</span>
+              )}
               <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button onClick={() => openEditTier(tier)} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white">
                   <span className="material-symbols-outlined text-sm">edit</span>
@@ -631,9 +642,19 @@ export default function AdminPuntosPage() {
                 <label className={labelCls}>Beneficios (separados por coma)</label>
                 <input type="text" value={tierForm.benefits} onChange={(e) => setTierForm({ ...tierForm, benefits: e.target.value })} placeholder="Promos básicas, Puntos por compra" className={inputCls} />
               </div>
-              <div className="flex items-center gap-3">
-                <input type="checkbox" id="tier-active" checked={tierForm.is_active} onChange={(e) => setTierForm({ ...tierForm, is_active: e.target.checked })} className="w-4 h-4 accent-pop-gold" />
-                <label htmlFor="tier-active" className="text-sm text-white font-semibold">Activo</label>
+              <div>
+                <label className={labelCls}>Texto de inversión / ¿Cuándo llegas aquí? (landing pública)</label>
+                <textarea value={tierForm.investment_text} onChange={(e) => setTierForm({ ...tierForm, investment_text: e.target.value })} placeholder="Con ~10 visitas con consumo promedio. O menos si refieres amigos." rows={2} className={inputCls} />
+              </div>
+              <div className="flex flex-wrap items-center gap-6">
+                <div className="flex items-center gap-3">
+                  <input type="checkbox" id="tier-active" checked={tierForm.is_active} onChange={(e) => setTierForm({ ...tierForm, is_active: e.target.checked })} className="w-4 h-4 accent-pop-gold" />
+                  <label htmlFor="tier-active" className="text-sm text-white font-semibold">Activo</label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input type="checkbox" id="tier-featured" checked={tierForm.is_featured} onChange={(e) => setTierForm({ ...tierForm, is_featured: e.target.checked })} className="w-4 h-4 accent-pop-gold" />
+                  <label htmlFor="tier-featured" className="text-sm text-white font-semibold">Destacado (badge MÁS POPULAR en landing)</label>
+                </div>
               </div>
             </div>
             <div className="p-6 border-t border-white/5 flex justify-end gap-3">

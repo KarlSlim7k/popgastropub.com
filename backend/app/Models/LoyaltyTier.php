@@ -19,8 +19,10 @@ class LoyaltyTier extends Model
         'border_color',
         'icon',
         'benefits',
+        'investment_text',
         'config',
         'is_active',
+        'is_featured',
         'sort_order',
     ];
 
@@ -28,6 +30,7 @@ class LoyaltyTier extends Model
         'benefits' => 'array',
         'config' => 'array',
         'is_active' => 'boolean',
+        'is_featured' => 'boolean',
         'min_points' => 'integer',
         'max_points' => 'integer',
         'sort_order' => 'integer',
@@ -59,5 +62,26 @@ class LoyaltyTier extends Model
             ->where(function ($q) use ($points) {
                 $q->whereNull('max_points')->orWhere('max_points', '>=', $points);
             });
+    }
+
+    /**
+     * Resuelve el slug del tier para una cantidad de puntos.
+     * Usa cache (60s) para evitar N+1 al listar usuarios.
+     */
+    public static function resolveSlugForPoints(int $points): string
+    {
+        $tiers = \Illuminate\Support\Facades\Cache::remember('loyalty_tiers_slug_map', 60, function () {
+            return self::active()->ordered()->get(['slug', 'min_points', 'max_points'])->toArray();
+        });
+
+        foreach ($tiers as $tier) {
+            $minOk = $points >= (int) $tier['min_points'];
+            $maxOk = $tier['max_points'] === null || $points <= (int) $tier['max_points'];
+            if ($minOk && $maxOk) {
+                return $tier['slug'];
+            }
+        }
+
+        return $tiers[0]['slug'] ?? 'fan';
     }
 }

@@ -66,12 +66,8 @@ class User extends Authenticatable
 
     public function getTierAttribute(): string
     {
-        $points = $this->points ?? 0;
-
-        if ($points >= \App\Services\LoyaltyConfig::tierMin('elite')) return 'elite';
-        if ($points >= \App\Services\LoyaltyConfig::tierMin('vip'))   return 'vip';
-        if ($points >= \App\Services\LoyaltyConfig::tierMin('lover')) return 'lover';
-        return 'fan';
+        $points = (int) ($this->points ?? 0);
+        return \App\Models\LoyaltyTier::resolveSlugForPoints($points);
     }
 
     public function reservas()

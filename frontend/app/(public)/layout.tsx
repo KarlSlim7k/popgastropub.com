@@ -1,104 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
-import Image from "next/image";
+import React from "react";
 import NewsletterForm from "@/components/NewsletterForm";
-
-const navLinks = [
-  { href: "/", label: "Inicio" },
-  { href: "/menu", label: "Menú" },
-  { href: "/sobre-nosotros", label: "Nosotros" },
-  { href: "/promociones", label: "Promos" },
-  { href: "/pop-points", label: "POP Points" },
-  { href: "/ubicacion", label: "Ubicación" },
-  { href: "/login", label: "Cuenta" },
-];
+import LandingNav from "@/components/pop-points/LandingNav";
 
 export default function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   return (
     <>
-      {/* Top Navigation Bar */}
-      <nav className="fixed top-0 w-full z-50 bg-transparent backdrop-blur-md dark:bg-[#234032]/80 flex justify-between items-center px-8 py-4 max-w-full no-line">
-        <div className="flex items-center justify-center">
-          <Image
-            src="/images/logopop.png"
-            alt="POP PEROTE Logo"
-            width={80}
-            height={40}
-            className="w-auto h-8 md:h-10 object-contain"
-            priority
-          />
-        </div>
-        <div className="hidden md:flex items-center space-x-8 font-epilogue font-bold tracking-tight uppercase">
-          {navLinks.map((link) => (
-            <a
-              key={link.href}
-              className="text-[#E5E2E1] hover:text-[#FFB693] transition-all duration-300 ease-in-out"
-              href={link.href}
-            >
-              {link.label}
-            </a>
-          ))}
-        </div>
-        <div className="flex items-center space-x-4">
-          <a
-            href="/login"
-            className="hidden md:block border border-[#F2C166]/20 px-4 py-2 text-[#F2C166] font-bold text-sm transition-all duration-300 active:scale-95"
-          >
-            LOGIN
-          </a>
-          <button
-            className="md:hidden text-[#F2C166] p-2"
-            onClick={() => setMobileMenuOpen((v) => !v)}
-            aria-label="Toggle menu"
-            type="button"
-          >
-            <span className="material-symbols-outlined text-2xl">
-              {mobileMenuOpen ? "close" : "menu"}
-            </span>
-          </button>
-          <a
-            href="https://wa.me/522821278014"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-[#D96E30] px-6 py-2 text-on-surface font-black text-sm transition-all duration-500 cubic-bezier(0.23, 1, 0.32, 1) active:scale-95 flex items-center gap-2"
-          >
-            <span className="hidden md:inline">WHATSAPP</span>
-            <span className="material-symbols-outlined text-lg">chat</span>
-          </a>
-        </div>
-      </nav>
-
-      {/* Mobile Menu Drawer */}
-      {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-[#234032]/95 backdrop-blur-xl pt-20 px-8 pb-24 overflow-y-auto">
-          <div className="flex flex-col gap-6 mt-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-[#F2C166] font-headline font-black text-2xl uppercase tracking-widest hover:text-[#D96E30] transition-colors"
-              >
-                {link.label}
-              </a>
-            ))}
-            <a
-              href="/login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="border border-[#F2C166]/30 text-[#F2C166] font-bold text-sm px-6 py-3 text-center uppercase tracking-widest mt-4"
-            >
-              Login
-            </a>
-          </div>
-        </div>
-      )}
+      <LandingNav />
 
       {/* Main Content */}
       {children}

@@ -32,6 +32,11 @@ Route::get('/ubicacion', [UbicacionController::class, 'show']);
 Route::get('/tickets/validate', [\App\Http\Controllers\TicketRedeemController::class, 'validate'])
     ->middleware('throttle:tickets');
 
+// Public loyalty + rewards (landing POP Points)
+Route::get('/loyalty/tiers', [\App\Http\Controllers\Public\LoyaltyController::class, 'tiers']);
+Route::get('/loyalty/point-actions', [\App\Http\Controllers\Public\LoyaltyController::class, 'pointActions']);
+Route::get('/recompensas', [RecompensaController::class, 'index']);
+
 // Public reservation (works with or without auth - controller checks $request->user())
 Route::post('/reservas/public', [ReservaController::class, 'store'])->middleware('throttle:6,1');
 
@@ -109,7 +114,6 @@ Route::middleware(['auth:sanctum', 'token.full'])->group(function () {
     Route::post('/pedidos', [PedidoController::class, 'store']);
 
     // Recompensas
-    Route::get('/recompensas', [RecompensaController::class, 'index']);
     Route::get('/recompensas/historial', [RecompensaController::class, 'history']);
     Route::post('/recompensas/{id}/canjear', [RecompensaController::class, 'redeem']);
 

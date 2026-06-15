@@ -12,7 +12,9 @@ class RecompensaController extends Controller
 {
     public function index()
     {
-        return Recompensa::where('disponible', true)->get();
+        return Recompensa::where('disponible', true)
+            ->orderBy('puntos_requeridos')
+            ->get();
     }
 
     public function history(Request $request)

@@ -51,9 +51,11 @@ class PuntosController extends Controller
                 'border_color' => $tier->border_color,
                 'icon' => $tier->icon,
                 'benefits' => $tier->benefits,
+                'investment_text' => $tier->investment_text,
                 'config' => $tier->config,
                 'members' => $members,
                 'is_active' => $tier->is_active,
+                'is_featured' => (bool) $tier->is_featured,
                 'sort_order' => $tier->sort_order,
             ];
         }));
@@ -96,8 +98,10 @@ class PuntosController extends Controller
             'border_color' => 'nullable|string|max:7',
             'icon' => 'nullable|string|max:50',
             'benefits' => 'nullable|array',
+            'investment_text' => 'nullable|string',
             'config' => 'nullable|array',
             'is_active' => 'boolean',
+            'is_featured' => 'boolean',
             'sort_order' => 'nullable|integer|min:0',
         ]);
 
@@ -106,10 +110,12 @@ class PuntosController extends Controller
         $validated['border_color'] = $validated['border_color'] ?? $validated['color'];
         $validated['icon'] = $validated['icon'] ?? 'person';
         $validated['is_active'] = $validated['is_active'] ?? true;
+        $validated['is_featured'] = $validated['is_featured'] ?? false;
         $validated['sort_order'] = $validated['sort_order'] ?? 0;
 
         $tier = LoyaltyTier::create($validated);
         Cache::forget('loyalty_tiers');
+        Cache::forget('loyalty_tiers_slug_map');
 
         return response()->json($tier, 201);
     }
@@ -128,13 +134,16 @@ class PuntosController extends Controller
             'border_color' => 'nullable|string|max:7',
             'icon' => 'nullable|string|max:50',
             'benefits' => 'nullable|array',
+            'investment_text' => 'nullable|string',
             'config' => 'nullable|array',
             'is_active' => 'boolean',
+            'is_featured' => 'boolean',
             'sort_order' => 'nullable|integer|min:0',
         ]);
 
         $tier->update($validated);
         Cache::forget('loyalty_tiers');
+        Cache::forget('loyalty_tiers_slug_map');
 
         return response()->json($tier->fresh());
     }
@@ -144,6 +153,7 @@ class PuntosController extends Controller
         $tier = LoyaltyTier::findOrFail($id);
         $tier->delete();
         Cache::forget('loyalty_tiers');
+        Cache::forget('loyalty_tiers_slug_map');
 
         return response()->json(['message' => 'Nivel eliminado']);
     }
@@ -161,6 +171,7 @@ class PuntosController extends Controller
         }
 
         Cache::forget('loyalty_tiers');
+        Cache::forget('loyalty_tiers_slug_map');
 
         return response()->json(['message' => 'Orden actualizado']);
     }
