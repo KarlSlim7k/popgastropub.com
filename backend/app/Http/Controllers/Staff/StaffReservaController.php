@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Models\Mesa;
 use App\Models\Reserva;
 use App\Models\Setting;
 use App\Services\ReservaMailService;
@@ -14,11 +15,19 @@ class StaffReservaController extends Controller
     {
         $fecha = $request->input('fecha', today()->toDateString());
 
-        $reservas = Reserva::whereDate('fecha', $fecha)->orderBy('hora')->get();
+        $reservas = Reserva::with('mesa')->whereDate('fecha', $fecha)->orderBy('hora')->get();
 
-        $settings = Setting::getGroup('restaurant');
-        $totalMesas = (int) ($settings['total_mesas'] ?? 12);
-        $ocupadas = $reservas->whereIn('estado', ['confirmada', 'sentada'])->count();
+        $totalMesas = Mesa::activa()->count();
+        if ($totalMesas === 0) {
+            $settings = Setting::getGroup('restaurant');
+            $totalMesas = (int) ($settings['total_mesas'] ?? 12);
+        }
+
+        $ocupadas = $reservas->whereIn('estado', ['confirmada', 'sentada'])
+            ->pluck('mesa_id')
+            ->filter()
+            ->unique()
+            ->count();
 
         return response()->json([
             'fecha' => $fecha,
@@ -27,7 +36,7 @@ class StaffReservaController extends Controller
                 'total_mesas' => $totalMesas,
                 'ocupadas' => $ocupadas,
                 'disponibles' => $totalMesas - $ocupadas,
-                'ocupacion_pct' => round(($ocupadas / $totalMesas) * 100),
+                'ocupacion_pct' => $totalMesas > 0 ? round(($ocupadas / $totalMesas) * 100) : 0,
             ],
         ]);
     }

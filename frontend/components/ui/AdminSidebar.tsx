@@ -28,6 +28,7 @@ const navItems = [
     icon: "calendar_month",
   },
   { label: "Reservas", href: "/admin/reservas", icon: "event_seat" },
+  { label: "Mesas", href: "/admin/mesas", icon: "table_restaurant" },
   { label: "Recompensas", href: "/admin/recompensas", icon: "redeem" },
   { label: "Facturación", href: "/admin/facturacion", icon: "receipt_long" },
 ];

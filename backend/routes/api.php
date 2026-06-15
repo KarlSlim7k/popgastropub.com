@@ -251,8 +251,12 @@ Route::middleware(['auth:sanctum', 'token.full', 'role:admin', 'throttle:admin-a
 
     // Reservas
     Route::get('/reservas', [App\Http\Controllers\Admin\ReservaController::class, 'index']);
+    Route::get('/reservas/disponibilidad', [App\Http\Controllers\Admin\ReservaController::class, 'disponibilidad']);
     Route::patch('/reservas/{id}/status', [App\Http\Controllers\Admin\ReservaController::class, 'updateStatus']);
     Route::delete('/reservas/{id}', [App\Http\Controllers\Admin\ReservaController::class, 'destroy']);
+
+    // Mesas CRUD
+    Route::apiResource('mesas', App\Http\Controllers\Admin\MesaController::class);
 
     // Pedidos
     Route::get('/pedidos', [App\Http\Controllers\Admin\PedidoController::class, 'index']);

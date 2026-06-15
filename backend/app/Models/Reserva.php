@@ -17,6 +17,7 @@ class Reserva extends Model
         'fecha',
         'hora',
         'personas',
+        'mesa_id',
         'notas',
         'estado',
     ];
@@ -24,5 +25,10 @@ class Reserva extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function mesa()
+    {
+        return $this->belongsTo(Mesa::class);
     }
 }
