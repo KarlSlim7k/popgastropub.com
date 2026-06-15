@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from "@/lib/auth-provider";
 import { fetchWithAuth } from "@/lib/api";
 
-interface Reserva { id: number; nombre: string; telefono: string; fecha: string; hora: string; personas: number; estado: string; notas?: string; }
+interface Reserva { id: number; nombre: string; telefono?: string; email?: string; fecha: string; hora: string; personas: number; estado: string; notas?: string; }
 interface SalonData { total_mesas: number; ocupadas: number; disponibles: number; ocupacion_pct: number; }
 
 export default function StaffReservationsPage() {
@@ -94,7 +94,7 @@ export default function StaffReservationsPage() {
                   {reservas.map((r) => (
                     <tr key={r.id} className="hover:bg-white/[0.02]">
                       <td className="py-6 font-mono text-pop-gold text-lg font-bold">{r.hora}</td>
-                      <td className="py-6"><p className="text-white font-bold">{r.nombre}</p><p className="text-[10px] text-gray-500">{r.telefono}</p></td>
+                      <td className="py-6"><p className="text-white font-bold">{r.nombre}</p><p className="text-[10px] text-gray-500">{r.email}</p><p className="text-[10px] text-gray-500">{r.telefono}</p></td>
                       <td className="py-6 text-gray-300 font-mono">{r.personas} pax</td>
                       <td className="py-6"><span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${statusBadge(r.estado)}`}>{r.estado}</span></td>
                       <td className="py-6 text-right">

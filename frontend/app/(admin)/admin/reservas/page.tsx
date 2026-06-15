@@ -9,7 +9,8 @@ import { Pagination } from "@/components/ui/Pagination";
 interface Reserva {
   id: number;
   nombre: string;
-  telefono: string;
+  telefono?: string;
+  email?: string;
   fecha: string;
   hora: string;
   personas: number;
@@ -104,7 +105,7 @@ export default function AdminReservasPage() {
           <tbody className="divide-y divide-white/5">
             {visible.map((reserva) => (
               <tr key={reserva.id} className="hover:bg-white/[0.02]">
-                <td className="p-5"><p className="text-sm font-bold text-white">{reserva.nombre}</p><p className="text-[10px] text-gray-500">{reserva.telefono}</p></td>
+                <td className="p-5"><p className="text-sm font-bold text-white">{reserva.nombre}</p><p className="text-[10px] text-gray-500">{reserva.email}</p><p className="text-[10px] text-gray-500">{reserva.telefono}</p></td>
                 <td className="text-xs text-gray-300">{reserva.fecha} · {reserva.hora}</td>
                 <td className="text-xs font-bold text-pop-gold">{reserva.personas}</td>
                 <td className="max-w-xs text-xs text-gray-400 truncate">{reserva.notas || "—"}</td>

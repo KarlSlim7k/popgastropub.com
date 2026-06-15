@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\PushNotificationController;
 use App\Models\Reserva;
+use App\Services\ReservaMailService;
 use Illuminate\Http\Request;
 
 class ReservaController extends Controller
@@ -32,6 +33,8 @@ class ReservaController extends Controller
 
         $reserva = Reserva::findOrFail($id);
         $reserva->update(['estado' => $validated['estado']]);
+
+        app(ReservaMailService::class)->notifyCustomer($reserva, $validated['estado']);
 
         if ($reserva->user_id) {
             $labels = ['confirmada' => '✅ Confirmada', 'cancelada' => '❌ Cancelada', 'completada' => 'Completada'];

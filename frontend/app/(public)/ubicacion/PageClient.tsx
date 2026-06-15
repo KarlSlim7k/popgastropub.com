@@ -27,6 +27,7 @@ type ReservaStatus = 'idle' | 'submitting' | 'success' | 'error' | 'whatsapp_sen
 
 export default function Ubicacion() {
   const [nombre, setNombre] = useState('');
+  const [email, setEmail] = useState('');
   const [telefono, setTelefono] = useState('');
   const [fecha, setFecha] = useState('');
   const [hora, setHora] = useState('');
@@ -57,14 +58,14 @@ export default function Ubicacion() {
       if (session?.token) {
         await fetchWithAuth('/reservas', session.token, {
           method: 'POST',
-          body: JSON.stringify({ nombre, telefono, fecha, hora, personas, notas }),
+          body: JSON.stringify({ nombre, email, telefono, fecha, hora, personas, notas }),
         });
         setStatus('success');
       } else {
         const { fetchAPI } = await import('@/lib/api');
         await fetchAPI('/reservas/public', {
           method: 'POST',
-          body: JSON.stringify({ nombre, telefono, fecha, hora, personas, notas }),
+          body: JSON.stringify({ nombre, email, telefono, fecha, hora, personas, notas }),
         });
         setStatus('whatsapp_sent');
       }
@@ -76,7 +77,7 @@ export default function Ubicacion() {
   };
 
   function resetForm() {
-    setNombre(''); setTelefono(''); setFecha(''); setHora(''); setPersonas(2); setNotas('');
+    setNombre(''); setEmail(''); setTelefono(''); setFecha(''); setHora(''); setPersonas(2); setNotas('');
   }
 
   const today = new Date().toISOString().split('T')[0];
@@ -237,7 +238,7 @@ export default function Ubicacion() {
                   <span className="text-white/20">|</span>
                   <a href="/login?tab=register" className="text-[#D96725] text-xs font-bold uppercase tracking-widest hover:underline">Registrarse</a>
                 </div>
-                <p className="text-white/40 text-xs mt-2">O continúa sin cuenta — te confirmaremos por WhatsApp.</p>
+                <p className="text-white/40 text-xs mt-2">O continúa sin cuenta — te enviaremos la confirmación por correo.</p>
               </div>
             )}
 
@@ -261,7 +262,7 @@ export default function Ubicacion() {
                   <span className="material-symbols-outlined text-[#F2C777] text-2xl">check_circle</span>
                   <h3 className="text-white font-bold text-lg">¡Reservación Registrada!</h3>
                 </div>
-                <p className="text-white/60 text-sm">Tu reservación fue registrada. Nuestro equipo te confirmará por WhatsApp al número {telefono || 'proporcionado'}.</p>
+                <p className="text-white/60 text-sm">Tu reservación fue registrada. Te enviamos un correo a {email || 'tu correo'} y el equipo de POP te confirmará por ahí.</p>
                 <p className="text-white/40 text-xs mt-3">
                   💡 <a href="/login?tab=register" className="text-[#F2C777] hover:underline">Crea una cuenta</a> para gestionar tus reservaciones, ver el estado en tiempo real y ganar <span className="text-[#F2C777]">50 puntos POP</span> de bienvenida.
                 </p>
@@ -283,7 +284,10 @@ export default function Ubicacion() {
               <form className="space-y-8" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <input className="w-full bg-transparent border-0 border-b border-white/10 py-4 focus:ring-0 focus:border-[#F2C777] transition-all text-white placeholder:text-white/30 outline-none" placeholder="Nombre Completo" type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
-                  <input className="w-full bg-transparent border-0 border-b border-white/10 py-4 focus:ring-0 focus:border-[#F2C777] transition-all text-white placeholder:text-white/30 outline-none" placeholder="Teléfono (WhatsApp)" type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} required />
+                  <input className="w-full bg-transparent border-0 border-b border-white/10 py-4 focus:ring-0 focus:border-[#F2C777] transition-all text-white placeholder:text-white/30 outline-none" placeholder="Correo Electrónico" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <input className="w-full bg-transparent border-0 border-b border-white/10 py-4 focus:ring-0 focus:border-[#F2C777] transition-all text-white placeholder:text-white/30 outline-none" placeholder="Teléfono (opcional)" type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   <input className="w-full bg-transparent border-0 border-b border-white/10 py-4 focus:ring-0 focus:border-[#F2C777] transition-all text-white outline-none" type="date" min={today} value={fecha} onChange={(e) => setFecha(e.target.value)} required />

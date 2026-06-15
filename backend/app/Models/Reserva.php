@@ -13,6 +13,7 @@ class Reserva extends Model
         'user_id',
         'nombre',
         'telefono',
+        'email',
         'fecha',
         'hora',
         'personas',

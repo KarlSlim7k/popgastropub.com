@@ -348,10 +348,9 @@ export default function ReservasPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Teléfono</label>
+                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Teléfono (opcional)</label>
                   <input
                     name="telefono"
-                    required
                     value={form.telefono}
                     onChange={handleChange}
                     className="w-full bg-pop-black border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-pop-gold transition-all"

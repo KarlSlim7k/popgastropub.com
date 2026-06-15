@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use App\Models\Reserva;
 use App\Models\Setting;
+use App\Services\ReservaMailService;
 use Illuminate\Http\Request;
 
 class StaffReservaController extends Controller
@@ -39,6 +40,8 @@ class StaffReservaController extends Controller
 
         $reserva = Reserva::findOrFail($id);
         $reserva->update(['estado' => $request->input('estado')]);
+
+        app(ReservaMailService::class)->notifyCustomer($reserva, $request->input('estado'));
 
         return response()->json($reserva);
     }

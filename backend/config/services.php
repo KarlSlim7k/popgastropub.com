@@ -24,5 +24,8 @@ return [
         'from_address' => env('RESEND_FROM_ADDRESS', 'noticias@popgastropub.com'),
         'from_name' => env('RESEND_FROM_NAME', 'POP Perote'),
         'newsletter_segment_id' => env('RESEND_NEWSLETTER_SEGMENT_ID'),
+        'reservas_from_address' => env('RESEND_RESERVAS_FROM_ADDRESS', 'reservaciones@popgastropub.com'),
+        'reservas_notify_to' => env('RESERVAS_NOTIFY_EMAIL', 'reservaciones@popgastropub.com'),
+        'confirmacion_from_address' => env('RESEND_CONFIRMACION_FROM_ADDRESS', 'confirmacion@popgastropub.com'),
     ],
 ];

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Reserva;
+use App\Services\ReservaMailService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -22,12 +23,18 @@ class ReservaController extends Controller
     {
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
-            'telefono' => 'required|string|max:50',
+            'telefono' => 'nullable|string|max:50',
+            'email' => 'nullable|email|max:255',
             'fecha' => 'required|date|after_or_equal:today',
             'hora' => 'required|date_format:H:i',
             'personas' => 'required|integer|min:1|max:20',
             'notas' => 'nullable|string',
         ]);
+
+        $validated['email'] = $validated['email'] ?? $request->user()?->email;
+        if (empty($validated['email'])) {
+            return response()->json(['message' => 'El correo electrónico es obligatorio.'], 422);
+        }
 
         $date = Carbon::parse($validated['fecha']);
         if ($date->dayOfWeek === Carbon::TUESDAY) {
@@ -54,11 +61,16 @@ class ReservaController extends Controller
             'id' => $reserva->id,
             'nombre' => $reserva->nombre,
             'telefono' => $reserva->telefono,
+            'email' => $reserva->email,
             'fecha' => $reserva->fecha,
             'hora' => $reserva->hora,
             'personas' => $reserva->personas,
             'user_id' => $reserva->user_id,
         ]);
+
+        $mailer = app(ReservaMailService::class);
+        $mailer->notifyStaff($reserva);
+        $mailer->notifyCustomer($reserva, 'pendiente');
 
         return response()->json([
             'reserva' => $reserva,
