@@ -10,7 +10,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "¿Los puntos tienen fecha de vencimiento?",
-    a: "Tus puntos no vencen mientras mantengas actividad en tu cuenta al menos una vez cada 6 meses. Una visita, un pedido en línea o cualquier acción que genere puntos restablece el contador.",
+    a: "Sí. Cada lote de puntos que acumulas tiene una vigencia de 2 meses (60 días) contados a partir de la fecha en que los obtuviste. Si no los usas dentro de ese periodo, se vencen automáticamente. Por eso te recomendamos visitarnos con frecuencia y revisar tu saldo seguido para que no se te pierda nada.",
   },
   {
     q: "¿Los pedidos a domicilio también generan puntos?",

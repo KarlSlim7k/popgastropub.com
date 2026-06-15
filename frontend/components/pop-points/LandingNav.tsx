@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
@@ -40,11 +41,15 @@ export default function LandingNav() {
             : "bg-[#0a0a0a]/80 backdrop-blur-md border-b border-transparent"
         }`}
       >
-        <Link
-          href="/"
-          className="font-epilogue font-black text-xl tracking-[0.2em] text-[#F2C777] hover:text-white transition-colors"
-        >
-          POP
+        <Link href="/" className="flex items-center gap-2 group" aria-label="POP Perote - Inicio">
+          <Image
+            src="/images/logopop.png"
+            alt="POP Perote"
+            width={48}
+            height={48}
+            className="h-9 w-9 md:h-10 md:w-10 object-contain transition-transform group-hover:scale-105"
+            priority
+          />
         </Link>
 
         <div className="hidden md:flex items-center gap-7">

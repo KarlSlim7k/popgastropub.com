@@ -70,6 +70,89 @@ class User extends Authenticatable
         return \App\Models\LoyaltyTier::resolveSlugForPoints($points);
     }
 
+    /**
+     * Saldo real de puntos no expirados (FIFO por lote created_at).
+     * Un lote positivo (puntos ganados) expira EXPIRATION_DAYS después de su created_at.
+     * Los lotes negativos (canjes) consumen de los positivos más antiguos primero.
+     */
+    public function getNonExpiredPointsAttribute(): int
+    {
+        $all = $this->loyaltyTransactions()->notExpired()->orderBy('created_at')->get(['points']);
+        $balance = 0;
+        $positiveLots = [];
+
+        foreach ($all as $tx) {
+            if ($tx->points > 0) {
+                $balance += $tx->points;
+                $positiveLots[] = ['points' => $tx->points, 'consumed' => 0];
+            } else {
+                $abs = abs((int) $tx->points);
+                $remaining = $abs;
+                foreach ($positiveLots as $i => $lot) {
+                    if ($remaining <= 0) break;
+                    $available = $lot['points'] - $lot['consumed'];
+                    if ($available <= 0) continue;
+                    $consume = min($available, $remaining);
+                    $positiveLots[$i]['consumed'] += $consume;
+                    $remaining -= $consume;
+                }
+            }
+        }
+
+        $consumedFromUnExpired = 0;
+        foreach ($positiveLots as $lot) {
+            $consumedFromUnExpired += $lot['consumed'];
+        }
+
+        return $balance;
+    }
+
+    public function getPointsBreakdownAttribute(): array
+    {
+        $all = $this->loyaltyTransactions()->orderBy('created_at')->get();
+        $balance = 0;
+        $positiveLots = [];
+        $expiredTotal = 0;
+        $expirationDays = \App\Models\LoyaltyTransaction::EXPIRATION_DAYS;
+        $now = now();
+
+        foreach ($all as $tx) {
+            if ($tx->points > 0) {
+                $isExpired = $tx->created_at->lt($now->copy()->subDays($expirationDays));
+                if ($isExpired) {
+                    $expiredTotal += $tx->points;
+                    continue;
+                }
+                $balance += $tx->points;
+                $positiveLots[] = ['points' => $tx->points, 'consumed' => 0];
+            } else {
+                $abs = abs((int) $tx->points);
+                $remaining = $abs;
+                foreach ($positiveLots as $i => $lot) {
+                    if ($remaining <= 0) break;
+                    $available = $lot['points'] - $lot['consumed'];
+                    if ($available <= 0) continue;
+                    $consume = min($available, $remaining);
+                    $positiveLots[$i]['consumed'] += $consume;
+                    $remaining -= $consume;
+                }
+            }
+        }
+
+        $consumed = 0;
+        foreach ($positiveLots as $lot) {
+            $consumed += $lot['consumed'];
+        }
+
+        $available = $balance - $consumed;
+
+        return [
+            'total' => $available,
+            'expired_total' => $expiredTotal,
+            'expiration_days' => $expirationDays,
+        ];
+    }
+
     public function reservas()
     {
         return $this->hasMany(Reserva::class);
