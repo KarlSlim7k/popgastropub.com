@@ -47,6 +47,12 @@ Route::get('/push/vapid-public-key', [App\Http\Controllers\PushNotificationContr
 Route::post('/csp-report', [App\Http\Controllers\CspReportController::class, 'store'])
     ->middleware('throttle:csp-report');
 
+// Newsletter subscription (landing footer + opt-out links)
+Route::post('/newsletter/subscribe', [App\Http\Controllers\NewsletterController::class, 'subscribe'])
+    ->middleware('throttle:6,1');
+Route::post('/newsletter/unsubscribe', [App\Http\Controllers\NewsletterController::class, 'unsubscribe'])
+    ->middleware('throttle:6,1');
+
 /*
 |--------------------------------------------------------------------------
 | Auth Routes (Sanctum)
@@ -259,4 +265,13 @@ Route::middleware(['auth:sanctum', 'token.full', 'role:admin', 'throttle:admin-a
     // Mail diagnostics
     Route::post('/mail/test', [App\Http\Controllers\Admin\MailTestController::class, 'send']);
     Route::get('/mail/config', [App\Http\Controllers\Admin\MailTestController::class, 'config']);
+
+    // Newsletter (Resend)
+    Route::get('/newsletter', [App\Http\Controllers\Admin\NewsletterController::class, 'index']);
+    Route::get('/newsletter/subscribers', [App\Http\Controllers\Admin\NewsletterController::class, 'subscribers']);
+    Route::get('/newsletter/broadcasts', [App\Http\Controllers\Admin\NewsletterController::class, 'broadcasts']);
+    Route::post('/newsletter/broadcasts', [App\Http\Controllers\Admin\NewsletterController::class, 'storeBroadcast']);
+    Route::get('/newsletter/broadcasts/{id}', [App\Http\Controllers\Admin\NewsletterController::class, 'showBroadcast']);
+    Route::post('/newsletter/broadcasts/{id}/send', [App\Http\Controllers\Admin\NewsletterController::class, 'sendBroadcast']);
+    Route::delete('/newsletter/broadcasts/{id}', [App\Http\Controllers\Admin\NewsletterController::class, 'destroyBroadcast']);
 });

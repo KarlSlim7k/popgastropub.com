@@ -53,6 +53,7 @@ interface RegisterFormData {
   passwordConfirmation: string;
   referralSource: string;
   termsAccepted: boolean;
+  newsletterSubscribed: boolean;
 }
 
 interface SocialProvidersResponse {
@@ -170,6 +171,7 @@ export default function Login() {
     passwordConfirmation: '',
     referralSource: '',
     termsAccepted: false,
+    newsletterSubscribed: false,
   });
 
   useEffect(() => {
@@ -362,6 +364,7 @@ export default function Login() {
           password: registerForm.password,
           password_confirmation: registerForm.passwordConfirmation,
           terms_accepted: registerForm.termsAccepted,
+          newsletter_subscribed: registerForm.newsletterSubscribed,
         }),
       });
 
@@ -790,6 +793,26 @@ export default function Login() {
                     </div>
                     <label className="text-[10px] text-on-surface/60 leading-tight" htmlFor="terms">
                       Acepto los Términos y Condiciones y la Política de Privacidad de POP.
+                    </label>
+                  </div>
+
+                  <div className="flex items-start space-x-3 py-2">
+                    <div className="flex items-center h-5">
+                      <input
+                        className="w-4 h-4 rounded-sm border-outline-variant bg-transparent text-primary-container focus:ring-primary-container focus:ring-offset-surface"
+                        id="newsletter"
+                        type="checkbox"
+                        checked={registerForm.newsletterSubscribed}
+                        onChange={(event) =>
+                          setRegisterForm((current) => ({
+                            ...current,
+                            newsletterSubscribed: event.target.checked,
+                          }))
+                        }
+                      />
+                    </div>
+                    <label className="text-[10px] text-on-surface/60 leading-tight" htmlFor="newsletter">
+                      Quiero recibir promociones y noticias por correo.
                     </label>
                   </div>
 

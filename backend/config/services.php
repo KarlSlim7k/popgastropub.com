@@ -18,4 +18,11 @@ return [
         'client_secret' => env('X_CLIENT_SECRET', env('TWITTER_CLIENT_SECRET')),
         'redirect' => env('X_REDIRECT_URI', env('TWITTER_REDIRECT_URI', rtrim(env('APP_URL', 'https://popgastropub.com'), '/').'/api/auth/social/x/callback')),
     ],
+
+    'resend' => [
+        'api_key' => env('RESEND_API_KEY'),
+        'from_address' => env('RESEND_FROM_ADDRESS', 'noticias@popgastropub.com'),
+        'from_name' => env('RESEND_FROM_NAME', 'POP Perote'),
+        'newsletter_segment_id' => env('RESEND_NEWSLETTER_SEGMENT_ID'),
+    ],
 ];

@@ -239,6 +239,11 @@ MAIL_FROM_NAME="POP Perote"
 FACTURACION_EMAIL=facturacion@popgastropub.com
 FACTURACION_CC=
 
+RESEND_API_KEY=                          # Resend API key (separate account/domain from MAIL_*, newsletter only)
+RESEND_FROM_ADDRESS=noticias@popgastropub.com
+RESEND_FROM_NAME="POP Perote"
+RESEND_NEWSLETTER_SEGMENT_ID=ff1c78e8-286e-4bca-959c-a19e542edb4b   # "Newsletter Subscribers" segment
+
 QR_SECRET=                   # 64+ chars, signs ticket & 2FA QR codes — NEVER rotate live secrets
 VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=

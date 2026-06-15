@@ -27,6 +27,8 @@ class User extends Authenticatable
         'orders_count',
         'total_spent',
         'referral_code',
+        'newsletter_subscribed',
+        'newsletter_subscribed_at',
         'email_verified_at',
         'oauth_provider',
         'oauth_provider_id',
@@ -58,6 +60,8 @@ class User extends Authenticatable
         'points_expired_total' => 'integer',
         'orders_count' => 'integer',
         'total_spent' => 'decimal:2',
+        'newsletter_subscribed' => 'boolean',
+        'newsletter_subscribed_at' => 'datetime',
     ];
 
     protected $appends = [

@@ -16,7 +16,7 @@ interface AuthResponse {
 export default function RegistroPage() {
   const router = useRouter();
   const { refreshSession } = useAuth();
-  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", password_confirmation: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", password_confirmation: "", newsletter_subscribed: false });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -42,6 +42,7 @@ export default function RegistroPage() {
           phone: form.phone.trim() || null,
           password: form.password,
           password_confirmation: form.password_confirmation,
+          newsletter_subscribed: form.newsletter_subscribed,
         }),
       });
       saveAuthSession({ token: res.token, user: res.user, provider: "password" });
@@ -105,6 +106,15 @@ export default function RegistroPage() {
             <PasswordInput required minLength={8} value={form.password_confirmation} onChange={set("password_confirmation")} autoComplete="new-password"
               className="w-full bg-transparent border border-white/10 rounded-md px-4 py-3 pr-10 text-white placeholder-white/30 focus:outline-none focus:border-[#D96E30] transition-colors"
               placeholder="Repite tu contraseña" />
+          </div>
+
+          <div className="flex items-start gap-3">
+            <input type="checkbox" id="newsletter" checked={form.newsletter_subscribed}
+              onChange={(e) => setForm((f) => ({ ...f, newsletter_subscribed: e.target.checked }))}
+              className="mt-1 w-4 h-4 rounded-sm border border-white/10 bg-transparent accent-[#D96E30]" />
+            <label htmlFor="newsletter" className="text-xs text-white/50 leading-tight">
+              Quiero recibir promociones y noticias por correo.
+            </label>
           </div>
 
           <button type="submit" disabled={loading}

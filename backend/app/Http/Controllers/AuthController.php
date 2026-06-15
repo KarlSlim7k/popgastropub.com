@@ -7,6 +7,7 @@ use App\Models\LoyaltyTransaction;
 use App\Http\Resources\UserResource;
 use App\Mail\ResetPasswordCode;
 use App\Services\LoyaltyConfig;
+use App\Services\NewsletterService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +22,7 @@ class AuthController extends Controller
 {
     private const WELCOME_POINTS = 50; // fallback; actual value from LoyaltyConfig
 
-    public function register(Request $request)
+    public function register(Request $request, NewsletterService $newsletter)
     {
         $payload = [
             'name' => trim((string) $request->input('name')),
@@ -31,6 +32,7 @@ class AuthController extends Controller
             'phone' => preg_replace('/\D+/', '', (string) $request->input('phone', '')) ?: null,
             'birth_date' => $request->input('birth_date'),
             'terms_accepted' => $request->boolean('terms_accepted'),
+            'newsletter_subscribed' => $request->boolean('newsletter_subscribed'),
         ];
 
         $validator = Validator::make($payload, [
@@ -40,6 +42,7 @@ class AuthController extends Controller
             'phone' => ['nullable', 'regex:/^[0-9]{10}$/', 'unique:users,phone'],
             'birth_date' => ['nullable', 'date', 'before:today'],
             'terms_accepted' => ['accepted'],
+            'newsletter_subscribed' => ['boolean'],
         ], [
             'name.required' => 'Escribe tu nombre completo.',
             'name.string' => 'Tu nombre solo debe contener letras y espacios.',
@@ -88,6 +91,8 @@ class AuthController extends Controller
                 'phone' => $payload['phone'] ?: null,
                 'points' => (int) LoyaltyConfig::get('welcome_bonus'),
                 'role' => 'cliente',
+                'newsletter_subscribed' => $payload['newsletter_subscribed'],
+                'newsletter_subscribed_at' => $payload['newsletter_subscribed'] ? now() : null,
             ]);
 
             LoyaltyTransaction::create([
@@ -110,6 +115,10 @@ class AuthController extends Controller
 
             return $user;
         });
+
+        if ($payload['newsletter_subscribed']) {
+            $newsletter->recordSubscription($user->email, $user->name, $user->id, 'user');
+        }
 
         $token = $this->issueToken($user);
 
@@ -193,19 +202,47 @@ class AuthController extends Controller
         return response()->json(new UserResource($request->user()));
     }
 
-    public function updateProfile(Request $request)
+    public function updateProfile(Request $request, NewsletterService $newsletter)
     {
         $user = $request->user();
 
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $user->id,
-            'phone' => 'nullable|string|max:20',
+        $validated = $request->validate(
+            [
+                'name' => 'sometimes|required|string|max:255',
+                'email' => 'sometimes|required|email|unique:users,email,' . $user->id,
+                'phone' => 'nullable|string|max:20',
+                'newsletter_subscribed' => 'sometimes|boolean',
+            ],
+            [
+                'name.required' => 'El nombre no puede estar vacío.',
+                'name.max' => 'El nombre es demasiado largo (máx. 255 caracteres).',
+                'email.required' => 'El correo no puede estar vacío.',
+                'email.email' => 'Verifica el formato del correo.',
+                'email.unique' => 'Este correo ya está registrado por otro usuario.',
+            ],
+        );
+
+        $payload = array_intersect_key($validated, array_flip(['name', 'email', 'phone', 'newsletter_subscribed']));
+
+        if (array_key_exists('newsletter_subscribed', $payload)) {
+            $payload['newsletter_subscribed_at'] = $payload['newsletter_subscribed'] ? now() : null;
+        }
+
+        $user->update($payload);
+        $user->refresh();
+
+        if (array_key_exists('newsletter_subscribed', $payload)) {
+            if ($payload['newsletter_subscribed']) {
+                $newsletter->recordSubscription($user->email, $user->name, $user->id, 'user');
+            } else {
+                $newsletter->recordUnsubscription($user->email);
+            }
+        }
+
+        return response()->json([
+            'message' => 'Perfil actualizado correctamente.',
+            'user' => new UserResource($user),
         ]);
-
-        $user->update($validated);
-
-        return response()->json(['message' => 'Perfil actualizado', 'user' => $user->fresh()]);
     }
 
     public function changePassword(Request $request)

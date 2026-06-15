@@ -18,6 +18,7 @@ const navItems = [
     href: "/admin/promociones",
     icon: "campaign",
   },
+  { label: "Newsletter", href: "/admin/newsletter", icon: "mail" },
   { label: "Puntos POP", href: "/admin/puntos", icon: "military_tech" },
   { label: "Usuarios", href: "/admin/usuarios", icon: "group" },
   { label: "Ranking Staff", href: "/admin/meseros", icon: "star" },

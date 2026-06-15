@@ -15,6 +15,7 @@ interface UserProfile {
   tier?: string;
   points?: number;
   created_at?: string;
+  newsletter_subscribed?: boolean;
 }
 
 export default function PerfilPage() {
@@ -25,6 +26,7 @@ export default function PerfilPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [newsletterSaving, setNewsletterSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
@@ -60,6 +62,19 @@ export default function PerfilPage() {
       setTimeout(() => setMessage(""), 3000);
     } catch (e: any) { setMessage(e.message || "Error al guardar"); }
     finally { setSaving(false); }
+  };
+
+  const handleNewsletterToggle = async () => {
+    if (!token || !profile) return;
+    const next = !profile.newsletter_subscribed;
+    setNewsletterSaving(true);
+    setMessage("");
+    try {
+      const res = await fetchWithAuth<any>("/auth/profile", token, { method: "PUT", body: JSON.stringify({ newsletter_subscribed: next }) });
+      const u = res.user ?? res;
+      setProfile((prev) => (prev ? { ...prev, ...u } : prev));
+    } catch (e: any) { setMessage(e.message || "Error al actualizar la suscripción"); }
+    finally { setNewsletterSaving(false); }
   };
 
   const handlePasswordChange = async () => {
@@ -214,6 +229,20 @@ export default function PerfilPage() {
                   </div>
                 </div>
                 <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-full ${subscribed ? "bg-green-500/10 text-green-400" : "bg-white/5 text-gray-500"}`}>{subscribed ? "Activo" : "Inactivo"}</span>
+              </button>
+              <button
+                onClick={handleNewsletterToggle}
+                disabled={newsletterSaving || loading}
+                className="w-full flex items-center justify-between bg-pop-cardGreen p-5 rounded-2xl border border-white/5 hover:bg-white/[0.02] transition-all disabled:opacity-50"
+              >
+                <div className="flex items-center gap-4">
+                  <span className="material-symbols-outlined text-pop-gold text-xl">mail</span>
+                  <div>
+                    <span className="text-xs font-black text-white uppercase tracking-tight">Newsletter</span>
+                    <p className="text-[9px] text-gray-500 mt-0.5">Promociones y noticias por correo</p>
+                  </div>
+                </div>
+                <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-full ${profile?.newsletter_subscribed ? "bg-green-500/10 text-green-400" : "bg-white/5 text-gray-500"}`}>{profile?.newsletter_subscribed ? "Activo" : "Inactivo"}</span>
               </button>
               <button onClick={() => logout()} className="w-full flex items-center justify-between bg-red-500/5 p-5 rounded-2xl border border-red-500/10 hover:bg-red-500/10 transition-all group mt-4">
                 <div className="flex items-center gap-4">
