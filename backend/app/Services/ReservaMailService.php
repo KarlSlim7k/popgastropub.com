@@ -6,6 +6,7 @@ use App\Models\Reserva;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\View;
 use Throwable;
 
@@ -30,12 +31,14 @@ class ReservaMailService
         $to = config('services.resend.reservas_notify_to');
 
         try {
-            $this->client()->post('/emails', [
-                'from' => sprintf('%s <%s>', config('services.resend.from_name'), $from),
-                'to' => [$to],
-                'subject' => "Nueva reservación: {$reserva->nombre} — {$reserva->fecha} {$reserva->hora}",
-                'html' => View::make('mail.reserva-staff', ['reserva' => $reserva])->render(),
-            ])->throw();
+            Mail::html(
+                View::make('mail.reserva-staff', ['reserva' => $reserva])->render(),
+                function ($message) use ($from, $to, $reserva) {
+                    $message->from($from, config('services.resend.from_name'))
+                        ->to($to)
+                        ->subject("Nueva reservación: {$reserva->nombre} — {$reserva->fecha} {$reserva->hora}");
+                }
+            );
         } catch (Throwable $e) {
             Log::error('RESERVA_MAIL_STAFF_ERROR', ['reserva_id' => $reserva->id, 'error' => $e->getMessage()]);
         }
