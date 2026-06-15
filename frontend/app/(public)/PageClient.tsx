@@ -430,8 +430,8 @@ export default function Home() {
             <h3 className="text-[#F2C166] font-headline text-4xl font-black uppercase tracking-tighter">Lo que dicen nuestros clientes</h3>
           </motion.div>
 
-          {/* Elfsight Google Reviews Widget */}
-          <div className="elfsight-app-9d213329-3cfd-4047-ab84-2790abd5a5cd" data-elfsight-app-lazy />
+          {/* SociableKit Google Reviews Widget */}
+          <div className="sk-ww-google-reviews" data-embed-id="25689704" />
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
