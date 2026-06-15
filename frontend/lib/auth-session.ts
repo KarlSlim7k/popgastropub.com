@@ -2,6 +2,7 @@ export interface AuthSessionUser {
   id: number;
   name: string;
   email: string;
+  phone?: string;
   role?: string;
   points?: number;
   tier?: string;
