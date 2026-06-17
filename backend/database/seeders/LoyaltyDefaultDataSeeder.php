@@ -152,7 +152,7 @@ class LoyaltyDefaultDataSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'action' => 'Baja afluencia (Lun y Jue)',
+                'action' => 'Double Check',
                 'slug' => 'low_traffic',
                 'points' => 2,
                 'points_type' => 'multiplier',
