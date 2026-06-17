@@ -152,7 +152,7 @@ class LoyaltyDefaultDataSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'action' => 'Día baja afluencia',
+                'action' => 'Baja afluencia (Lun y Jue)',
                 'slug' => 'low_traffic',
                 'points' => 2,
                 'points_type' => 'multiplier',
@@ -160,7 +160,7 @@ class LoyaltyDefaultDataSeeder extends Seeder
                 'color' => '#D96725',
                 'is_active' => true,
                 'sort_order' => 6,
-                'description' => '2x puntos en días de baja afluencia',
+                'description' => '2x puntos los lunes y jueves',
                 'conditions' => json_encode(['multiplier' => 2]),
                 'created_at' => now(),
                 'updated_at' => now(),

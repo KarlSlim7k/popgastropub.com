@@ -19,7 +19,6 @@ import FAQ from "@/components/pop-points/FAQ";
 import FinalCTA from "@/components/pop-points/FinalCTA";
 
 const DEFAULT_WELCOME_PTS = 50;
-const POINTS_PER_PESO = 0.1;
 
 export default function PuntosPage() {
   const [tiers, setTiers] = useState<Tier[]>([]);
@@ -77,7 +76,7 @@ export default function PuntosPage() {
       <Hero welcomePoints={welcomePoints} tiers={tiers} />
       <HowItWorks />
       <EarnPoints actions={actions} welcomePoints={welcomePoints} />
-      <Tiers tiers={tiers} pointsPerPeso={POINTS_PER_PESO} />
+      <Tiers tiers={tiers} />
       <Rewards recompensas={recompensas} />
       <CompareTable tiers={tiers} />
       <FAQ />
