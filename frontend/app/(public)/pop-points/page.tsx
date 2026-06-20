@@ -56,6 +56,7 @@ export default function PuntosPage() {
 
   const welcomeAction = actions.find((a) => a.slug === "welcome");
   const welcomePoints = welcomeAction?.points ?? DEFAULT_WELCOME_PTS;
+  const earnActions = actions.filter((a) => a.slug !== "welcome");
 
   if (loading) {
     return (
@@ -75,7 +76,7 @@ export default function PuntosPage() {
     <main className="min-h-screen bg-[#0D0D0D] pt-16">
       <Hero welcomePoints={welcomePoints} tiers={tiers} />
       <HowItWorks />
-      <EarnPoints actions={actions} welcomePoints={welcomePoints} />
+      <EarnPoints actions={earnActions} welcomePoints={welcomePoints} />
       <Tiers tiers={tiers} />
       <Rewards recompensas={recompensas} />
       <CompareTable tiers={tiers} />
