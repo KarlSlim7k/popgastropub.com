@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { getAuthSession } from '@/lib/auth-session';
 import { fetchWithAuth } from '@/lib/api';
+import { getCloseTime, getDayOfWeekFromDateString, getOpenStatus, getRestaurantDateString, isWithinHours } from '@/lib/business-hours';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -35,23 +36,28 @@ export default function Ubicacion() {
   const [notas, setNotas] = useState('');
   const [status, setStatus] = useState<ReservaStatus>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+  const [submittedEmail, setSubmittedEmail] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [openStatus, setOpenStatus] = useState<{ label: string; isOpen: boolean } | null>(null);
 
   useEffect(() => {
     setIsLoggedIn(!!getAuthSession());
-    const now = new Date();
-    const day = now.getDay();
-    const time = now.getHours() + now.getMinutes() / 60;
-    if (day === 2) { setOpenStatus({ label: 'CERRADO', isOpen: false }); return; }
-    const close = (day === 5 || day === 6) ? 22 : day === 0 ? 21 : 21.5;
-    setOpenStatus({ label: time >= 14 && time < close ? 'ABIERTO AHORA' : 'CERRADO', isOpen: time >= 14 && time < close });
+    const current = getOpenStatus();
+    setOpenStatus({ label: current.isOpen ? 'ABIERTO AHORA' : current.label.toUpperCase(), isOpen: current.isOpen });
   }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
+    const selectedDay = getDayOfWeekFromDateString(fecha);
+    if (!isWithinHours(hora, selectedDay)) {
+      const close = getCloseTime(selectedDay);
+      setErrorMsg(close ? `El horario para ese día es de 14:00 a ${close}.` : 'POP Perote permanece cerrado los martes. Elige otra fecha.');
+      setStatus('error');
+      return;
+    }
     setStatus('submitting');
+    setSubmittedEmail(email);
     const session = getAuthSession();
 
     try {
@@ -80,13 +86,15 @@ export default function Ubicacion() {
     setNombre(''); setEmail(''); setTelefono(''); setFecha(''); setHora(''); setPersonas(2); setNotas('');
   }
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getRestaurantDateString();
+  const selectedDay = fecha ? getDayOfWeekFromDateString(fecha) : null;
+  const selectedCloseTime = selectedDay === null ? '22:00' : getCloseTime(selectedDay);
 
   return (
-    <main className="bg-[#0D0D0D] pt-28 md:pt-36">
+    <main className="bg-[#0D0D0D] pt-28 md:pt-36 overflow-x-clip">
       {/* Hero */}
       <section className="relative h-[500px] md:h-[600px] w-full overflow-hidden">
-        <Image alt="Entrada del restaurante POP Perote" src="/images/entrada_pop_horizontal.webp" fill className="object-cover brightness-[0.35]" priority />
+        <Image alt="Entrada del restaurante POP Perote" src="/images/entrada_pop_horizontal.webp" fill sizes="100vw" className="object-cover brightness-[0.35]" priority />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
@@ -116,7 +124,7 @@ export default function Ubicacion() {
           transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
           className="lg:col-span-8 h-[500px] md:h-[600px] bg-[#1C1C1C] rounded-xl overflow-hidden relative"
         >
-          <iframe allowFullScreen className="w-full h-full grayscale invert brightness-90 contrast-125" loading="lazy" src="https://maps.google.com/maps?q=POP+Perote,+Justo+Sierra+No.+11,+Col.+Amado+Nervo,+Perote,+Veracruz&t=&z=16&ie=UTF8&iwloc=&output=embed" />
+          <iframe title="Mapa de ubicación de POP Perote" allowFullScreen className="w-full h-full grayscale invert brightness-90 contrast-125" loading="lazy" src="https://maps.google.com/maps?q=POP+Perote,+Justo+Sierra+No.+11,+Col.+Amado+Nervo,+Perote,+Veracruz&t=&z=16&ie=UTF8&iwloc=&output=embed" />
           <div className="absolute bottom-6 left-6 bg-[#0D0D0D]/90 backdrop-blur-md p-6 max-w-sm rounded-lg border-l-4 border-[#D96725]">
             {openStatus && (
               <span className={`inline-block text-[10px] font-black px-2 py-1 rounded mb-3 tracking-widest uppercase ${openStatus.isOpen ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
@@ -129,8 +137,8 @@ export default function Ubicacion() {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.15, ease: [0.23, 1, 0.32, 1] }}
           className="lg:col-span-4"
@@ -190,7 +198,7 @@ export default function Ubicacion() {
             whileHover={{ y: -8 }}
             transition={{ duration: 0.3 }}
             className="bg-[#1C1C1C] border border-[#F2C777]/10 p-8 rounded-xl flex flex-col justify-between h-48 transition-all duration-500 hover:border-[#F2C777]/30"
-            href="https://wa.me/522821278014"
+            href="https://wa.me/522828253243"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -214,8 +222,8 @@ export default function Ubicacion() {
       <section className="bg-[#0D0D0D] py-24 border-t border-white/5" id="reservar">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1] }}
           >
@@ -238,7 +246,7 @@ export default function Ubicacion() {
                   <span className="text-white/20">|</span>
                   <a href="/login?tab=register" className="text-[#D96725] text-xs font-bold uppercase tracking-widest hover:underline">Registrarse</a>
                 </div>
-                <p className="text-white/40 text-xs mt-2">O continúa sin cuenta — te enviaremos la confirmación por correo.</p>
+                <p className="text-white/40 text-xs mt-2">O continúa sin cuenta — te enviaremos el seguimiento por correo.</p>
               </div>
             )}
 
@@ -247,9 +255,9 @@ export default function Ubicacion() {
               <div className="bg-green-900/20 border border-green-500/20 p-6 rounded-lg mb-8">
                 <div className="flex items-center gap-3 mb-2">
                   <span className="material-symbols-outlined text-green-400 text-2xl">check_circle</span>
-                  <h3 className="text-white font-bold text-lg">¡Reservación Confirmada!</h3>
+                  <h3 className="text-white font-bold text-lg">¡Solicitud recibida!</h3>
                 </div>
-                <p className="text-white/60 text-sm">Tu reservación ha sido registrada. Recibirás una notificación de confirmación en tu cuenta. El equipo de POP te espera.</p>
+                <p className="text-white/60 text-sm">Tu solicitud quedó pendiente de revisión. Te notificaremos en tu cuenta cuando el equipo de POP confirme la disponibilidad.</p>
                 <button onClick={() => setStatus('idle')} className="mt-4 text-[#F2C777] text-xs font-bold uppercase tracking-widest hover:underline">
                   Hacer otra reservación
                 </button>
@@ -262,7 +270,7 @@ export default function Ubicacion() {
                   <span className="material-symbols-outlined text-[#F2C777] text-2xl">check_circle</span>
                   <h3 className="text-white font-bold text-lg">¡Reservación Registrada!</h3>
                 </div>
-                <p className="text-white/60 text-sm">Tu reservación fue registrada. Te enviamos un correo a {email || 'tu correo'} y el equipo de POP te confirmará por ahí.</p>
+                <p className="text-white/60 text-sm">Tu solicitud fue registrada. Te enviamos un correo a {submittedEmail || 'tu correo'} y el equipo de POP te confirmará por ahí.</p>
                 <p className="text-white/40 text-xs mt-3">
                   💡 <a href="/login?tab=register" className="text-[#F2C777] hover:underline">Crea una cuenta</a> para gestionar tus reservaciones, ver el estado en tiempo real y ganar <span className="text-[#F2C777]">50 puntos POP</span> de bienvenida.
                 </p>
@@ -283,27 +291,28 @@ export default function Ubicacion() {
             {(status === 'idle' || status === 'error' || status === 'submitting') && (
               <form className="space-y-8" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <input className="w-full bg-transparent border-0 border-b border-white/10 py-4 focus:ring-0 focus:border-[#F2C777] transition-all text-white placeholder:text-white/30 outline-none" placeholder="Nombre Completo" type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
-                  <input className="w-full bg-transparent border-0 border-b border-white/10 py-4 focus:ring-0 focus:border-[#F2C777] transition-all text-white placeholder:text-white/30 outline-none" placeholder="Correo Electrónico" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  <div><label htmlFor="reserva-nombre" className="text-xs font-bold uppercase tracking-widest text-white/60">Nombre completo</label><input id="reserva-nombre" className="w-full bg-transparent border-0 border-b border-white/10 py-4 focus:ring-0 focus:border-[#F2C777] transition-all text-white placeholder:text-white/30 outline-none" placeholder="Tu nombre" type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required /></div>
+                  <div><label htmlFor="reserva-email" className="text-xs font-bold uppercase tracking-widest text-white/60">Correo electrónico</label><input id="reserva-email" className="w-full bg-transparent border-0 border-b border-white/10 py-4 focus:ring-0 focus:border-[#F2C777] transition-all text-white placeholder:text-white/30 outline-none" placeholder="correo@ejemplo.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <input className="w-full bg-transparent border-0 border-b border-white/10 py-4 focus:ring-0 focus:border-[#F2C777] transition-all text-white placeholder:text-white/30 outline-none" placeholder="Teléfono (opcional)" type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
+                  <div><label htmlFor="reserva-telefono" className="text-xs font-bold uppercase tracking-widest text-white/60">Teléfono (opcional)</label><input id="reserva-telefono" className="w-full bg-transparent border-0 border-b border-white/10 py-4 focus:ring-0 focus:border-[#F2C777] transition-all text-white placeholder:text-white/30 outline-none" placeholder="2828253243" type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} /></div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <input className="w-full bg-transparent border-0 border-b border-white/10 py-4 focus:ring-0 focus:border-[#F2C777] transition-all text-white outline-none" type="date" min={today} value={fecha} onChange={(e) => setFecha(e.target.value)} required />
-                  <input className="w-full bg-transparent border-0 border-b border-white/10 py-4 focus:ring-0 focus:border-[#F2C777] transition-all text-white outline-none" type="time" min="14:00" max="22:00" value={hora} onChange={(e) => setHora(e.target.value)} required />
-                  <div className="flex items-center justify-between border-b border-white/10 py-2">
-                    <span className="text-white/50 text-sm uppercase font-bold">Personas</span>
+                  <div><label htmlFor="reserva-fecha" className="text-xs font-bold uppercase tracking-widest text-white/60">Fecha</label><input id="reserva-fecha" className="w-full bg-transparent border-0 border-b border-white/10 py-4 focus:ring-0 focus:border-[#F2C777] transition-all text-white outline-none [color-scheme:dark]" type="date" min={today} value={fecha} onChange={(e) => { setFecha(e.target.value); setHora(''); }} required /></div>
+                  <div><label htmlFor="reserva-hora" className="text-xs font-bold uppercase tracking-widest text-white/60">Hora</label><input id="reserva-hora" className="w-full bg-transparent border-0 border-b border-white/10 py-4 focus:ring-0 focus:border-[#F2C777] transition-all text-white outline-none [color-scheme:dark]" type="time" min="14:00" max={selectedCloseTime ?? undefined} disabled={selectedDay === 2} value={hora} onChange={(e) => setHora(e.target.value)} required /></div>
+                  <div className="flex items-center justify-between border-b border-white/10 py-2" role="group" aria-label="Número de personas">
+                    <span className="text-white/50 text-sm uppercase font-bold" id="reserva-personas">Personas</span>
                     <div className="flex items-center gap-4">
-                      <button className="text-[#F2C777]" type="button" onClick={() => setPersonas(p => Math.max(1, p - 1))}><span className="material-symbols-outlined">remove_circle</span></button>
+                      <button aria-label="Disminuir personas" className="text-[#F2C777]" type="button" onClick={() => setPersonas(p => Math.max(1, p - 1))}><span className="material-symbols-outlined" aria-hidden="true">remove_circle</span></button>
                       <span className="font-headline font-bold text-xl text-white tabular-nums">{personas}</span>
-                      <button className="text-[#F2C777]" type="button" onClick={() => setPersonas(p => Math.min(20, p + 1))}><span className="material-symbols-outlined">add_circle</span></button>
+                      <button aria-label="Aumentar personas" className="text-[#F2C777]" type="button" onClick={() => setPersonas(p => Math.min(20, p + 1))}><span className="material-symbols-outlined" aria-hidden="true">add_circle</span></button>
                     </div>
                   </div>
                 </div>
-                <textarea className="w-full bg-transparent border-0 border-b border-white/10 py-4 focus:ring-0 focus:border-[#F2C777] transition-all text-white placeholder:text-white/30 resize-none outline-none" placeholder="Notas especiales (Alergias, cumpleaños...)" rows={3} value={notas} onChange={(e) => setNotas(e.target.value)} />
+                {selectedDay === 2 && <p className="text-sm text-[#D96725]">POP Perote permanece cerrado los martes. Elige otra fecha.</p>}
+                <div><label htmlFor="reserva-notas" className="text-xs font-bold uppercase tracking-widest text-white/60">Notas especiales (opcional)</label><textarea id="reserva-notas" className="w-full bg-transparent border-0 border-b border-white/10 py-4 focus:ring-0 focus:border-[#F2C777] transition-all text-white placeholder:text-white/30 resize-none outline-none" placeholder="Alergias, cumpleaños..." rows={3} value={notas} onChange={(e) => setNotas(e.target.value)} /></div>
                 <button className="w-full bg-[#D96725] text-white font-headline font-black py-6 rounded-sm tracking-widest uppercase transition-all duration-500 hover:bg-[#F2C777] hover:text-[#0D0D0D] active:scale-95 disabled:opacity-50" type="submit" disabled={status === 'submitting'}>
-                  {status === 'submitting' ? 'ENVIANDO...' : 'CONFIRMAR RESERVACIÓN'}
+                  {status === 'submitting' ? 'ENVIANDO...' : 'ENVIAR SOLICITUD'}
                 </button>
               </form>
             )}
@@ -311,26 +320,26 @@ export default function Ubicacion() {
 
           {/* Gallery */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.15, ease: [0.23, 1, 0.32, 1] }}
             className="grid grid-cols-2 gap-4"
           >
             <div className="space-y-4">
               <div className="relative h-64 overflow-hidden rounded-lg">
-                <Image alt="Mesa grande POP Perote" src="/images/mesa_grande_1.webp" fill className="object-cover transition-transform duration-700 hover:scale-110" />
+                <Image alt="Mesa grande POP Perote" src="/images/mesa_grande_1.webp" fill sizes="(min-width: 1024px) 25vw, 50vw" className="object-cover transition-transform duration-700 hover:scale-110" />
               </div>
               <div className="relative h-80 overflow-hidden rounded-lg">
-                <Image alt="Decoración POP Perote" src="/images/decoracion_pop_3.webp" fill className="object-cover transition-transform duration-700 hover:scale-110" />
+                <Image alt="Decoración POP Perote" src="/images/decoracion_pop_3.webp" fill sizes="(min-width: 1024px) 25vw, 50vw" className="object-cover transition-transform duration-700 hover:scale-110" />
               </div>
             </div>
             <div className="space-y-4 pt-12">
               <div className="relative h-80 overflow-hidden rounded-lg">
-                <Image alt="Mesa lateral POP Perote" src="/images/mesa_lateral.webp" fill className="object-cover transition-transform duration-700 hover:scale-110" />
+                <Image alt="Mesa lateral POP Perote" src="/images/mesa_lateral.webp" fill sizes="(min-width: 1024px) 25vw, 50vw" className="object-cover transition-transform duration-700 hover:scale-110" />
               </div>
               <div className="relative h-64 overflow-hidden rounded-lg">
-                <Image alt="Decoración interior POP" src="/images/decoracion_pop_6.webp" fill className="object-cover transition-transform duration-700 hover:scale-110" />
+                <Image alt="Decoración interior POP" src="/images/decoracion_pop_6.webp" fill sizes="(min-width: 1024px) 25vw, 50vw" className="object-cover transition-transform duration-700 hover:scale-110" />
               </div>
             </div>
           </motion.div>

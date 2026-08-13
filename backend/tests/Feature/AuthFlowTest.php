@@ -88,6 +88,35 @@ class AuthFlowTest extends TestCase
         $response->assertOk()->assertJsonStructure(['user', 'token']);
     }
 
+    public function test_first_party_login_uses_session_cookie_without_issuing_a_token(): void
+    {
+        config(['sanctum.stateful' => ['popgastropub.com']]);
+
+        $user = User::create([
+            'name' => 'Cliente SPA',
+            'email' => 'spa-login@test.com',
+            'password' => bcrypt('password123'),
+            'role' => 'cliente',
+        ]);
+
+        $headers = ['Origin' => 'https://popgastropub.com'];
+        $this->withHeaders($headers)->postJson('/api/auth/login', [
+            'login' => 'spa-login@test.com',
+            'password' => 'password123',
+        ])->assertOk()
+            ->assertJsonMissingPath('token')
+            ->assertJsonPath('user.email', 'spa-login@test.com');
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertDatabaseMissing('personal_access_tokens', ['tokenable_id' => $user->id]);
+        $this->withHeaders($headers)->getJson('/api/auth/me')
+            ->assertOk()
+            ->assertJsonPath('email', 'spa-login@test.com');
+
+        $this->withHeaders($headers)->postJson('/api/auth/logout')->assertOk();
+        $this->assertGuest('web');
+    }
+
     public function test_login_with_invalid_password_returns_401(): void
     {
         User::create([

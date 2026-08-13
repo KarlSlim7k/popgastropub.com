@@ -45,23 +45,25 @@ const podiumColors = [
 
 export default function RankingPage() {
   const { session } = useAuth();
+  const token = session?.token;
   const [meseros, setMeseros] = useState<Mesero[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [miRanking, setMiRanking] = useState<{ position: number; tier: string; progress: number; puntos_totales: number } | null>(null);
 
   useEffect(() => {
-    if (!session?.token) return;
+    const authToken = token;
+    if (!authToken) return;
 
     let cancelled = false;
 
-    async function loadRanking() {
+    async function loadRanking(activeToken: string) {
       try {
         setLoading(true);
         setError(null);
         const [data, personal] = await Promise.all([
-          fetchWithAuth<Mesero[]>('/ranking', session!.token),
-          fetchWithAuth<any>('/staff/mi-ranking', session!.token).catch(() => null),
+          fetchWithAuth<Mesero[]>('/ranking', activeToken),
+          fetchWithAuth<any>('/staff/mi-ranking', activeToken).catch(() => null),
         ]);
         if (!cancelled) {
           const sorted = [...data].sort((a, b) => b.puntos - a.puntos);
@@ -77,12 +79,12 @@ export default function RankingPage() {
       }
     }
 
-    loadRanking();
+    loadRanking(authToken);
 
     return () => {
       cancelled = true;
     };
-  }, [session?.token]);
+  }, [token]);
 
   const topThree = useMemo(() => meseros.slice(0, 3), [meseros]);
   const rest = useMemo(() => meseros.slice(3), [meseros]);

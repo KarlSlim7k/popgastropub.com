@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
@@ -59,7 +59,7 @@ export default function AdminMeserosPage() {
     password: "",
   });
 
-  const fetchWaiters = async () => {
+  const fetchWaiters = useCallback(async () => {
     const session = getAuthSession();
     if (!session) return;
     setLoading(true);
@@ -73,11 +73,11 @@ export default function AdminMeserosPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedPeriod]);
 
   useEffect(() => {
     fetchWaiters();
-  }, [selectedPeriod]);
+  }, [fetchWaiters]);
 
   const openCreate = () => {
     setEditingWaiter(null);

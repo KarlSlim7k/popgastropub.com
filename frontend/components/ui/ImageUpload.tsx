@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { getAuthSession } from "@/lib/auth-session";
+import { fetchWithCsrf } from "@/lib/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.popgastropub.com/api";
 
@@ -28,9 +29,8 @@ export function ImageUpload({ value, onChange, folder = "menu" }: ImageUploadPro
       formData.append("file", file);
       formData.append("folder", folder);
 
-      const res = await fetch(`${API_URL}/admin/upload`, {
+      const res = await fetchWithCsrf(`${API_URL}/admin/upload`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${session.token}` },
         body: formData,
       });
 

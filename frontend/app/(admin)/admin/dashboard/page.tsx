@@ -95,7 +95,7 @@ export default function AdminDashboardPage() {
         </article>
 
         <article className="bg-pop-cardGreen p-6 lg:p-8 rounded-2xl border border-white/5">
-          <h2 className="text-xl font-black uppercase tracking-tighter text-white font-epilogue mb-10">Mix de Ventas</h2>
+          <h2 className="text-xl font-black uppercase tracking-tighter text-white font-epilogue mb-10">Mix de Bebidas</h2>
           <div className="space-y-6">
             {donutData.map((d, i) => (
               <div key={i} className="space-y-2">
@@ -137,12 +137,12 @@ export default function AdminDashboardPage() {
 
         <article className="bg-pop-cardGreen rounded-2xl border border-white/5 overflow-hidden">
           <header className="p-6 border-b border-white/5 flex justify-between items-center">
-            <h3 className="text-sm font-black text-white uppercase tracking-widest font-epilogue">Menú en Vivo</h3>
+            <h3 className="text-sm font-black text-white uppercase tracking-widest font-epilogue">Bebidas en Vivo</h3>
             <span className="material-symbols-outlined text-pop-orange">inventory_2</span>
           </header>
           <table className="w-full text-left">
             <thead className="bg-white/[0.01] text-[10px] font-black uppercase text-gray-500 tracking-widest">
-              <tr><th className="py-4 px-6">Platillo</th><th className="py-4 px-4 text-right">Stock</th></tr>
+              <tr><th className="py-4 px-6">Bebida</th><th className="py-4 px-4 text-right">Stock</th></tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {menuItems.map((m, idx) => (

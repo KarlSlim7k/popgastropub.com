@@ -22,6 +22,7 @@ const navItems = [
   { label: "Puntos POP", href: "/admin/puntos", icon: "military_tech" },
   { label: "Usuarios", href: "/admin/usuarios", icon: "group" },
   { label: "Ranking Staff", href: "/admin/meseros", icon: "star" },
+  { label: "Ventas Bar Stars", href: "/admin/ventas-meseros", icon: "fact_check" },
   {
     label: "Periodos Ranking",
     href: "/admin/ranking-periodos",

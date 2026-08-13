@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\LoyaltyTransaction;
 use App\Http\Resources\UserResource;
 use App\Mail\ResetPasswordCode;
+use App\Models\LoyaltyTransaction;
+use App\Models\Referral;
+use App\Models\User;
 use App\Services\LoyaltyConfig;
 use App\Services\NewsletterService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -89,6 +91,7 @@ class AuthController extends Controller
                 'email' => $payload['email'],
                 'password' => Hash::make($payload['password']),
                 'phone' => $payload['phone'] ?: null,
+                'birth_date' => $payload['birth_date'] ?: null,
                 'points' => (int) LoyaltyConfig::get('welcome_bonus'),
                 'role' => 'cliente',
                 'newsletter_subscribed' => $payload['newsletter_subscribed'],
@@ -105,7 +108,7 @@ class AuthController extends Controller
             if ($refCode) {
                 $referrer = User::where('referral_code', $refCode)->first();
                 if ($referrer && $referrer->id !== $user->id) {
-                    \App\Models\Referral::create([
+                    Referral::create([
                         'referrer_id' => $referrer->id,
                         'referred_id' => $user->id,
                         'status' => 'pending',
@@ -120,12 +123,12 @@ class AuthController extends Controller
             $newsletter->recordSubscription($user->email, $user->name, $user->id, 'user');
         }
 
-        $token = $this->issueToken($user);
+        $token = $this->authenticate($request, $user);
 
-        return response()->json([
+        return response()->json(array_filter([
             'user' => new UserResource($user),
             'token' => $token,
-        ], 201);
+        ], fn ($value) => $value !== null), 201);
     }
 
     public function login(Request $request)
@@ -158,7 +161,7 @@ class AuthController extends Controller
 
         $user = $this->findUserByIdentifier($payload['login']);
 
-        if (!$user || !Hash::check($payload['password'], $user->password)) {
+        if (! $user || ! Hash::check($payload['password'], $user->password)) {
             return response()->json(['message' => 'Credenciales inválidas.'], 401);
         }
 
@@ -167,6 +170,15 @@ class AuthController extends Controller
         }
 
         if ($user->two_factor_enabled) {
+            if ($this->isFirstPartyRequest($request)) {
+                $request->session()->put('two_factor_user_id', $user->id);
+                $request->session()->regenerate();
+
+                return response()->json([
+                    'requires_2fa' => true,
+                ]);
+            }
+
             $user->tokens()->where('name', '2fa_pending')->delete();
             $tempToken = $user->createToken('2fa_pending', ['2fa:pending'])->plainTextToken;
 
@@ -176,22 +188,24 @@ class AuthController extends Controller
             ]);
         }
 
-        $token = $this->issueToken($user);
+        $token = $this->authenticate($request, $user);
 
-        return response()->json([
+        return response()->json(array_filter([
             'user' => new UserResource($user),
             'token' => $token,
-        ]);
+        ], fn ($value) => $value !== null));
     }
 
     public function logout(Request $request)
     {
         $token = $request->user()?->currentAccessToken();
 
-        if ($token) {
+        if ($request->bearerToken() && $token && method_exists($token, 'delete')) {
             $token->delete();
-        } else {
-            $request->user()?->tokens()->delete();
+        } elseif ($request->hasSession()) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
         }
 
         return response()->json(['message' => 'Sesión cerrada']);
@@ -209,8 +223,9 @@ class AuthController extends Controller
         $validated = $request->validate(
             [
                 'name' => 'sometimes|required|string|max:255',
-                'email' => 'sometimes|required|email|unique:users,email,' . $user->id,
+                'email' => 'sometimes|required|email|unique:users,email,'.$user->id,
                 'phone' => 'nullable|string|max:20',
+                'birth_date' => 'nullable|date|before:today',
                 'newsletter_subscribed' => 'sometimes|boolean',
             ],
             [
@@ -222,7 +237,7 @@ class AuthController extends Controller
             ],
         );
 
-        $payload = array_intersect_key($validated, array_flip(['name', 'email', 'phone', 'newsletter_subscribed']));
+        $payload = array_intersect_key($validated, array_flip(['name', 'email', 'phone', 'birth_date', 'newsletter_subscribed']));
 
         if (array_key_exists('newsletter_subscribed', $payload)) {
             $payload['newsletter_subscribed_at'] = $payload['newsletter_subscribed'] ? now() : null;
@@ -254,7 +269,7 @@ class AuthController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        if (!Hash::check($request->input('current_password'), $user->password)) {
+        if (! Hash::check($request->input('current_password'), $user->password)) {
             return response()->json(['message' => 'La contraseña actual es incorrecta.'], 422);
         }
 
@@ -275,13 +290,13 @@ class AuthController extends Controller
         $email = Str::lower(trim($request->input('email')));
         $user = User::where('email', $email)->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'Si el correo está registrado, recibirás un código.']);
         }
 
         if ($user->oauth_provider) {
             return response()->json([
-                'message' => 'Tu cuenta fue creada con ' . ucfirst($user->oauth_provider) . '. Inicia sesión desde ahí.',
+                'message' => 'Tu cuenta fue creada con '.ucfirst($user->oauth_provider).'. Inicia sesión desde ahí.',
             ], 422);
         }
 
@@ -334,18 +349,19 @@ class AuthController extends Controller
 
         $record = DB::table('password_reset_tokens')->where('email', $email)->first();
 
-        if (!$record || !Hash::check($code, $record->token)) {
+        if (! $record || ! Hash::check($code, $record->token)) {
             return response()->json(['message' => 'El código es incorrecto o ha expirado.'], 422);
         }
 
         if (Carbon::parse($record->created_at)->addMinutes(15)->isPast()) {
             DB::table('password_reset_tokens')->where('email', $email)->delete();
+
             return response()->json(['message' => 'El código ha expirado. Solicita uno nuevo.'], 422);
         }
 
         $user = User::where('email', $email)->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'No se encontró una cuenta con este correo.'], 404);
         }
 
@@ -382,5 +398,22 @@ class AuthController extends Controller
         $user->tokens()->where('name', 'auth_token')->delete();
 
         return $user->createToken('auth_token', ['*'])->plainTextToken;
+    }
+
+    private function authenticate(Request $request, User $user): ?string
+    {
+        if ($this->isFirstPartyRequest($request)) {
+            Auth::guard('web')->login($user);
+            $request->session()->regenerate();
+
+            return null;
+        }
+
+        return $this->issueToken($user);
+    }
+
+    private function isFirstPartyRequest(Request $request): bool
+    {
+        return $request->attributes->get('sanctum') === true;
     }
 }

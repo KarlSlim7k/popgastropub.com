@@ -8,6 +8,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://popgastropub.com'),
   title: 'POP Perote | Sushi, Wings & Más',
   description: 'El mejor sushi en Perote, Veracruz. Justo Sierra No. 11, Col. Amado Nervo. Ordena ahora.',
   keywords: 'sushi, perote, veracruz, wings, restaurante, pop perote',
@@ -15,6 +16,20 @@ export const metadata: Metadata = {
     icon: '/images/logopop.png',
     shortcut: '/images/logopop.png',
     apple: '/images/logopop.png',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'es_MX',
+    siteName: 'POP Perote',
+    title: 'POP Perote | Sushi, Wings & Más',
+    description: 'El mejor sushi en Perote, Veracruz. Justo Sierra No. 11, Col. Amado Nervo. Ordena ahora.',
+    images: [{ url: '/images/entrada_pop_horizontal.webp', width: 1600, height: 1066, alt: 'Entrada del restaurante POP Perote' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'POP Perote | Sushi, Wings & Más',
+    description: 'El mejor sushi en Perote, Veracruz. Justo Sierra No. 11, Col. Amado Nervo. Ordena ahora.',
+    images: ['/images/entrada_pop_horizontal.webp'],
   },
 }
 
@@ -30,9 +45,8 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800;900&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+          href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800;900&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=optional"
         />
-        <script src="https://widgets.sociablekit.com/google-reviews/widget.js" defer />
       </head>
       <body className={inter.className}>
         <AuthProvider>

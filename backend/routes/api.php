@@ -1,18 +1,44 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\ConfiguracionController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DrinkTypeController;
+use App\Http\Controllers\Admin\LoyaltyConfigController;
+use App\Http\Controllers\Admin\MailTestController;
+use App\Http\Controllers\Admin\MesaController;
+use App\Http\Controllers\Admin\MeseroController;
+use App\Http\Controllers\Admin\PuntosController;
+use App\Http\Controllers\Admin\RankingPeriodController;
+use App\Http\Controllers\Admin\StaffSaleController;
+use App\Http\Controllers\Admin\UploadController;
+use App\Http\Controllers\Admin\UsuarioController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\SocialAuthController;
-use App\Http\Controllers\MenuController;
-use App\Http\Controllers\PromocionController;
+use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\FacturaController;
 use App\Http\Controllers\LoyaltyController;
-use App\Http\Controllers\RankingController;
-use App\Http\Controllers\UbicacionController;
-use App\Http\Controllers\ReservaController;
-use App\Http\Controllers\PedidoController;
-use App\Http\Controllers\RecompensaController;
+use App\Http\Controllers\MenuController;
+use App\Http\Controllers\MeseroRatingController;
+use App\Http\Controllers\NewsletterController;
+use App\Http\Controllers\PromocionController;
 use App\Http\Controllers\PublicImageController;
+use App\Http\Controllers\PushNotificationController;
+use App\Http\Controllers\RankingController;
+use App\Http\Controllers\RecompensaController;
+use App\Http\Controllers\ReferralController;
+use App\Http\Controllers\ReservaController;
+use App\Http\Controllers\SocialAuthController;
+use App\Http\Controllers\Staff\StaffAnalyticsController;
+use App\Http\Controllers\Staff\StaffConfigController;
+use App\Http\Controllers\Staff\StaffDashboardController;
+use App\Http\Controllers\Staff\StaffMenuController;
+use App\Http\Controllers\Staff\StaffNotificationController;
+use App\Http\Controllers\Staff\StaffRankingController;
+use App\Http\Controllers\Staff\StaffReservaController;
+use App\Http\Controllers\Staff\TicketGeneratorController;
+use App\Http\Controllers\TicketRedeemController;
+use App\Http\Controllers\TwoFactorController;
+use App\Http\Controllers\UbicacionController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,28 +55,28 @@ Route::post('/promociones/{slug}/click', [PromocionController::class, 'click'])-
 Route::post('/promociones/{slug}/view', [PromocionController::class, 'view'])->middleware('throttle:30,1');
 Route::get('/storage/{path}', [PublicImageController::class, 'show'])->where('path', '.*');
 Route::get('/ubicacion', [UbicacionController::class, 'show']);
-Route::get('/tickets/validate', [\App\Http\Controllers\TicketRedeemController::class, 'validate'])
+Route::get('/tickets/validate', [TicketRedeemController::class, 'validate'])
     ->middleware('throttle:tickets');
 
 // Public loyalty + rewards (landing POP Points)
-Route::get('/loyalty/tiers', [\App\Http\Controllers\Public\LoyaltyController::class, 'tiers']);
-Route::get('/loyalty/point-actions', [\App\Http\Controllers\Public\LoyaltyController::class, 'pointActions']);
+Route::get('/loyalty/tiers', [App\Http\Controllers\Public\LoyaltyController::class, 'tiers']);
+Route::get('/loyalty/point-actions', [App\Http\Controllers\Public\LoyaltyController::class, 'pointActions']);
 Route::get('/recompensas', [RecompensaController::class, 'index']);
 
 // Public reservation (works with or without auth - controller checks $request->user())
 Route::post('/reservas/public', [ReservaController::class, 'store'])->middleware('throttle:6,1');
 
 // Public push key
-Route::get('/push/vapid-public-key', [App\Http\Controllers\PushNotificationController::class, 'vapidPublicKey']);
+Route::get('/push/vapid-public-key', [PushNotificationController::class, 'vapidPublicKey']);
 
 // CSP violation reports (Report-Only, telemetría V3-07)
-Route::post('/csp-report', [App\Http\Controllers\CspReportController::class, 'store'])
+Route::post('/csp-report', [CspReportController::class, 'store'])
     ->middleware('throttle:csp-report');
 
 // Newsletter subscription (landing footer + opt-out links)
-Route::post('/newsletter/subscribe', [App\Http\Controllers\NewsletterController::class, 'subscribe'])
+Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])
     ->middleware('throttle:6,1');
-Route::post('/newsletter/unsubscribe', [App\Http\Controllers\NewsletterController::class, 'unsubscribe'])
+Route::post('/newsletter/unsubscribe', [NewsletterController::class, 'unsubscribe'])
     ->middleware('throttle:6,1');
 
 /*
@@ -66,14 +92,14 @@ Route::post('/auth/reset-password', [AuthController::class, 'resetPassword'])->m
 Route::get('/auth/social/providers', [SocialAuthController::class, 'providers']);
 Route::get('/auth/social/{provider}/redirect', [SocialAuthController::class, 'redirectToProvider'])
     ->whereIn('provider', ['google', 'facebook', 'x'])
-    ->middleware('throttle:auth-social');
+    ->middleware(['web', 'throttle:auth-social']);
 Route::get('/auth/social/{provider}/callback', [SocialAuthController::class, 'handleProviderCallback'])
     ->whereIn('provider', ['google', 'facebook', 'x'])
-    ->middleware('throttle:auth-social');
+    ->middleware(['web', 'throttle:auth-social']);
+Route::post('/auth/2fa/verify', [TwoFactorController::class, 'verify'])->middleware('throttle:auth-login');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
-    Route::post('/auth/2fa/verify', [App\Http\Controllers\TwoFactorController::class, 'verify'])->middleware('throttle:auth-login');
 });
 
 Route::middleware(['auth:sanctum', 'token.full'])->group(function () {
@@ -82,10 +108,10 @@ Route::middleware(['auth:sanctum', 'token.full'])->group(function () {
     Route::put('/auth/password', [AuthController::class, 'changePassword']);
 
     // 2FA
-    Route::get('/auth/2fa/status', [App\Http\Controllers\TwoFactorController::class, 'status']);
-    Route::post('/auth/2fa/setup', [App\Http\Controllers\TwoFactorController::class, 'setup']);
-    Route::post('/auth/2fa/enable', [App\Http\Controllers\TwoFactorController::class, 'enable']);
-    Route::post('/auth/2fa/disable', [App\Http\Controllers\TwoFactorController::class, 'disable']);
+    Route::get('/auth/2fa/status', [TwoFactorController::class, 'status']);
+    Route::post('/auth/2fa/setup', [TwoFactorController::class, 'setup']);
+    Route::post('/auth/2fa/enable', [TwoFactorController::class, 'enable']);
+    Route::post('/auth/2fa/disable', [TwoFactorController::class, 'disable']);
 });
 
 /*
@@ -108,32 +134,28 @@ Route::middleware(['auth:sanctum', 'token.full'])->group(function () {
     Route::get('/facturas/{id}/ticket', [FacturaController::class, 'ticket']);
 
     // Referidos
-    Route::get('/referidos', [\App\Http\Controllers\ReferralController::class, 'index']);
+    Route::get('/referidos', [ReferralController::class, 'index']);
 
     // Reservas
     Route::get('/reservas', [ReservaController::class, 'index']);
     Route::post('/reservas', [ReservaController::class, 'store']);
     Route::patch('/reservas/{id}/cancel', [ReservaController::class, 'cancel']);
 
-    // Pedidos
-    Route::get('/pedidos', [PedidoController::class, 'index']);
-    Route::post('/pedidos', [PedidoController::class, 'store']);
-
     // Recompensas
     Route::get('/recompensas/historial', [RecompensaController::class, 'history']);
     Route::post('/recompensas/{id}/canjear', [RecompensaController::class, 'redeem']);
 
     // Tickets — canje de puntos por QR
-    Route::post('/tickets/redeem', [\App\Http\Controllers\TicketRedeemController::class, 'redeem'])
+    Route::post('/tickets/redeem', [TicketRedeemController::class, 'redeem'])
         ->middleware('throttle:tickets');
 
     // Mesero ratings (client → waiter)
-    Route::get('/meseros/para-calificar', [\App\Http\Controllers\MeseroRatingController::class, 'meseros']);
-    Route::post('/meseros/calificar', [\App\Http\Controllers\MeseroRatingController::class, 'store']);
+    Route::get('/meseros/para-calificar', [MeseroRatingController::class, 'meseros']);
+    Route::post('/meseros/calificar', [MeseroRatingController::class, 'store']);
 
     // Push notifications
-    Route::post('/push/subscribe', [App\Http\Controllers\PushNotificationController::class, 'subscribe']);
-    Route::post('/push/unsubscribe', [App\Http\Controllers\PushNotificationController::class, 'unsubscribe']);
+    Route::post('/push/subscribe', [PushNotificationController::class, 'subscribe']);
+    Route::post('/push/unsubscribe', [PushNotificationController::class, 'unsubscribe']);
 });
 
 /*
@@ -144,28 +166,31 @@ Route::middleware(['auth:sanctum', 'token.full'])->group(function () {
 
 Route::middleware(['auth:sanctum', 'token.full', 'role:mesero,admin', 'throttle:admin-api'])->group(function () {
     Route::get('/ranking', [RankingController::class, 'index']);
-    Route::post('/ranking/points', [RankingController::class, 'addPoints']);
     Route::get('/ranking/history', [RankingController::class, 'history']);
+    Route::get('/ranking/drink-types', [RankingController::class, 'drinkTypes']);
 });
 
+Route::middleware(['auth:sanctum', 'token.full', 'role:mesero', 'throttle:admin-api'])
+    ->post('/ranking/points', [RankingController::class, 'addPoints']);
+
 Route::middleware(['auth:sanctum', 'token.full', 'role:mesero,admin', 'throttle:admin-api'])->prefix('staff')->group(function () {
-    Route::get('/dashboard', [App\Http\Controllers\Staff\StaffDashboardController::class, 'index']);
-    Route::get('/analytics', [App\Http\Controllers\Staff\StaffAnalyticsController::class, 'index']);
-    Route::get('/reservas', [App\Http\Controllers\Staff\StaffReservaController::class, 'index']);
-    Route::patch('/reservas/{id}/status', [App\Http\Controllers\Staff\StaffReservaController::class, 'updateStatus']);
-    Route::get('/menu', [App\Http\Controllers\Staff\StaffMenuController::class, 'index']);
-    Route::patch('/menu/{id}/disponibilidad', [App\Http\Controllers\Staff\StaffMenuController::class, 'toggleDisponibilidad']);
-    Route::get('/mi-ranking', [App\Http\Controllers\Staff\StaffRankingController::class, 'miRanking']);
-    Route::get('/configuracion', [App\Http\Controllers\Staff\StaffConfigController::class, 'index']);
-    Route::put('/configuracion', [App\Http\Controllers\Staff\StaffConfigController::class, 'update']);
-    Route::post('/tickets/validate', [App\Http\Controllers\Staff\TicketGeneratorController::class, 'validar']);
-    Route::post('/tickets/generate', [App\Http\Controllers\Staff\TicketGeneratorController::class, 'generate']);
-    Route::get('/tickets', [App\Http\Controllers\Staff\TicketGeneratorController::class, 'historial']);
+    Route::get('/dashboard', [StaffDashboardController::class, 'index']);
+    Route::get('/analytics', [StaffAnalyticsController::class, 'index']);
+    Route::get('/reservas', [StaffReservaController::class, 'index']);
+    Route::patch('/reservas/{id}/status', [StaffReservaController::class, 'updateStatus']);
+    Route::get('/menu', [StaffMenuController::class, 'index']);
+    Route::patch('/menu/{id}/disponibilidad', [StaffMenuController::class, 'toggleDisponibilidad']);
+    Route::get('/mi-ranking', [StaffRankingController::class, 'miRanking']);
+    Route::get('/configuracion', [StaffConfigController::class, 'index']);
+    Route::put('/configuracion', [StaffConfigController::class, 'update']);
+    Route::post('/tickets/validate', [TicketGeneratorController::class, 'validar']);
+    Route::post('/tickets/generate', [TicketGeneratorController::class, 'generate']);
+    Route::get('/tickets', [TicketGeneratorController::class, 'historial']);
 
     // Notifications
-    Route::get('/notificaciones', [App\Http\Controllers\Staff\StaffNotificationController::class, 'index']);
-    Route::get('/notificaciones/count', [App\Http\Controllers\Staff\StaffNotificationController::class, 'unreadCount']);
-    Route::post('/notificaciones/read', [App\Http\Controllers\Staff\StaffNotificationController::class, 'markRead']);
+    Route::get('/notificaciones', [StaffNotificationController::class, 'index']);
+    Route::get('/notificaciones/count', [StaffNotificationController::class, 'unreadCount']);
+    Route::post('/notificaciones/read', [StaffNotificationController::class, 'markRead']);
 });
 
 /*
@@ -175,49 +200,52 @@ Route::middleware(['auth:sanctum', 'token.full', 'role:mesero,admin', 'throttle:
 */
 
 Route::middleware(['auth:sanctum', 'token.full', 'role:admin', 'throttle:admin-api'])->prefix('admin')->group(function () {
+    Route::get('/staff-sales', [StaffSaleController::class, 'index']);
+    Route::patch('/staff-sales/{sale}/approve', [StaffSaleController::class, 'approve']);
+    Route::patch('/staff-sales/{sale}/reject', [StaffSaleController::class, 'reject']);
     // Upload
-    Route::post('/upload', [App\Http\Controllers\Admin\UploadController::class, 'store']);
+    Route::post('/upload', [UploadController::class, 'store']);
 
     // Dashboard
-    Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index']);
-    Route::get('/dashboard/chart-data', [App\Http\Controllers\Admin\DashboardController::class, 'chartData']);
-    Route::get('/dashboard/sales-mix', [App\Http\Controllers\Admin\DashboardController::class, 'salesMix']);
-    Route::get('/dashboard/top-waiters', [App\Http\Controllers\Admin\DashboardController::class, 'topWaiters']);
-    Route::get('/dashboard/live-menu', [App\Http\Controllers\Admin\DashboardController::class, 'liveMenu']);
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/dashboard/chart-data', [DashboardController::class, 'chartData']);
+    Route::get('/dashboard/sales-mix', [DashboardController::class, 'salesMix']);
+    Route::get('/dashboard/top-waiters', [DashboardController::class, 'topWaiters']);
+    Route::get('/dashboard/live-menu', [DashboardController::class, 'liveMenu']);
 
     // Puntos POP
-    Route::get('/puntos/stats', [App\Http\Controllers\Admin\PuntosController::class, 'stats']);
-    Route::get('/puntos/tiers', [App\Http\Controllers\Admin\PuntosController::class, 'tiers']);
-    Route::post('/puntos/tiers', [App\Http\Controllers\Admin\PuntosController::class, 'storeTier']);
-    Route::put('/puntos/tiers/{id}', [App\Http\Controllers\Admin\PuntosController::class, 'updateTier']);
-    Route::delete('/puntos/tiers/{id}', [App\Http\Controllers\Admin\PuntosController::class, 'destroyTier']);
-    Route::post('/puntos/tiers/reorder', [App\Http\Controllers\Admin\PuntosController::class, 'reorderTiers']);
+    Route::get('/puntos/stats', [PuntosController::class, 'stats']);
+    Route::get('/puntos/tiers', [PuntosController::class, 'tiers']);
+    Route::post('/puntos/tiers', [PuntosController::class, 'storeTier']);
+    Route::put('/puntos/tiers/{id}', [PuntosController::class, 'updateTier']);
+    Route::delete('/puntos/tiers/{id}', [PuntosController::class, 'destroyTier']);
+    Route::post('/puntos/tiers/reorder', [PuntosController::class, 'reorderTiers']);
 
-    Route::get('/puntos/actions', [App\Http\Controllers\Admin\PuntosController::class, 'pointActions']);
-    Route::post('/puntos/actions', [App\Http\Controllers\Admin\PuntosController::class, 'storePointAction']);
-    Route::put('/puntos/actions/{id}', [App\Http\Controllers\Admin\PuntosController::class, 'updatePointAction']);
-    Route::delete('/puntos/actions/{id}', [App\Http\Controllers\Admin\PuntosController::class, 'destroyPointAction']);
-    Route::post('/puntos/actions/reorder', [App\Http\Controllers\Admin\PuntosController::class, 'reorderPointActions']);
+    Route::get('/puntos/actions', [PuntosController::class, 'pointActions']);
+    Route::post('/puntos/actions', [PuntosController::class, 'storePointAction']);
+    Route::put('/puntos/actions/{id}', [PuntosController::class, 'updatePointAction']);
+    Route::delete('/puntos/actions/{id}', [PuntosController::class, 'destroyPointAction']);
+    Route::post('/puntos/actions/reorder', [PuntosController::class, 'reorderPointActions']);
 
-    Route::get('/puntos/top-members', [App\Http\Controllers\Admin\PuntosController::class, 'topMembers']);
-    Route::get('/puntos/activity', [App\Http\Controllers\Admin\PuntosController::class, 'activity']);
-    Route::post('/puntos/redeem', [App\Http\Controllers\Admin\PuntosController::class, 'redeem']);
-    Route::post('/puntos/adjust', [App\Http\Controllers\Admin\PuntosController::class, 'adjustPoints']);
+    Route::get('/puntos/top-members', [PuntosController::class, 'topMembers']);
+    Route::get('/puntos/activity', [PuntosController::class, 'activity']);
+    Route::post('/puntos/redeem', [PuntosController::class, 'redeem']);
+    Route::post('/puntos/adjust', [PuntosController::class, 'adjustPoints']);
 
     // Configuración
-    Route::get('/configuracion', [App\Http\Controllers\Admin\ConfiguracionController::class, 'index']);
-    Route::put('/configuracion', [App\Http\Controllers\Admin\ConfiguracionController::class, 'update']);
+    Route::get('/configuracion', [ConfiguracionController::class, 'index']);
+    Route::put('/configuracion', [ConfiguracionController::class, 'update']);
 
     // Loyalty config (business constants)
-    Route::get('/loyalty-config', [App\Http\Controllers\Admin\LoyaltyConfigController::class, 'index']);
-    Route::put('/loyalty-config', [App\Http\Controllers\Admin\LoyaltyConfigController::class, 'update']);
+    Route::get('/loyalty-config', [LoyaltyConfigController::class, 'index']);
+    Route::put('/loyalty-config', [LoyaltyConfigController::class, 'update']);
 
     // Menu CRUD
     Route::apiResource('menu', App\Http\Controllers\Admin\MenuController::class);
 
     // Drink Types CRUD
-    Route::apiResource('drink-types', App\Http\Controllers\Admin\DrinkTypeController::class);
-    Route::post('/drink-types/reorder', [App\Http\Controllers\Admin\DrinkTypeController::class, 'reorder']);
+    Route::apiResource('drink-types', DrinkTypeController::class);
+    Route::post('/drink-types/reorder', [DrinkTypeController::class, 'reorder']);
 
     // Promociones CRUD
     Route::post('/promociones/{id}/publish', [App\Http\Controllers\Admin\PromocionController::class, 'publish']);
@@ -236,18 +264,18 @@ Route::middleware(['auth:sanctum', 'token.full', 'role:admin', 'throttle:admin-a
     Route::get('/facturas/{id}/log', [App\Http\Controllers\Admin\FacturaController::class, 'statusLog']);
 
     // Usuarios CRUD
-    Route::apiResource('usuarios', App\Http\Controllers\Admin\UsuarioController::class);
-    Route::get('/usuarios-export', [App\Http\Controllers\Admin\UsuarioController::class, 'export']);
+    Route::apiResource('usuarios', UsuarioController::class);
+    Route::get('/usuarios-export', [UsuarioController::class, 'export']);
 
     // Meseros CRUD
-    Route::apiResource('meseros', App\Http\Controllers\Admin\MeseroController::class);
-    Route::post('/meseros/{id}/adjust-points', [App\Http\Controllers\Admin\MeseroController::class, 'adjustPoints']);
-    Route::get('/meseros/{id}/points-log', [App\Http\Controllers\Admin\MeseroController::class, 'pointsLog']);
+    Route::apiResource('meseros', MeseroController::class);
+    Route::post('/meseros/{id}/adjust-points', [MeseroController::class, 'adjustPoints']);
+    Route::get('/meseros/{id}/points-log', [MeseroController::class, 'pointsLog']);
 
     // Ranking Periods
-    Route::get('/ranking/periodos', [App\Http\Controllers\Admin\RankingPeriodController::class, 'index']);
-    Route::post('/ranking/rotar', [App\Http\Controllers\Admin\RankingPeriodController::class, 'rotate']);
-    Route::post('/ranking/multiplicador', [App\Http\Controllers\Admin\RankingPeriodController::class, 'setMultiplier']);
+    Route::get('/ranking/periodos', [RankingPeriodController::class, 'index']);
+    Route::post('/ranking/rotar', [RankingPeriodController::class, 'rotate']);
+    Route::post('/ranking/multiplicador', [RankingPeriodController::class, 'setMultiplier']);
 
     // Reservas
     Route::get('/reservas', [App\Http\Controllers\Admin\ReservaController::class, 'index']);
@@ -256,19 +284,14 @@ Route::middleware(['auth:sanctum', 'token.full', 'role:admin', 'throttle:admin-a
     Route::delete('/reservas/{id}', [App\Http\Controllers\Admin\ReservaController::class, 'destroy']);
 
     // Mesas CRUD
-    Route::apiResource('mesas', App\Http\Controllers\Admin\MesaController::class);
-
-    // Pedidos
-    Route::get('/pedidos', [App\Http\Controllers\Admin\PedidoController::class, 'index']);
-    Route::patch('/pedidos/{id}/status', [App\Http\Controllers\Admin\PedidoController::class, 'updateStatus']);
-    Route::delete('/pedidos/{id}', [App\Http\Controllers\Admin\PedidoController::class, 'destroy']);
+    Route::apiResource('mesas', MesaController::class);
 
     // Recompensas
     Route::apiResource('recompensas', App\Http\Controllers\Admin\RecompensaController::class);
 
     // Mail diagnostics
-    Route::post('/mail/test', [App\Http\Controllers\Admin\MailTestController::class, 'send']);
-    Route::get('/mail/config', [App\Http\Controllers\Admin\MailTestController::class, 'config']);
+    Route::post('/mail/test', [MailTestController::class, 'send']);
+    Route::get('/mail/config', [MailTestController::class, 'config']);
 
     // Newsletter (Resend)
     Route::get('/newsletter', [App\Http\Controllers\Admin\NewsletterController::class, 'index']);

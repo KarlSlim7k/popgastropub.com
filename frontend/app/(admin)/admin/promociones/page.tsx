@@ -84,7 +84,6 @@ const DAYS = [
 const ALL_DAYS = DAYS.map((day) => day.value);
 const FOODBOOKING_URL = "https://www.foodbooking.com/ordering/restaurant/menu?company_uid=04f4d10b-2c07-4411-895d-4437eb890919&restaurant_uid=499ca112-e4ea-46f4-8990-47d5b58748ae&facebook=true";
 const CTA_PRESETS = [
-  { label: "Orden interna", text: "Ordenar ahora", url: "/orden" },
   { label: "FoodBooking", text: "Pedir en FoodBooking", url: FOODBOOKING_URL },
   { label: "WhatsApp", text: "Enviar WhatsApp", url: "https://wa.me/522821278014" },
   { label: "Menú", text: "Ver menú", url: "/menu" },

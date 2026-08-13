@@ -9,15 +9,29 @@ export interface AuthSessionUser {
 }
 
 export interface AuthSession {
+  /** Compatibility marker for existing callers; authentication lives in an HttpOnly cookie. */
   token: string;
   user: AuthSessionUser;
   provider?: string;
 }
 
 const AUTH_SESSION_KEY = 'pop_auth_session';
+const COOKIE_SESSION_MARKER = 'http-only-cookie';
 
 function canUseStorage(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+}
+
+function sanitizeUser(user: Partial<AuthSessionUser>): AuthSessionUser {
+  return {
+    id: Number(user.id),
+    name: String(user.name ?? ''),
+    email: String(user.email ?? ''),
+    ...(user.phone ? { phone: String(user.phone) } : {}),
+    ...(user.role ? { role: String(user.role) } : {}),
+    ...(typeof user.points === 'number' ? { points: user.points } : {}),
+    ...(user.tier ? { tier: String(user.tier) } : {}),
+  };
 }
 
 export function saveAuthSession(session: AuthSession): void {
@@ -25,7 +39,10 @@ export function saveAuthSession(session: AuthSession): void {
     return;
   }
 
-  window.localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
+  window.localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+    user: sanitizeUser(session.user),
+    provider: session.provider,
+  }));
 }
 
 export function getAuthSession(): AuthSession | null {
@@ -40,13 +57,24 @@ export function getAuthSession(): AuthSession | null {
   }
 
   try {
-    const parsed = JSON.parse(raw) as AuthSession;
+    const parsed = JSON.parse(raw) as Partial<AuthSession>;
 
-    if (!parsed?.token || !parsed?.user?.email) {
+    if (!parsed?.user?.email) {
       return null;
     }
 
-    return parsed;
+    // Rewrite legacy entries immediately so old bearer tokens do not remain persisted.
+    const user = sanitizeUser(parsed.user);
+    window.localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+      user,
+      provider: parsed.provider,
+    }));
+
+    return {
+      token: COOKIE_SESSION_MARKER,
+      user,
+      provider: parsed.provider,
+    };
   } catch {
     return null;
   }

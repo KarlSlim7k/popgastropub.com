@@ -20,12 +20,15 @@ class StaffDashboardController extends Controller
         $ventasHoy = 0;
 
         if ($mesero) {
-            $totalPoints = $mesero->cocktail_points + $mesero->premium_points + $mesero->pitcher_points +
-                           $mesero->bottle_points + $mesero->combo_points + $mesero->upsell_points + $mesero->rating_points;
-            $ordersServed = $mesero->orders_served;
+            $totalPoints = (int) $mesero->puntos;
+            $ordersServed = MeseroPointsLog::where('mesero_id', $mesero->id)
+                ->approved()
+                ->whereDate('created_at', today())
+                ->sum('quantity');
             $totalSales = (float) $mesero->total_sales;
 
             $ventasHoy = MeseroPointsLog::where('mesero_id', $mesero->id)
+                ->approved()
                 ->whereDate('created_at', today())
                 ->sum('points');
         }
@@ -36,6 +39,7 @@ class StaffDashboardController extends Controller
                 'bebidas_vendidas' => $ordersServed,
                 'puntos_totales' => $totalPoints,
                 'ventas_totales' => $totalSales,
+                'ventas_pendientes' => MeseroPointsLog::where('mesero_id', $mesero?->id)->pending()->count(),
             ],
             'mesero' => $mesero,
         ]);

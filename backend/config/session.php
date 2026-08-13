@@ -13,7 +13,7 @@ return [
     'cookie' => env('SESSION_COOKIE', 'pop_perote_session'),
     'path' => '/',
     'domain' => env('SESSION_DOMAIN'),
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    'secure' => env('SESSION_SECURE_COOKIE', env('APP_ENV', 'production') === 'production'),
     'http_only' => true,
     'same_site' => 'lax',
     'partitioned' => env('SESSION_PARTITIONED_COOKIE', false),

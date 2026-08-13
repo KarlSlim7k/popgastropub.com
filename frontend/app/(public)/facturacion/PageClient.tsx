@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { getAuthSession } from '@/lib/auth-session';
+import { fetchWithCsrf } from '@/lib/api';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -99,16 +100,9 @@ export default function FacturacionPage() {
     const formData = new FormData(form);
     formData.append('ticket', file);
 
-    const session = getAuthSession();
-    const headers = new Headers();
-    if (session?.token) {
-      headers.append('Authorization', `Bearer ${session.token}`);
-    }
-
     try {
-      const res = await fetch(`${API_URL}/facturas`, {
+      const res = await fetchWithCsrf(`${API_URL}/facturas`, {
         method: 'POST',
-        headers,
         body: formData,
       });
 
@@ -556,7 +550,7 @@ export default function FacturacionPage() {
               Email
             </a>
             <a
-              href="https://wa.me/522821278014"
+              href="https://wa.me/522828253243"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 bg-[#D96E30] hover:bg-[#F2C166] hover:text-[#234032] text-white font-black text-xs px-4 py-2.5 transition-colors"

@@ -12,7 +12,7 @@ use Spatie\Activitylog\Support\LogOptions;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, SoftDeletes, LogsActivity;
+    use HasApiTokens, HasFactory, LogsActivity, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -20,6 +20,7 @@ class User extends Authenticatable
         'password',
         'role',
         'phone',
+        'birth_date',
         'points',
         'status',
         'rfc',
@@ -62,6 +63,7 @@ class User extends Authenticatable
         'total_spent' => 'decimal:2',
         'newsletter_subscribed' => 'boolean',
         'newsletter_subscribed_at' => 'datetime',
+        'birth_date' => 'date:Y-m-d',
     ];
 
     protected $appends = [
@@ -71,7 +73,8 @@ class User extends Authenticatable
     public function getTierAttribute(): string
     {
         $points = (int) ($this->points ?? 0);
-        return \App\Models\LoyaltyTier::resolveSlugForPoints($points);
+
+        return LoyaltyTier::resolveSlugForPoints($points);
     }
 
     /**
@@ -93,9 +96,13 @@ class User extends Authenticatable
                 $abs = abs((int) $tx->points);
                 $remaining = $abs;
                 foreach ($positiveLots as $i => $lot) {
-                    if ($remaining <= 0) break;
+                    if ($remaining <= 0) {
+                        break;
+                    }
                     $available = $lot['points'] - $lot['consumed'];
-                    if ($available <= 0) continue;
+                    if ($available <= 0) {
+                        continue;
+                    }
                     $consume = min($available, $remaining);
                     $positiveLots[$i]['consumed'] += $consume;
                     $remaining -= $consume;
@@ -117,7 +124,7 @@ class User extends Authenticatable
         $balance = 0;
         $positiveLots = [];
         $expiredTotal = 0;
-        $expirationDays = \App\Models\LoyaltyTransaction::EXPIRATION_DAYS;
+        $expirationDays = LoyaltyTransaction::EXPIRATION_DAYS;
         $now = now();
 
         foreach ($all as $tx) {
@@ -125,6 +132,7 @@ class User extends Authenticatable
                 $isExpired = $tx->created_at->lt($now->copy()->subDays($expirationDays));
                 if ($isExpired) {
                     $expiredTotal += $tx->points;
+
                     continue;
                 }
                 $balance += $tx->points;
@@ -133,9 +141,13 @@ class User extends Authenticatable
                 $abs = abs((int) $tx->points);
                 $remaining = $abs;
                 foreach ($positiveLots as $i => $lot) {
-                    if ($remaining <= 0) break;
+                    if ($remaining <= 0) {
+                        break;
+                    }
                     $available = $lot['points'] - $lot['consumed'];
-                    if ($available <= 0) continue;
+                    if ($available <= 0) {
+                        continue;
+                    }
                     $consume = min($available, $remaining);
                     $positiveLots[$i]['consumed'] += $consume;
                     $remaining -= $consume;
@@ -160,11 +172,6 @@ class User extends Authenticatable
     public function reservas()
     {
         return $this->hasMany(Reserva::class);
-    }
-
-    public function pedidos()
-    {
-        return $this->hasMany(Pedido::class);
     }
 
     public function redemptions()

@@ -60,7 +60,7 @@ export default function TerminosPage() {
             <ul className="list-disc pl-6 space-y-1 mt-3">
               <li>Los puntos no tienen valor monetario, no son transferibles, no son canjeables por efectivo y no constituyen un título de crédito.</li>
               <li>POP Perote se reserva el derecho de modificar, suspender o cancelar el programa en cualquier momento, notificando con al menos <strong className="text-white">15 días naturales</strong> de anticipación a través de la plataforma.</li>
-              <li>Los puntos acumulados tienen una vigencia de <strong className="text-white">12 meses</strong> a partir de la última transacción activa. La inactividad por más de 12 meses resultará en la cancelación del saldo.</li>
+              <li>Cada lote de puntos acumulado tiene una vigencia de <strong className="text-white">60 días</strong> desde la fecha en que fue obtenido. Los lotes vencidos se descuentan automáticamente del saldo disponible.</li>
               <li>El canje de puntos está sujeto a disponibilidad y a las condiciones específicas de cada recompensa.</li>
               <li>POP Perote se reserva el derecho de anular puntos obtenidos de forma fraudulenta o en violación de estos términos.</li>
             </ul>
@@ -81,7 +81,7 @@ export default function TerminosPage() {
             <h2 className="text-xl font-black text-white uppercase tracking-tight mb-3">VI. Facturación CFDI</h2>
             <ul className="list-disc pl-6 space-y-1">
               <li>Las facturas se emiten conforme al <strong className="text-white">CFDI 4.0</strong>, única versión válida desde el 1 de abril de 2023 según el SAT.</li>
-              <li>La solicitud de factura debe realizarse <strong className="text-white">dentro del mes calendario</strong> en que se efectuó el consumo. No se emiten facturas de meses anteriores.</li>
+              <li>Se recomienda solicitar la factura dentro del mes calendario del consumo. Las solicitudes posteriores quedan sujetas a revisión administrativa y contable; el sistema no las rechaza automáticamente.</li>
               <li>El RFC y Razón Social proporcionados deben coincidir exactamente con los registros del SAT. POP Perote no se hace responsable por datos fiscales incorrectos proporcionados por el cliente.</li>
               <li>El tiempo de respuesta es de hasta <strong className="text-white">24 horas hábiles</strong>. En periodos de alta demanda (cierre de mes) puede extenderse hasta 48 horas.</li>
             </ul>

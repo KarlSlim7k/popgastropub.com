@@ -1,5 +1,11 @@
 <?php
 
+$mysqlSslCaAttribute = extension_loaded('pdo_mysql')
+    ? (defined('Pdo\\Mysql::ATTR_SSL_CA')
+        ? constant('Pdo\\Mysql::ATTR_SSL_CA')
+        : constant('PDO::MYSQL_ATTR_SSL_CA'))
+    : null;
+
 return [
     'default' => env('DB_CONNECTION', 'mysql'),
     'connections' => [
@@ -18,7 +24,7 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                $mysqlSslCaAttribute => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
     ],

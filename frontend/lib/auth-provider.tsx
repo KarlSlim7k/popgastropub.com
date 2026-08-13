@@ -2,20 +2,21 @@
 
 import { useEffect, useState, createContext, useContext, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAuthSession, clearAuthSession, getRoleDashboard, normalizeRole, type AuthSession } from './auth-session';
+import { getAuthSession, saveAuthSession, clearAuthSession, getRoleDashboard, normalizeRole, type AuthSession } from './auth-session';
+import { fetchAPI } from './api';
 
 interface AuthContextType {
   session: AuthSession | null;
   isLoading: boolean;
   logout: () => Promise<void>;
-  refreshSession: () => void;
+  refreshSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
   isLoading: true,
   logout: async () => {},
-  refreshSession: () => {},
+  refreshSession: async () => {},
 });
 
 export function useAuth() {
@@ -27,10 +28,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  const refreshSession = useCallback(() => {
-    const s = getAuthSession();
-    setSession(s);
-    setIsLoading(false);
+  const refreshSession = useCallback(async () => {
+    const stored = getAuthSession();
+    setIsLoading(true);
+
+    try {
+      const user = await fetchAPI<AuthSession['user']>('/auth/me');
+      const nextSession: AuthSession = {
+        token: 'http-only-cookie',
+        user,
+        provider: stored?.provider,
+      };
+      saveAuthSession(nextSession);
+      setSession(nextSession);
+    } catch {
+      clearAuthSession();
+      setSession(null);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -38,12 +54,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshSession]);
 
   const logout = useCallback(async () => {
-    if (session?.token) {
+    if (session) {
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.popgastropub.com/api'}/auth/logout`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${session.token}`, 'Content-Type': 'application/json' },
-        });
+        await fetchAPI('/auth/logout', { method: 'POST' });
       } catch {}
     }
     clearAuthSession();

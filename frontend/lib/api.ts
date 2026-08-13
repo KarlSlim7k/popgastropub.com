@@ -1,4 +1,7 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.popgastropub.com/api'
+const API_ORIGIN = API_URL.replace(/\/api\/?$/, '')
+const UNSAFE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
+let csrfRequest: Promise<void> | null = null
 
 interface FetchOptions extends RequestInit {
   params?: Record<string, string>
@@ -74,6 +77,54 @@ export class APIError extends Error {
   }
 }
 
+function readCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null
+
+  const prefix = `${encodeURIComponent(name)}=`
+  const cookie = document.cookie.split('; ').find((entry) => entry.startsWith(prefix))
+
+  return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : null
+}
+
+async function ensureCsrfCookie(): Promise<void> {
+  if (readCookie('XSRF-TOKEN')) return
+
+  csrfRequest ??= fetch(`${API_ORIGIN}/sanctum/csrf-cookie`, {
+    credentials: 'include',
+    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+  }).then((response) => {
+    if (!response.ok && response.status !== 204) {
+      throw new APIError('No fue posible iniciar la sesión segura.', response.status)
+    }
+  }).finally(() => {
+    csrfRequest = null
+  })
+
+  await csrfRequest
+}
+
+export async function fetchWithCsrf(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
+  const method = (init.method ?? 'GET').toUpperCase()
+  const headers = new Headers(init.headers)
+
+  if (UNSAFE_METHODS.has(method)) {
+    await ensureCsrfCookie()
+    const csrfToken = readCookie('XSRF-TOKEN')
+    if (!csrfToken) {
+      throw new APIError('No fue posible validar la sesión segura.', 419)
+    }
+    headers.set('X-XSRF-TOKEN', csrfToken)
+  }
+
+  headers.set('X-Requested-With', 'XMLHttpRequest')
+
+  return fetch(input, {
+    ...init,
+    headers,
+    credentials: 'include',
+  })
+}
+
 export async function fetchAPI<T>(
   endpoint: string,
   options: FetchOptions = {}
@@ -94,10 +145,9 @@ export async function fetchAPI<T>(
     ...(customHeaders as Record<string, string> | undefined),
   }
 
-  const response = await fetch(url.toString(), {
+  const response = await fetchWithCsrf(url.toString(), {
     ...rest,
     headers,
-    credentials: 'include',
   })
 
   if (!response.ok) {
@@ -117,22 +167,16 @@ export async function fetchWithAuth<T>(
   token: string,
   options: FetchOptions = {}
 ): Promise<T> {
-  return fetchAPI<T>(endpoint, {
-    ...options,
-    headers: {
-      ...options.headers,
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  void token
+  return fetchAPI<T>(endpoint, options)
 }
 
 export async function fetchBlobWithAuth(endpoint: string, token: string): Promise<Blob> {
-  const response = await fetch(new URL(`${API_URL}${endpoint}`).toString(), {
+  void token
+  const response = await fetchWithCsrf(new URL(`${API_URL}${endpoint}`).toString(), {
     headers: {
       Accept: '*/*',
-      Authorization: `Bearer ${token}`,
     },
-    credentials: 'include',
   })
 
   if (!response.ok) {

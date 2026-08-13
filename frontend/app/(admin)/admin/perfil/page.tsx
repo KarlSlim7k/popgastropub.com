@@ -39,7 +39,7 @@ export default function AdminPerfilPage() {
       email: session.user.email ?? "",
       phone: session.user.phone ?? "",
     });
-  }, [session?.user?.id, session?.user?.name, session?.user?.email, session?.user?.phone]);
+  }, [session?.user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));

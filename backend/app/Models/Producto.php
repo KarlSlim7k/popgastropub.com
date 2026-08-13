@@ -11,6 +11,15 @@ class Producto extends Model
 {
     use HasFactory, SoftDeletes, LogsActivity;
 
+    public const BEVERAGE_CATEGORIES = [
+        'BEBIDAS.',
+        'MIXOLOGIA',
+        'Bebidas',
+        'Mixología',
+        'Coctelería',
+        'MENÚ DEL BAR',
+    ];
+
     protected $fillable = [
         'nombre',
         'descripcion',
@@ -42,4 +51,9 @@ class Producto extends Model
         'alergenos' => 'array',
         'ranking_points' => 'integer',
     ];
+
+    public function scopeBeverages($query)
+    {
+        return $query->whereIn('categoria', self::BEVERAGE_CATEGORIES);
+    }
 }

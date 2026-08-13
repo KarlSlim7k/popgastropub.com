@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type AnchorHTMLAttributes, type FormEvent, type ReactNode } from "react";
-import { API_URL } from "@/lib/api";
+import { API_URL, fetchWithCsrf } from "@/lib/api";
 
 export type PromoFormField = "nombre" | "telefono" | "email" | "mensaje";
 type PromoClickType = "cta_primary_click" | "cta_secondary_click";
@@ -14,13 +14,12 @@ const FIELD_CONFIG: Record<PromoFormField, { label: string; type: string; placeh
 };
 
 async function postInteraction(slug: string, endpoint: string, body: Record<string, string> = {}) {
-  return fetch(`${API_URL}/promociones/${encodeURIComponent(slug)}/${endpoint}`, {
+  return fetchWithCsrf(`${API_URL}/promociones/${encodeURIComponent(slug)}/${endpoint}`, {
     method: "POST",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
     },
-    credentials: "include",
     keepalive: endpoint !== "lead",
     body: JSON.stringify(body),
   });
@@ -37,12 +36,6 @@ function getLeadOrigin(): string {
 }
 
 function recordClick(slug: string, type: PromoClickType): void {
-  const url = `${API_URL}/promociones/${encodeURIComponent(slug)}/click`;
-  const body = new FormData();
-  body.append("type", type);
-
-  if (navigator.sendBeacon?.(url, body)) return;
-
   void postInteraction(slug, "click", { type }).catch(() => undefined);
 }
 

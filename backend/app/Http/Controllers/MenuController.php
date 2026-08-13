@@ -9,7 +9,8 @@ class MenuController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Producto::where('disponible', true);
+        $query = Producto::where('disponible', true)
+            ->beverages();
 
         if ($request->has('categoria')) {
             $query->where('categoria', $request->categoria);
@@ -26,7 +27,7 @@ class MenuController extends Controller
 
     public function show($id)
     {
-        $producto = Producto::findOrFail($id);
+        $producto = Producto::beverages()->findOrFail($id);
 
         return response()->json($producto);
     }

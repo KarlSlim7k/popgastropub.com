@@ -30,9 +30,9 @@ class AdminFormsTest extends TestCase
     public function test_admin_can_create_complete_menu_item(): void
     {
         $response = $this->actingAs($this->admin)->postJson('/api/admin/menu', [
-            'name' => 'Rollo de prueba',
+            'name' => 'Cóctel de prueba',
             'description' => 'Descripción visible en menú.',
-            'category' => 'Sushi',
+            'category' => 'Coctelería',
             'price' => 150,
             'cost' => 60,
             'stock' => 80,
@@ -45,7 +45,7 @@ class AdminFormsTest extends TestCase
         ]);
 
         $response->assertCreated()->assertJsonFragment(['featured' => true, 'status' => 'available']);
-        $this->assertDatabaseHas('productos', ['nombre' => 'Rollo de prueba', 'destacado' => true]);
+        $this->assertDatabaseHas('productos', ['nombre' => 'Cóctel de prueba', 'destacado' => true]);
     }
 
     public function test_admin_can_create_indefinite_weekday_promotion(): void
@@ -139,7 +139,7 @@ class AdminFormsTest extends TestCase
         $this->assertStringContainsString("'=cmd", $csv);
         $this->assertStringContainsString("'@SUM(1+1)", $csv);
         $this->assertStringNotContainsString("\n=cmd", $csv);
-        $this->assertStringNotContainsString(",=cmd", $csv);
+        $this->assertStringNotContainsString(',=cmd', $csv);
     }
 
     public function test_public_image_route_only_serves_allowed_admin_images(): void

@@ -24,7 +24,7 @@ export default function StaffAnalyticsPage() {
   const { session } = useAuth();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [tickets, setTickets] = useState<TicketItem[]>([]);
-  const [pointsLog, setPointsLog] = useState<{ id: number; category: string; points: number; multiplier: number; created_at: string }[]>([]);
+  const [pointsLog, setPointsLog] = useState<{ id: number; category: string; points: number; multiplier: number; status: 'pending' | 'approved' | 'rejected'; created_at: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -161,7 +161,7 @@ export default function StaffAnalyticsPage() {
                   <tr>
                     <th className="py-3 px-6">Categoría</th>
                     <th className="py-3 px-4">Pts</th>
-                    <th className="py-3 px-4">Mult.</th>
+                    <th className="py-3 px-4">Estado</th>
                     <th className="py-3 px-6 text-right">Fecha</th>
                   </tr>
                 </thead>
@@ -169,8 +169,8 @@ export default function StaffAnalyticsPage() {
                   {pointsLog.slice(0, 20).map((log) => (
                     <tr key={log.id} className="hover:bg-white/[0.01]">
                       <td className="py-3 px-6 text-xs font-bold text-white capitalize">{log.category}</td>
-                      <td className="py-3 px-4 text-xs font-black text-pop-gold">+{log.points}</td>
-                      <td className="py-3 px-4 text-xs text-gray-500">{log.multiplier}x</td>
+                      <td className={`py-3 px-4 text-xs font-black ${log.status === 'approved' ? 'text-pop-gold' : 'text-gray-500'}`}>{log.status === 'approved' ? '+' : ''}{log.points}</td>
+                      <td className="py-3 px-4 text-[10px] font-bold uppercase text-gray-500">{log.status === 'approved' ? 'Aprobada' : log.status === 'rejected' ? 'Rechazada' : 'Pendiente'}</td>
                       <td className="py-3 px-6 text-right text-[10px] text-gray-500">{new Date(log.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
                     </tr>
                   ))}

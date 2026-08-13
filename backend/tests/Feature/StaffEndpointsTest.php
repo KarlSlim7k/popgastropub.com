@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\DrinkType;
 use App\Models\Mesero;
-use App\Models\MeseroRating;
 use App\Models\StaffNotification;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,8 +14,11 @@ class StaffEndpointsTest extends TestCase
     use RefreshDatabase;
 
     private User $meseroUser;
+
     private User $adminUser;
+
     private User $clienteUser;
+
     private Mesero $mesero;
 
     protected function setUp(): void
@@ -95,14 +97,28 @@ class StaffEndpointsTest extends TestCase
         $response->assertStatus(200)->assertJsonCount(1);
     }
 
-    public function test_add_points_increments_mesero_score(): void
+    public function test_sale_submission_stays_pending_until_admin_approval(): void
     {
         $response = $this->actingAs($this->meseroUser)->postJson('/api/ranking/points', [
             'category' => 'cocktail',
             'quantity' => 2,
         ]);
 
-        $response->assertStatus(200)->assertJsonFragment(['message' => 'Puntos añadidos: +20']);
+        $response->assertAccepted()->assertJsonFragment(['message' => 'Venta enviada a revisión: +20 pts pendientes']);
+        $this->assertDatabaseHas('meseros', ['id' => $this->mesero->id, 'puntos' => 100]);
+        $this->assertDatabaseHas('mesero_points_log', [
+            'mesero_id' => $this->mesero->id,
+            'quantity' => 2,
+            'points' => 20,
+            'status' => 'pending',
+        ]);
+
+        $saleId = $response->json('sale.id');
+        $this->actingAs($this->adminUser)
+            ->patchJson("/api/admin/staff-sales/{$saleId}/approve")
+            ->assertOk()
+            ->assertJsonPath('sale.status', 'approved');
+
         $this->assertDatabaseHas('meseros', ['id' => $this->mesero->id, 'puntos' => 120]);
     }
 
@@ -115,8 +131,8 @@ class StaffEndpointsTest extends TestCase
             'quantity' => 1,
         ]);
 
-        $response->assertStatus(200);
-        $this->assertDatabaseHas('meseros', ['id' => $this->mesero->id, 'puntos' => 120]); // 100 + 10*2
+        $response->assertAccepted()->assertJsonPath('sale.points', 20);
+        $this->assertDatabaseHas('meseros', ['id' => $this->mesero->id, 'puntos' => 100]);
     }
 
     public function test_add_points_rejects_invalid_category(): void
@@ -144,8 +160,8 @@ class StaffEndpointsTest extends TestCase
             'quantity' => 1,
         ]);
 
-        $response->assertStatus(200)->assertJsonFragment(['message' => 'Puntos añadidos: +30']);
-        $this->assertDatabaseHas('meseros', ['id' => $this->mesero->id, 'puntos' => 130]);
+        $response->assertAccepted()->assertJsonPath('sale.points', 30);
+        $this->assertDatabaseHas('meseros', ['id' => $this->mesero->id, 'puntos' => 100]);
     }
 
     // --- Mi Ranking Tests ---

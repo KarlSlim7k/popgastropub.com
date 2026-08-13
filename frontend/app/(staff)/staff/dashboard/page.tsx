@@ -47,6 +47,8 @@ const StatCard = ({ label, value, icon }: { label: string; value: string; icon: 
 
 export default function WaiterDashboardPage() {
   const { session } = useAuth();
+  const token = session?.token;
+  const userEmail = session?.user?.email;
   const [meseros, setMeseros] = useState<Mesero[]>([]);
   const [rankingLoading, setRankingLoading] = useState(true);
   const [stats, setStats] = useState<DashStats | null>(null);
@@ -56,16 +58,17 @@ export default function WaiterDashboardPage() {
   const userName = session?.user?.name || "Mesero";
 
   useEffect(() => {
-    if (!session?.token) return;
+    const authToken = token;
+    if (!authToken) return;
     let cancelled = false;
 
-    async function loadData() {
+    async function loadData(activeToken: string) {
       try {
         setRankingLoading(true);
         const [rankingData, dashData, notifs] = await Promise.all([
-          fetchWithAuth<Mesero[]>("/ranking", session!.token),
-          fetchWithAuth<{ stats: DashStats }>("/staff/dashboard", session!.token).catch(() => null),
-          fetchWithAuth<Notification[]>("/staff/notificaciones", session!.token).catch(() => []),
+          fetchWithAuth<Mesero[]>("/ranking", activeToken),
+          fetchWithAuth<{ stats: DashStats }>("/staff/dashboard", activeToken).catch(() => null),
+          fetchWithAuth<Notification[]>("/staff/notificaciones", activeToken).catch(() => []),
         ]);
         if (cancelled) return;
 
@@ -76,8 +79,8 @@ export default function WaiterDashboardPage() {
         setNotifications(notifs || []);
 
         // Find current user's position
-        if (session?.user?.email) {
-          const idx = sorted.findIndex((m) => m.user?.email === session.user.email);
+        if (userEmail) {
+          const idx = sorted.findIndex((m) => m.user?.email === userEmail);
           setMyPosition(idx >= 0 ? idx + 1 : null);
         }
       } catch {} finally {
@@ -85,9 +88,9 @@ export default function WaiterDashboardPage() {
       }
     }
 
-    loadData();
+    loadData(authToken);
     return () => { cancelled = true; };
-  }, [session?.token]);
+  }, [token, userEmail]);
 
   const topMesero = useMemo(() => meseros[0] || null, [meseros]);
 

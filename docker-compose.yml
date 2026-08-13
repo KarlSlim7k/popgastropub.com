@@ -56,7 +56,7 @@ services:
     expose:
       - "9000"
     command: >
-      sh -c "mkdir -p /var/www/html/storage/app/private /var/www/html/storage/app/public /var/www/html/storage/framework/cache/data /var/www/html/storage/framework/sessions /var/www/html/storage/framework/views /var/www/html/storage/logs /var/www/html/bootstrap/cache && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && chmod -R ug+rwX /var/www/html/storage /var/www/html/bootstrap/cache && php artisan migrate --force && php artisan tickets:migrate-to-private && php artisan storage:link --force 2>/dev/null || true && php-fpm"
+      sh -c "mkdir -p /var/www/html/storage/app/private /var/www/html/storage/app/public /var/www/html/storage/framework/cache/data /var/www/html/storage/framework/sessions /var/www/html/storage/framework/views /var/www/html/storage/logs /var/www/html/bootstrap/cache && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && chmod -R ug+rwX /var/www/html/storage /var/www/html/bootstrap/cache && php artisan migrate --force && php artisan tickets:migrate-to-private && (php artisan storage:link --force 2>/dev/null || true) && exec php-fpm"
     environment:
       - APP_ENV=production
       - APP_DEBUG=${APP_DEBUG:-false}
@@ -69,6 +69,9 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - CACHE_STORE=${CACHE_STORE:-file}
       - SESSION_DRIVER=${SESSION_DRIVER:-file}
+      - SESSION_DOMAIN=${SESSION_DOMAIN:-.popgastropub.com}
+      - SESSION_SECURE_COOKIE=${SESSION_SECURE_COOKIE:-true}
+      - SANCTUM_STATEFUL_DOMAINS=${SANCTUM_STATEFUL_DOMAINS:-popgastropub.com,www.popgastropub.com}
       - APP_URL=${APP_URL:-https://api.popgastropub.com}
       - FRONTEND_URL=${FRONTEND_URL:-https://popgastropub.com}
       - QR_SECRET=${QR_SECRET:?QR_SECRET requerido}
