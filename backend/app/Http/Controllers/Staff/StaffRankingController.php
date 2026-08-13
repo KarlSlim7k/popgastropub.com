@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Models\Mesero;
+use App\Models\MeseroPointsLog;
 use Illuminate\Http\Request;
 
 class StaffRankingController extends Controller
@@ -13,28 +14,29 @@ class StaffRankingController extends Controller
         $user = $request->user();
         $mesero = Mesero::where('user_id', $user->id)->first();
 
-        if (!$mesero) {
+        if (! $mesero) {
             return response()->json(['message' => 'No se encontró perfil de mesero'], 404);
         }
 
-        $totalPoints = $mesero->cocktail_points + $mesero->premium_points + $mesero->pitcher_points +
-                       $mesero->bottle_points + $mesero->combo_points + $mesero->upsell_points + $mesero->rating_points;
+        $totalPoints = (int) $mesero->puntos;
 
         // Calculate position
-        $allMeseros = Mesero::where('activo', true)->get()->map(fn($m) =>
-            $m->cocktail_points + $m->premium_points + $m->pitcher_points +
-            $m->bottle_points + $m->combo_points + $m->upsell_points + $m->rating_points
-        )->sortDesc()->values();
+        $allMeseros = Mesero::where('activo', true)->orderByDesc('puntos')->pluck('puntos')->values();
 
         $position = $allMeseros->search($totalPoints) + 1;
         $totalMeseros = $allMeseros->count();
 
         // Tier calculation
         $tier = 'Rookie';
-        if ($totalPoints >= 5000) $tier = 'Legend';
-        elseif ($totalPoints >= 3000) $tier = 'Master';
-        elseif ($totalPoints >= 1500) $tier = 'Pro';
-        elseif ($totalPoints >= 500) $tier = 'Rising';
+        if ($totalPoints >= 5000) {
+            $tier = 'Legend';
+        } elseif ($totalPoints >= 3000) {
+            $tier = 'Master';
+        } elseif ($totalPoints >= 1500) {
+            $tier = 'Pro';
+        } elseif ($totalPoints >= 500) {
+            $tier = 'Rising';
+        }
 
         $nextTierMin = match ($tier) {
             'Rookie' => 500, 'Rising' => 1500, 'Pro' => 3000, 'Master' => 5000, default => null,
@@ -57,7 +59,12 @@ class StaffRankingController extends Controller
                 'combo' => $mesero->combo_points,
                 'upsell' => $mesero->upsell_points,
                 'rating' => $mesero->rating_points,
+                'otros' => (int) MeseroPointsLog::where('mesero_id', $mesero->id)
+                    ->approved()
+                    ->whereNotIn('category', ['cocktail', 'premium', 'pitcher', 'bottle', 'combo', 'upsell', 'rating'])
+                    ->sum('points'),
             ],
+            'ventas_pendientes' => MeseroPointsLog::where('mesero_id', $mesero->id)->pending()->count(),
         ]);
     }
 }

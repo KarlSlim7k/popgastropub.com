@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
 
@@ -23,7 +23,7 @@ export default function RankingPeriodosPage() {
 
   const token = getAuthSession()?.token ?? "";
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!token) return;
     setLoading(true);
     try {
@@ -32,9 +32,9 @@ export default function RankingPeriodosPage() {
     } catch {} finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   useEffect(() => {
     if (!toast) return;

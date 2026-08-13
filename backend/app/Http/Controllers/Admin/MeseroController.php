@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\DrinkType;
 use App\Models\Mesero;
 use App\Models\MeseroPointsLog;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
@@ -36,11 +38,11 @@ class MeseroController extends Controller
             }
         }
 
-        $meseros = $query->orderByRaw('(cocktail_points + premium_points + pitcher_points + bottle_points + combo_points + upsell_points + rating_points) DESC')->get();
+        $meseros = $query->orderByDesc('puntos')->get();
 
         $extraPoints = $this->extraPointsByMesero($meseros->pluck('id'));
 
-        return response()->json($meseros->map(fn($m) => $this->toFrontend($m, $extraPoints[$m->id] ?? 0)));
+        return response()->json($meseros->map(fn ($m) => $this->toFrontend($m, $extraPoints[$m->id] ?? 0)));
     }
 
     public function store(Request $request)
@@ -89,9 +91,15 @@ class MeseroController extends Controller
                     'status' => $request->input('status') === 'inactivo' ? 'inactivo' : 'activo',
                 ];
 
-                if ($request->has('accountEmail')) $userData['email'] = $request->input('accountEmail');
-                if ($request->has('accountPhone')) $userData['phone'] = $request->input('accountPhone');
-                if ($request->filled('password')) $userData['password'] = Hash::make($request->input('password'));
+                if ($request->has('accountEmail')) {
+                    $userData['email'] = $request->input('accountEmail');
+                }
+                if ($request->has('accountPhone')) {
+                    $userData['phone'] = $request->input('accountPhone');
+                }
+                if ($request->filled('password')) {
+                    $userData['password'] = Hash::make($request->input('password'));
+                }
 
                 $mesero->user->update($userData);
                 if ($mesero->user->status === 'inactivo') {
@@ -118,12 +126,12 @@ class MeseroController extends Controller
 
     public function adjustPoints(Request $request, $id)
     {
-        $drinkTypeSlugs = \App\Models\DrinkType::pluck('slug')->toArray();
+        $drinkTypeSlugs = DrinkType::pluck('slug')->toArray();
         $validCategories = implode(',', array_merge($drinkTypeSlugs, ['rating']));
 
         $request->validate([
             'points' => 'required|integer',
-            'category' => 'required|in:' . $validCategories,
+            'category' => 'required|in:'.$validCategories,
             'description' => 'nullable|string|max:255',
         ]);
 
@@ -132,7 +140,7 @@ class MeseroController extends Controller
         $category = $request->input('category');
         $description = $request->input('description', 'Ajuste manual admin');
 
-        $categoryField = $category . '_points';
+        $categoryField = $category.'_points';
         $hasColumn = Schema::hasColumn('meseros', $categoryField);
 
         if ($points > 0) {
@@ -182,7 +190,7 @@ class MeseroController extends Controller
      * Suma de mesero_points_log para categorías sin columna *_points propia
      * (drink types nuevos creados por el admin), agrupada por mesero.
      *
-     * @param  \Illuminate\Support\Collection<int, int>  $meseroIds
+     * @param  Collection<int, int>  $meseroIds
      * @return array<int, int>
      */
     private function extraPointsByMesero($meseroIds): array
@@ -192,6 +200,7 @@ class MeseroController extends Controller
         }
 
         return MeseroPointsLog::whereIn('mesero_id', $meseroIds)
+            ->approved()
             ->whereNotIn('category', self::CORE_CATEGORIES)
             ->selectRaw('mesero_id, SUM(points) as extra')
             ->groupBy('mesero_id')
@@ -203,6 +212,7 @@ class MeseroController extends Controller
     private function extraPointsForMesero(int $meseroId): int
     {
         return (int) MeseroPointsLog::where('mesero_id', $meseroId)
+            ->approved()
             ->whereNotIn('category', self::CORE_CATEGORIES)
             ->sum('points');
     }
@@ -218,7 +228,7 @@ class MeseroController extends Controller
             'name' => $m->nombre,
             'accountEmail' => $m->user?->email ?? '',
             'accountPhone' => $m->user?->phone ?? '',
-            'initials' => $m->iniciales ?: strtoupper(collect(explode(' ', $m->nombre))->map(fn($w) => $w[0] ?? '')->join('')),
+            'initials' => $m->iniciales ?: strtoupper(collect(explode(' ', $m->nombre))->map(fn ($w) => $w[0] ?? '')->join('')),
             'status' => $m->status ?? ($m->activo ? 'activo' : 'inactivo'),
             'cocktailPoints' => $m->cocktail_points ?? 0,
             'premiumPoints' => $m->premium_points ?? 0,
@@ -238,22 +248,46 @@ class MeseroController extends Controller
     {
         $map = [];
 
-        if ($request->has('name')) $map['nombre'] = $request->input('name');
-        if ($request->has('initials')) $map['iniciales'] = $request->input('initials');
+        if ($request->has('name')) {
+            $map['nombre'] = $request->input('name');
+        }
+        if ($request->has('initials')) {
+            $map['iniciales'] = $request->input('initials');
+        }
         if ($request->has('status')) {
             $map['status'] = $request->input('status');
             $map['activo'] = $request->input('status') === 'activo';
         }
-        if ($request->has('cocktailPoints')) $map['cocktail_points'] = $request->input('cocktailPoints');
-        if ($request->has('premiumPoints')) $map['premium_points'] = $request->input('premiumPoints');
-        if ($request->has('pitcherPoints')) $map['pitcher_points'] = $request->input('pitcherPoints');
-        if ($request->has('bottlePoints')) $map['bottle_points'] = $request->input('bottlePoints');
-        if ($request->has('comboPoints')) $map['combo_points'] = $request->input('comboPoints');
-        if ($request->has('upsellPoints')) $map['upsell_points'] = $request->input('upsellPoints');
-        if ($request->has('ratingPoints')) $map['rating_points'] = $request->input('ratingPoints');
-        if ($request->has('totalSales')) $map['total_sales'] = $request->input('totalSales');
-        if ($request->has('ordersServed')) $map['orders_served'] = $request->input('ordersServed');
-        if ($request->has('avgRating')) $map['avg_rating'] = $request->input('avgRating');
+        if ($request->has('cocktailPoints')) {
+            $map['cocktail_points'] = $request->input('cocktailPoints');
+        }
+        if ($request->has('premiumPoints')) {
+            $map['premium_points'] = $request->input('premiumPoints');
+        }
+        if ($request->has('pitcherPoints')) {
+            $map['pitcher_points'] = $request->input('pitcherPoints');
+        }
+        if ($request->has('bottlePoints')) {
+            $map['bottle_points'] = $request->input('bottlePoints');
+        }
+        if ($request->has('comboPoints')) {
+            $map['combo_points'] = $request->input('comboPoints');
+        }
+        if ($request->has('upsellPoints')) {
+            $map['upsell_points'] = $request->input('upsellPoints');
+        }
+        if ($request->has('ratingPoints')) {
+            $map['rating_points'] = $request->input('ratingPoints');
+        }
+        if ($request->has('totalSales')) {
+            $map['total_sales'] = $request->input('totalSales');
+        }
+        if ($request->has('ordersServed')) {
+            $map['orders_served'] = $request->input('ordersServed');
+        }
+        if ($request->has('avgRating')) {
+            $map['avg_rating'] = $request->input('avgRating');
+        }
 
         return $map;
     }

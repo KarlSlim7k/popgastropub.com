@@ -4,14 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from "@/lib/auth-provider";
 import { fetchWithAuth } from "@/lib/api";
 
-const DRINK_CATEGORIES = [
-  { key: "cocktail", label: "Cóctel / Margarita", points: 10, icon: "local_bar" },
-  { key: "premium", label: "Bebida Premium", points: 15, icon: "wine_bar" },
-  { key: "pitcher", label: "Pitcher / Compartida", points: 25, icon: "sports_bar" },
-  { key: "bottle", label: "Botella Completa", points: 50, icon: "liquor" },
-  { key: "combo", label: "Combo Comida + Bebida", points: 20, icon: "restaurant" },
-  { key: "upsell", label: "Upselling (Upgrade)", points: 15, icon: "trending_up" },
-];
+interface DrinkType {
+  id: number;
+  slug: string;
+  label: string;
+  points: number;
+  icon: string;
+}
 
 export default function StaffVentasPage() {
   const { session } = useAuth();
@@ -21,38 +20,45 @@ export default function StaffVentasPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [todayPoints, setTodayPoints] = useState(0);
   const [todaySales, setTodaySales] = useState(0);
+  const [pendingSales, setPendingSales] = useState(0);
+  const [drinkTypes, setDrinkTypes] = useState<DrinkType[]>([]);
+  const [loadingTypes, setLoadingTypes] = useState(true);
 
   useEffect(() => {
     if (!session?.token) return;
-    fetchWithAuth<{ stats: { ventas_hoy: number; bebidas_vendidas: number } }>("/staff/dashboard", session.token)
-      .then((data) => {
+    Promise.all([
+      fetchWithAuth<{ stats: { ventas_hoy: number; bebidas_vendidas: number; ventas_pendientes: number } }>("/staff/dashboard", session.token),
+      fetchWithAuth<DrinkType[]>("/ranking/drink-types", session.token),
+    ])
+      .then(([data, types]) => {
         if (data?.stats) {
           setTodayPoints(data.stats.ventas_hoy);
           setTodaySales(data.stats.bebidas_vendidas);
+          setPendingSales(data.stats.ventas_pendientes);
         }
+        setDrinkTypes(types);
       })
-      .catch(() => {});
+      .catch((error: unknown) => {
+        setToast(error instanceof Error ? error.message : "No fue posible cargar los tipos de bebida");
+      })
+      .finally(() => setLoadingTypes(false));
   }, [session?.token]);
 
   const handleSubmit = async () => {
     if (!session?.token || !selected) return;
     setSubmitting(true);
     try {
-      const res = await fetchWithAuth<{ message: string; mesero: { puntos: number } }>("/ranking/points", session.token, {
+      const res = await fetchWithAuth<{ message: string }>("/ranking/points", session.token, {
         method: "POST",
         body: JSON.stringify({ category: selected, quantity }),
       });
-      // Use actual points from API response (multiplier-aware)
-      const match = res.message.match(/\+(\d+)/);
-      const awarded = match ? parseInt(match[1], 10) : 0;
-      setTodayPoints((prev) => prev + awarded);
-      setTodaySales((prev) => prev + quantity);
+      setPendingSales((prev) => prev + 1);
       setToast(res.message);
       setSelected(null);
       setQuantity(1);
       setTimeout(() => setToast(null), 3000);
-    } catch (e: any) {
-      setToast(e.message || "Error al registrar");
+    } catch (error: unknown) {
+      setToast(error instanceof Error ? error.message : "Error al registrar");
       setTimeout(() => setToast(null), 3000);
     } finally {
       setSubmitting(false);
@@ -67,10 +73,14 @@ export default function StaffVentasPage() {
       </header>
 
       {/* Today's Stats */}
-      <div className="grid grid-cols-2 gap-4 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
         <div className="bg-pop-cardGreen p-6 rounded-xl border border-white/5">
           <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Puntos Hoy</p>
           <p className="text-3xl font-black text-pop-gold font-epilogue">{todayPoints}</p>
+        </div>
+        <div className="bg-pop-cardGreen p-6 rounded-xl border border-white/5">
+          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Pendientes de revisión</p>
+          <p className="text-3xl font-black text-pop-orange font-epilogue">{pendingSales}</p>
         </div>
         <div className="bg-pop-cardGreen p-6 rounded-xl border border-white/5">
           <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Ventas Hoy</p>
@@ -81,15 +91,20 @@ export default function StaffVentasPage() {
       {/* Drink Categories */}
       <section className="mb-8">
         <h2 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-6">Selecciona tipo de venta</h2>
+        {loadingTypes ? (
+          <p className="text-sm text-gray-500">Cargando tipos de bebida...</p>
+        ) : drinkTypes.length === 0 ? (
+          <p className="text-sm text-red-400">No hay tipos de bebida activos. Solicita al administrador que configure el ranking.</p>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {DRINK_CATEGORIES.map((cat) => (
+          {drinkTypes.map((cat) => (
             <button
-              key={cat.key}
-              onClick={() => setSelected(cat.key)}
-              className={`p-6 rounded-xl border transition-all text-left ${selected === cat.key ? "bg-pop-gold/10 border-pop-gold" : "bg-pop-cardGreen border-white/5 hover:border-pop-gold/30"}`}
+              key={cat.slug}
+              onClick={() => setSelected(cat.slug)}
+              className={`p-6 rounded-xl border transition-all text-left ${selected === cat.slug ? "bg-pop-gold/10 border-pop-gold" : "bg-pop-cardGreen border-white/5 hover:border-pop-gold/30"}`}
             >
               <div className="flex items-center gap-4 mb-3">
-                <span className={`material-symbols-outlined text-3xl ${selected === cat.key ? "text-pop-gold" : "text-gray-500"}`}>{cat.icon}</span>
+                <span className={`material-symbols-outlined text-3xl ${selected === cat.slug ? "text-pop-gold" : "text-gray-500"}`}>{cat.icon || "local_bar"}</span>
                 <div>
                   <p className="text-sm font-black text-white uppercase">{cat.label}</p>
                   <p className="text-xs text-pop-gold font-bold">+{cat.points} pts/unidad</p>
@@ -98,6 +113,7 @@ export default function StaffVentasPage() {
             </button>
           ))}
         </div>
+        )}
       </section>
 
       {/* Quantity & Submit */}
@@ -106,7 +122,7 @@ export default function StaffVentasPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Cantidad</p>
-              <p className="text-sm text-gray-400 mt-1">{DRINK_CATEGORIES.find(c => c.key === selected)?.label}</p>
+              <p className="text-sm text-gray-400 mt-1">{drinkTypes.find(c => c.slug === selected)?.label}</p>
             </div>
             <div className="flex items-center gap-4">
               <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center text-white hover:bg-white/10">
@@ -121,11 +137,11 @@ export default function StaffVentasPage() {
 
           <div className="flex items-center justify-between pt-6 border-t border-white/5">
             <div>
-              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Total puntos</p>
-              <p className="text-4xl font-black text-pop-gold font-epilogue">+{(DRINK_CATEGORIES.find(c => c.key === selected)?.points || 0) * quantity}</p>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Puntos base estimados</p>
+              <p className="text-4xl font-black text-pop-gold font-epilogue">+{(drinkTypes.find(c => c.slug === selected)?.points || 0) * quantity}</p>
             </div>
             <button onClick={handleSubmit} disabled={submitting} className="px-10 py-4 bg-pop-gold text-pop-black font-black uppercase text-xs tracking-widest rounded-xl hover:bg-pop-lightGold transition-all disabled:opacity-50 shadow-lg">
-              {submitting ? "Registrando..." : "Registrar Venta"}
+              {submitting ? "Enviando..." : "Enviar a revisión"}
             </button>
           </div>
         </section>
