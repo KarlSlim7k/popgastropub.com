@@ -71,7 +71,7 @@ export default function StaffMenuPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-white/5 text-[10px] uppercase tracking-[0.2em] text-gray-500">
-                <th className="pb-4 font-bold">Platillo</th>
+                <th className="pb-4 font-bold">Bebida</th>
                 <th className="pb-4 font-bold">Categoría</th>
                 <th className="pb-4 font-bold">Precio</th>
                 <th className="pb-4 font-bold">Stock</th>
@@ -92,7 +92,7 @@ export default function StaffMenuPage() {
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && <tr><td colSpan={5} className="py-10 text-center text-gray-500 text-xs uppercase">Sin platillos</td></tr>}
+              {filtered.length === 0 && <tr><td colSpan={5} className="py-10 text-center text-gray-500 text-xs uppercase">Sin bebidas</td></tr>}
             </tbody>
           </table>
         </div>

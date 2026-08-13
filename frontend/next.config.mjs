@@ -37,6 +37,16 @@ const nextConfig = {
         destination: '/menu',
         permanent: true,
       },
+      {
+        source: '/pedidos',
+        destination: '/menu',
+        permanent: true,
+      },
+      {
+        source: '/admin/pedidos',
+        destination: '/admin/dashboard',
+        permanent: true,
+      },
     ];
   },
 }

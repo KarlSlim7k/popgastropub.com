@@ -4,15 +4,17 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use App\Models\Producto;
-use Illuminate\Http\Request;
 
 class StaffMenuController extends Controller
 {
     public function index()
     {
-        $productos = Producto::orderBy('categoria')->orderBy('nombre')->get();
+        $productos = Producto::beverages()
+            ->orderBy('categoria')
+            ->orderBy('nombre')
+            ->get();
 
-        return response()->json($productos->map(fn($p) => [
+        return response()->json($productos->map(fn ($p) => [
             'id' => $p->id,
             'nombre' => $p->nombre,
             'categoria' => $p->categoria,
@@ -25,8 +27,8 @@ class StaffMenuController extends Controller
 
     public function toggleDisponibilidad($id)
     {
-        $producto = Producto::findOrFail($id);
-        $producto->update(['disponible' => !$producto->disponible]);
+        $producto = Producto::beverages()->findOrFail($id);
+        $producto->update(['disponible' => ! $producto->disponible]);
 
         return response()->json(['id' => $producto->id, 'disponible' => $producto->disponible]);
     }

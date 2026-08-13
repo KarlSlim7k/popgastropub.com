@@ -48,7 +48,7 @@ function slugify(value: string) {
 type ApiProduct = {
   id: number | string;
   nombre: string;
-  descripcion: string;
+  descripcion: string | null;
   precio: number;
   categoria: string;
   imagen: string | null;
@@ -63,6 +63,7 @@ type MenuSectionDynamic = {
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.popgastropub.com/api';
+const PUBLIC_BEVERAGE_SECTION_IDS = new Set(['bebidas', 'mixologia', 'menu-bar']);
 
 export default function MenuExperience() {
   const cart = useOrderCart();
@@ -70,7 +71,6 @@ export default function MenuExperience() {
   const [isOrderOpen, setIsOrderOpen] = useState(false);
   const [sections, setSections] = useState<MenuSectionDynamic[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState('Todo');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('');
@@ -106,7 +106,7 @@ export default function MenuExperience() {
               name: p.nombre,
               price: p.precio,
               category: category,
-              description: p.descripcion,
+              description: p.descripcion || 'Consulta disponibilidad y presentación en el restaurante.',
               image: p.imagen || '/images/logopop.png',
               badge: p.destacado ? 'Destacado' : undefined,
               rating: p.destacado ? 5 : 4,
@@ -115,14 +115,11 @@ export default function MenuExperience() {
         );
 
         setSections(mappedSections);
-      } catch (err) {
-        const fallbackSections: MenuSectionDynamic[] = menuSections.map((s) => ({
-          id: s.id,
-          title: s.title,
-          items: s.items,
-        }));
+      } catch {
+        const fallbackSections: MenuSectionDynamic[] = menuSections
+          .filter((section) => PUBLIC_BEVERAGE_SECTION_IDS.has(section.id))
+          .map((s) => ({ id: s.id, title: s.title, items: s.items }));
         setSections(fallbackSections);
-        setError(err instanceof Error ? err.message : 'Error desconocido');
       } finally {
         setLoading(false);
       }
@@ -136,11 +133,6 @@ export default function MenuExperience() {
       setActiveCategory(sections[0].id);
     }
   }, [sections, activeCategory]);
-
-  const totalProducts = useMemo(
-    () => sections.reduce((total, section) => total + section.items.length, 0),
-    [sections],
-  );
 
   const filteredSections = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -186,13 +178,13 @@ export default function MenuExperience() {
           <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
             <div className="max-w-2xl">
               <p className="text-[11px] font-black uppercase tracking-[0.35em] text-[#F2C777]/65">
-                Menu POP
+                Bebidas POP
               </p>
               <h1 className="mt-4 font-epilogue text-5xl font-black leading-[0.9] tracking-tighter text-[#F2C894] md:text-7xl">
-                NUESTRO MENU
+                BEBIDAS Y MIXOLOGÍA
               </h1>
               <p className="mt-5 max-w-xl text-xl text-white/70">
-                Deleitate con nuestra explosión de sabores: sushi, boneless, snacks y más, preparados al momento con ingredientes frescos y auténticos. ¡Cada bocado es una fiesta para tu paladar!
+                Explora coctelería, bebidas y opciones del bar. El menú completo de alimentos y los pedidos se gestionan en FoodBooking.
               </p>
             </div>
             <div className="w-full md:w-96">
@@ -202,7 +194,8 @@ export default function MenuExperience() {
                 </span>
                 <input
                   className="w-full border-b border-[#F2C777]/15 bg-[#1B1716] py-4 pl-12 pr-4 text-white/80 outline-none transition-all placeholder:text-white/30 focus:border-[#F2C777]/35"
-                  placeholder="Buscar platillo..."
+                  placeholder="Buscar bebida..."
+                  aria-label="Buscar una bebida"
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -212,7 +205,7 @@ export default function MenuExperience() {
           </div>
 
           <div className="mt-10 flex flex-wrap gap-3">
-            {['Todo', 'Más Vendidos', 'Nuevos', 'Picante', 'Vegetariano', 'Para Compartir'].map((filter) => (
+            {['Todo', 'Más Vendidos', 'Nuevos'].map((filter) => (
               <button
                 className={`rounded-full border px-5 py-2 text-xs font-black uppercase tracking-[0.25em] transition-colors ${
                   activeFilter === filter
@@ -259,7 +252,7 @@ export default function MenuExperience() {
 
         {filteredSections.length === 0 ? (
           <div className="text-center py-24">
-            <p className="text-white/60 text-lg">No se encontraron platillos</p>
+            <p className="text-white/60 text-lg">No se encontraron bebidas</p>
           </div>
         ) : (
           filteredSections.map((section) => (
