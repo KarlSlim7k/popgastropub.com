@@ -29,13 +29,22 @@ export default function LandingNav() {
     setMobileOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    document.body.classList.toggle("public-menu-open", mobileOpen);
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.classList.remove("public-menu-open");
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname?.startsWith(href);
 
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 h-16 px-6 lg:px-8 flex items-center justify-between transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-[80] h-16 px-6 lg:px-8 flex items-center justify-between transition-all duration-300 ${
           scrolled
             ? "bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-[#F2C777]/15"
             : "bg-[#0a0a0a]/80 backdrop-blur-md border-b border-transparent"
@@ -71,7 +80,7 @@ export default function LandingNav() {
         <div className="flex items-center gap-3">
           <Link
             href="/login?tab=register"
-            className="hidden md:inline-flex items-center bg-[#D96E30] hover:bg-[#F2C777] text-white hover:text-[#0D0D0D] font-black uppercase tracking-widest text-[11px] px-4 py-2 rounded transition-all duration-200"
+            className="hidden md:inline-flex items-center bg-[#D96725] hover:bg-[#F2C777] text-white hover:text-[#0D0D0D] font-black uppercase tracking-widest text-[11px] px-4 py-2 rounded transition-all duration-200"
           >
             Únete gratis
           </Link>
@@ -79,7 +88,9 @@ export default function LandingNav() {
             type="button"
             className="md:hidden text-[#F2C777] p-2"
             onClick={() => setMobileOpen((v) => !v)}
-            aria-label="Toggle menu"
+            aria-label={mobileOpen ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={mobileOpen}
+            aria-controls="public-mobile-menu"
           >
             <span className="material-symbols-outlined text-2xl">
               {mobileOpen ? "close" : "menu"}
@@ -89,7 +100,7 @@ export default function LandingNav() {
       </nav>
 
       {mobileOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-[#0a0a0a]/95 backdrop-blur-xl pt-20 px-6 pb-12 overflow-y-auto">
+        <div id="public-mobile-menu" className="md:hidden fixed inset-0 z-[70] bg-[#0D0D0D]/95 backdrop-blur-xl pt-20 px-6 pb-12 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Menú principal">
           <div className="flex flex-col gap-5">
             {NAV_LINKS.map((link) => (
               <Link
@@ -98,7 +109,7 @@ export default function LandingNav() {
                 className={`font-epilogue font-black text-2xl uppercase tracking-widest transition-colors ${
                   isActive(link.href)
                     ? "text-[#F2C777]"
-                    : "text-white hover:text-[#D96E30]"
+                    : "text-white hover:text-[#D96725]"
                 }`}
               >
                 {link.label}

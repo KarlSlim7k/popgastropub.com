@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
@@ -76,7 +76,7 @@ export default function AdminNewsletterPage() {
     } catch {}
   };
 
-  const fetchSubscribers = async (p = subPage) => {
+  const fetchSubscribers = useCallback(async (p: number) => {
     const session = getAuthSession();
     if (!session) return;
     setSubLoading(true);
@@ -93,7 +93,7 @@ export default function AdminNewsletterPage() {
     } finally {
       setSubLoading(false);
     }
-  };
+  }, [search, sourceFilter, statusFilter]);
 
   const fetchBroadcasts = async () => {
     const session = getAuthSession();
@@ -110,8 +110,8 @@ export default function AdminNewsletterPage() {
   };
 
   useEffect(() => { fetchStats(); fetchBroadcasts(); }, []);
-  useEffect(() => { fetchSubscribers(1); setSubPage(1); }, [search, sourceFilter, statusFilter]);
-  useEffect(() => { fetchSubscribers(subPage); }, [subPage]);
+  useEffect(() => { setSubPage(1); }, [search, sourceFilter, statusFilter]);
+  useEffect(() => { fetchSubscribers(subPage); }, [fetchSubscribers, subPage]);
 
   const openCreateModal = () => {
     setCreateForm({ name: "", subject: "", preview_text: "", html: "", text: "" });

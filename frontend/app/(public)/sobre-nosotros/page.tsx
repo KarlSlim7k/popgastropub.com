@@ -26,7 +26,7 @@ export default function SobreNosotros() {
       {/* Photo Gallery (Masonry Grid) */}
       <section className="py-24 bg-[#0D0D0D]">
         <div className="max-w-[1400px] mx-auto px-8">
-          <motion.h2
+          <motion.h1
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -34,7 +34,7 @@ export default function SobreNosotros() {
             className="text-4xl md:text-6xl font-black font-headline text-white tracking-tighter mb-16 text-center"
           >
             Nuestro Espacio
-          </motion.h2>
+          </motion.h1>
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -43,16 +43,16 @@ export default function SobreNosotros() {
             className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[300px]"
           >
             <motion.div variants={itemVariants} className="md:col-span-2 md:row-span-2 relative group overflow-hidden rounded-lg">
-              <Image alt="Interior POP Perote - decoración" src="/images/decoracion_pop_4.webp" fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+              <Image alt="Interior POP Perote - decoración" src="/images/decoracion_pop_4.webp" fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover transition-transform duration-700 group-hover:scale-110" />
             </motion.div>
             <motion.div variants={itemVariants} className="relative group overflow-hidden rounded-lg">
-              <Image alt="Vista lateral del restaurante" src="/images/vista_lateral_2.webp" fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+              <Image alt="Vista lateral del restaurante" src="/images/vista_lateral_2.webp" fill sizes="(min-width: 768px) 25vw, 100vw" className="object-cover transition-transform duration-700 group-hover:scale-110" />
             </motion.div>
             <motion.div variants={itemVariants} className="relative group overflow-hidden rounded-lg">
-              <Image alt="Sushi POP Perote" src="/images/sushi_1.webp" fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+              <Image alt="Sushi POP Perote" src="/images/sushi_1.webp" fill sizes="(min-width: 768px) 25vw, 100vw" className="object-cover transition-transform duration-700 group-hover:scale-110" />
             </motion.div>
             <motion.div variants={itemVariants} className="md:col-span-2 relative group overflow-hidden rounded-lg">
-              <Image alt="Mixología POP Perote" src="/images/mixologia_1.webp" fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+              <Image alt="Mixología POP Perote" src="/images/mixologia_1.webp" fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover transition-transform duration-700 group-hover:scale-110" />
             </motion.div>
           </motion.div>
           <motion.div
@@ -63,16 +63,16 @@ export default function SobreNosotros() {
             className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4"
           >
             <motion.div variants={itemVariants} className="relative h-[250px] group overflow-hidden rounded-lg">
-              <Image alt="Decoración POP" src="/images/decoracion_pop.webp" fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+              <Image alt="Decoración POP" src="/images/decoracion_pop.webp" fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover transition-transform duration-700 group-hover:scale-110" />
             </motion.div>
             <motion.div variants={itemVariants} className="relative h-[250px] group overflow-hidden rounded-lg">
-              <Image alt="Mesa grande POP" src="/images/mesa_grande_1.webp" fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+              <Image alt="Mesa grande POP" src="/images/mesa_grande_1.webp" fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover transition-transform duration-700 group-hover:scale-110" />
             </motion.div>
             <motion.div variants={itemVariants} className="relative h-[250px] group overflow-hidden rounded-lg">
-              <Image alt="Mixer POP" src="/images/mixer_1.webp" fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+              <Image alt="Mixer POP" src="/images/mixer_1.webp" fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover transition-transform duration-700 group-hover:scale-110" />
             </motion.div>
             <motion.div variants={itemVariants} className="relative h-[250px] group overflow-hidden rounded-lg">
-              <Image alt="Decoración interior" src="/images/decoracion_pop_5.webp" fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+              <Image alt="Decoración interior" src="/images/decoracion_pop_5.webp" fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover transition-transform duration-700 group-hover:scale-110" />
             </motion.div>
           </motion.div>
         </div>

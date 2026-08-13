@@ -4,6 +4,51 @@
  */
 
 export const DIAS_SEMANA = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+export const RESTAURANT_TIME_ZONE = 'America/Mexico_City';
+
+const WEEKDAY_INDEX: Record<string, number> = {
+  Sunday: 0,
+  Monday: 1,
+  Tuesday: 2,
+  Wednesday: 3,
+  Thursday: 4,
+  Friday: 5,
+  Saturday: 6,
+};
+
+export function getRestaurantDateParts(date = new Date()): { date: string; dayOfWeek: number; hour: number; minute: number } {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: RESTAURANT_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    weekday: 'long',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(date);
+  const get = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? '';
+
+  return {
+    date: `${get('year')}-${get('month')}-${get('day')}`,
+    dayOfWeek: WEEKDAY_INDEX[get('weekday')] ?? 0,
+    hour: Number(get('hour')),
+    minute: Number(get('minute')),
+  };
+}
+
+export function getRestaurantDateString(date = new Date()): string {
+  return getRestaurantDateParts(date).date;
+}
+
+export function getRestaurantDayOfWeek(date = new Date()): number {
+  return getRestaurantDateParts(date).dayOfWeek;
+}
+
+export function getDayOfWeekFromDateString(date: string): number {
+  const [year, month, day] = date.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+}
 
 export const SCHEDULE = [
   { day: 'Domingo', short: 'Dom', open: '14:00', close: '21:00' },
@@ -30,13 +75,13 @@ export function isClosed(dayOfWeek: number): boolean {
 export function isWithinHours(hora: string, dayOfWeek: number): boolean {
   const close = getCloseTime(dayOfWeek);
   if (!close) return false;
-  return hora >= '14:00' && hora <= close;
+  return hora >= '14:00' && hora < close;
 }
 
 export function getOpenStatus(): { isOpen: boolean; label: string } {
-  const now = new Date();
-  const day = now.getDay();
-  const hour = now.getHours() + now.getMinutes() / 60;
+  const now = getRestaurantDateParts();
+  const day = now.dayOfWeek;
+  const hour = now.hour + now.minute / 60;
 
   if (isClosed(day)) return { isOpen: false, label: 'Cerrado hoy (Martes)' };
 

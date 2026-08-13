@@ -4,6 +4,7 @@ import Image from 'next/image';
 import React, { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { fetchAPI } from '@/lib/api';
+import GoogleReviewsWidget from '@/components/GoogleReviewsWidget';
 
 interface Promo {
   id: number;
@@ -21,7 +22,7 @@ interface Producto {
   destacado: boolean;
 }
 
-import { getOpenStatus as getOpenStatusBase, DIAS_SEMANA } from '@/lib/business-hours';
+import { getOpenStatus as getOpenStatusBase, getRestaurantDayOfWeek, DIAS_SEMANA } from '@/lib/business-hours';
 
 const HERO_SLIDES = [
   {
@@ -34,7 +35,9 @@ const HERO_SLIDES = [
   },
 ];
 
-const WHATSAPP_PHONE = '522821278014';
+const WHATSAPP_PHONE = '522828253243';
+const FOODBOOKING_URL =
+  'https://www.foodbooking.com/ordering/restaurant/menu?company_uid=04f4d10b-2c07-4411-895d-4437eb890919&restaurant_uid=499ca112-e4ea-46f4-8990-47d5b58748ae&facebook=true';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -84,7 +87,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const diaHoy = DIAS_SEMANA[new Date().getDay()];
+    const diaHoy = DIAS_SEMANA[getRestaurantDayOfWeek()];
     fetchAPI<{ data: Promo[] }>('/promociones')
       .then(({ data }) => {
         const activa = data.find((p) => p.dias_activos?.includes(diaHoy));
@@ -95,8 +98,9 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    fetchAPI<{ data: Producto[] }>('/menu')
-      .then(({ data }) => {
+    fetchAPI<Producto[] | { data: Producto[] }>('/menu')
+      .then((response) => {
+        const data = Array.isArray(response) ? response : response.data;
         setDestacados(data.filter((p) => p.destacado).slice(0, 6));
       })
       .catch(() => setDestacadosError(true))
@@ -119,6 +123,7 @@ export default function Home() {
               key={slide.src}
               alt={slide.alt}
               fill
+              sizes="100vw"
               priority={index === 0}
               className={`object-cover transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
               src={slide.src}
@@ -173,7 +178,7 @@ export default function Home() {
           >
             <a
               className="bg-[#D96E30] hover:shadow-[0_0_30px_rgba(217,103,37,0.4)] transition-all duration-300 transform hover:scale-105 text-white font-black py-4 px-10 text-lg rounded-sm flex items-center gap-3"
-              href={`https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent('Hola POP Perote, quiero hacer un pedido')}`}
+              href={FOODBOOKING_URL}
               rel="noreferrer"
               target="_blank"
             >
@@ -265,7 +270,7 @@ export default function Home() {
               { alt: 'Crepas POP Perote', src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAeJVETMzeX-9hOA-VDkzF8FOz7Hboj2-tY-vK2y9GaDY0_EB4dnwMJUGrMo6_Y3B9806TrqAx22FMN02BAGx5bbw2-_ag4KpuqBxWRGom9CYXECMzk9BSv9c9YpMBVSh4bXZ3JpXZ1ZbQYyNrW-fbTXN257VpNVHRObxY5ndmzYiQ4shaJDZjLhKPrEgVqKGhJiziCjrJlyloIfn_35wivdjygDOujHaec01868RI8QIBo0Kqv1D-pdfjqW8DEcGum_QYg5j2SPs2f', label: null, title: '🥞 CREPAS', desc: 'Dulces o saladas, preparadas con nuestra receta tradicional.' },
               { alt: 'Bebidas POP Perote', src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDhB15iQu03HIIqavgiNf-9AJv6EThSEyo_x7ctcEr7GuGU6qYABqtCnv5QOnr0MtG0ZjxCd5oImdefRYszY_OdKjfyj2_uSriKpe8V7a1mgYTO0nBZ-ALmwKxf83IJmFslkaRWKNN6K2U6_l8eGgbXMlULCjL5CoFTN5xn-LRB_f3tm3Lt6amoKoeWN_2JW2byO8Z6koivqzUuw5pXjWu99k61LyA_za_i7rStW_qFL8oX2GJkMdBekuJbhY5xzPBv40ozfr1TIsG2', label: null, title: '🍹 BEBIDAS', desc: 'Coctelería, refrescos y nuestras mezclas especiales.' },
               { alt: 'Snacks POP Perote', src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCczlIB9qBBqo6f4pv2oprZrObXWF1SjYO8ucdsCJAk_UHGSAZm76b3BIGT2PDLPvZT8O9YntXBNUNL9mWtGBOGRbTuJnNjC6fWlAjnNugoBZim2BfjJRp58NSe4YcL4PscvoFwBHRCgPLz65q7GlwNd1-aaC7fdGDm9OfCDkwpBHhft9zzhBkaWsoAQNFV1z7B3Y9mz7rAvRcAVSZ4BYNLCMc0m2B71yx-ecAHV54nr6BNNC4SjI70kR7ylGA3cvv1tCSinL5G9roK', label: null, title: '🍿 SNACKS', desc: 'Para picar y compartir con amigos.' },
-            ].map((item, idx) => (
+            ].map((item) => (
               <motion.a
                 key={item.title}
                 variants={itemVariants}
@@ -274,7 +279,7 @@ export default function Home() {
                 className="group relative aspect-[4/5] overflow-hidden bg-surface-container-low block rounded-xl"
                 href="/menu"
               >
-                <Image fill className="object-cover transition-transform duration-700 group-hover:scale-110" alt={item.alt} src={item.src} />
+                <Image fill sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" className="object-cover transition-transform duration-700 group-hover:scale-110" alt={item.alt} src={item.src} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
                 {item.label && (
                   <div className="absolute top-6 left-6">
@@ -431,7 +436,7 @@ export default function Home() {
           </motion.div>
 
           {/* SociableKit Google Reviews Widget */}
-          <div className="sk-ww-google-reviews" data-embed-id="25689704" />
+          <GoogleReviewsWidget />
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -456,7 +461,7 @@ export default function Home() {
         className="flex flex-col md:flex-row h-auto md:h-[600px] bg-surface-container-low border-t border-[#F2C166]/10"
       >
         <div className="w-full md:w-1/2 h-[400px] md:h-full overflow-hidden relative">
-          <Image fill className="object-cover" alt="Entrada del restaurante POP Perote" src="/images/entrada_vertical.webp" />
+          <Image fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" alt="Entrada del restaurante POP Perote" src="/images/entrada_vertical.webp" />
           <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#234032]/30 hidden md:block"></div>
         </div>
         <div className="w-full md:w-1/2 p-12 md:p-24 flex flex-col justify-center">

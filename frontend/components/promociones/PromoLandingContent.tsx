@@ -69,7 +69,7 @@ export default function PromoLandingContent({ promo, preview = false }: { promo:
   const isClassic = promo.landing_template === 'clasica';
   const primaryCta = {
     text: promo.cta_primary_text || 'Ordenar ahora',
-    url: promo.cta_primary_url || '/orden',
+    url: promo.cta_primary_url || '/menu',
   };
   const secondaryCta = {
     text: promo.cta_secondary_text || 'Ver ubicación',
@@ -126,7 +126,7 @@ export default function PromoLandingContent({ promo, preview = false }: { promo:
 
       <div className={isClassic ? 'lg:order-1' : ''}>
         <p className="mb-4 text-xs font-black uppercase tracking-[0.28em] text-[#D96725]">
-          POP Perote presenta
+          POP Perote invita
         </p>
         <h1 className="font-epilogue text-5xl font-black uppercase leading-[0.94] tracking-tighter text-[#F2C777] sm:text-6xl">
           {title}

@@ -35,6 +35,7 @@ export default function AdminFacturacionPage() {
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState({ current_page: 1, last_page: 1, total: 0 });
+  const detailItemId = detailItem?.id;
 
   const fetchFacturas = useCallback(async (p: number, silent = false) => {
     const session = getAuthSession();
@@ -65,13 +66,13 @@ export default function AdminFacturacionPage() {
   }, [fetchFacturas, page]);
 
   useEffect(() => {
-    if (!detailItem) { setStatusLog([]); return; }
+    if (!detailItemId) { setStatusLog([]); return; }
     const session = getAuthSession();
     if (!session) return;
-    fetchWithAuth<any[]>(`/admin/facturas/${detailItem.id}/log`, session.token)
+    fetchWithAuth<any[]>(`/admin/facturas/${detailItemId}/log`, session.token)
       .then(setStatusLog)
       .catch(() => {});
-  }, [detailItem?.id]);
+  }, [detailItemId]);
 
   const updateStatus = async (id: number, newStatus: string) => {
     const session = getAuthSession();

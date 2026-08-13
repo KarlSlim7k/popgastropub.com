@@ -12,10 +12,6 @@ interface Tier {
   max_points: number | null;
 }
 
-interface PointsData {
-  points: number;
-}
-
 interface HistoryItem {
   id: number;
   description: string;

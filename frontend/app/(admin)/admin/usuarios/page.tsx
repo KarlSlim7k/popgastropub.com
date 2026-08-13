@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { downloadAuthenticatedFile, fetchWithAuth } from "@/lib/api";
 import { getAuthSession } from "@/lib/auth-session";
@@ -36,7 +36,7 @@ export default function AdminUsuariosPage() {
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState({ current_page: 1, last_page: 1, total: 0 });
 
-  const fetchUsers = async (p = page) => {
+  const fetchUsers = useCallback(async (p: number) => {
     const session = getAuthSession();
     if (!session) return;
     setLoading(true);
@@ -51,10 +51,10 @@ export default function AdminUsuariosPage() {
       if (data.meta) setMeta(data.meta);
     } catch {}
     finally { setLoading(false); }
-  };
+  }, [filterRole, filterStatus, searchTerm]);
 
-  useEffect(() => { fetchUsers(1); setPage(1); }, [searchTerm, filterRole, filterStatus]);
-  useEffect(() => { fetchUsers(page); }, [page]);
+  useEffect(() => { setPage(1); }, [searchTerm, filterRole, filterStatus]);
+  useEffect(() => { fetchUsers(page); }, [fetchUsers, page]);
 
   const openCreate = () => {
     setEditingUser(null);
@@ -81,7 +81,7 @@ export default function AdminUsuariosPage() {
         await fetchWithAuth("/admin/usuarios", session.token, { method: "POST", body: JSON.stringify(payload) });
       }
       setShowModal(false);
-      fetchUsers();
+      fetchUsers(page);
     } catch { toast.error("Error al guardar usuario"); }
   };
 
@@ -91,7 +91,7 @@ export default function AdminUsuariosPage() {
     if (!confirm("¿Eliminar este usuario?")) return;
     try {
       await fetchWithAuth(`/admin/usuarios/${id}`, session.token, { method: "DELETE" });
-      fetchUsers();
+      fetchUsers(page);
     } catch { toast.error("Error al eliminar"); }
   };
 

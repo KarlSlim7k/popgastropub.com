@@ -16,8 +16,8 @@ class ReservaController extends Controller
     {
         $perPage = min((int) $request->input('per_page', 20), 100);
         $paginated = Reserva::with(['user', 'mesa'])
-            ->when($request->input('estado'), fn($q, $v) => $q->where('estado', $v))
-            ->when($request->input('fecha'), fn($q, $v) => $q->whereDate('fecha', $v))
+            ->when($request->input('estado'), fn ($q, $v) => $q->where('estado', $v))
+            ->when($request->input('fecha'), fn ($q, $v) => $q->whereDate('fecha', $v))
             ->orderBy('fecha', 'desc')
             ->paginate($perPage);
 
@@ -53,12 +53,16 @@ class ReservaController extends Controller
         }
 
         $data = [];
-        if (array_key_exists('estado', $validated)) $data['estado'] = $validated['estado'];
-        if (array_key_exists('mesa_id', $validated)) $data['mesa_id'] = $validated['mesa_id'];
+        if (array_key_exists('estado', $validated)) {
+            $data['estado'] = $validated['estado'];
+        }
+        if (array_key_exists('mesa_id', $validated)) {
+            $data['mesa_id'] = $validated['mesa_id'];
+        }
 
         $reserva->update($data);
 
-        if (array_key_exists('estado', $validated) && $validated['notificar'] ?? true) {
+        if (array_key_exists('estado', $validated) && ($validated['notificar'] ?? true)) {
             app(ReservaMailService::class)->notifyCustomer($reserva, $validated['estado']);
 
             if ($reserva->user_id) {
@@ -67,7 +71,7 @@ class ReservaController extends Controller
                     PushNotificationController::sendToUser(
                         $reserva->user_id,
                         'Tu reservación en POP Perote',
-                        'Tu reserva del ' . $reserva->fecha . ' a las ' . $reserva->hora . ' está: ' . $labels[$validated['estado']]
+                        'Tu reserva del '.$reserva->fecha.' a las '.$reserva->hora.' está: '.$labels[$validated['estado']]
                     );
                 }
             }
@@ -79,7 +83,7 @@ class ReservaController extends Controller
     public function disponibilidad(Request $request)
     {
         $mes = $request->input('mes', now()->format('Y-m'));
-        $inicio = Carbon::parse($mes . '-01')->startOfMonth();
+        $inicio = Carbon::parse($mes.'-01')->startOfMonth();
         $fin = $inicio->copy()->endOfMonth();
 
         $total = Mesa::activa()->count();

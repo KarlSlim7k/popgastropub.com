@@ -3,14 +3,13 @@
 import { useState, forwardRef, InputHTMLAttributes, ReactNode } from "react";
 
 interface PasswordInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
-  errorClassName?: string;
   iconClassName?: string;
   wrapperClassName?: string;
   rightAdornment?: ReactNode;
 }
 
 const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(function PasswordInput(
-  { errorClassName, iconClassName, wrapperClassName, rightAdornment, className = "", ...props },
+  { iconClassName, wrapperClassName, rightAdornment, className = "", ...props },
   ref,
 ) {
   const [visible, setVisible] = useState(false);
