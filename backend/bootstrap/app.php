@@ -15,9 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->redirectGuestsTo(fn (Request $request) => $request->is('api/*') ? null : '/login');
-        $middleware->api(prepend: [
-            \Illuminate\Session\Middleware\StartSession::class,
-        ]);
+        $middleware->statefulApi();
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
             'token.full' => \App\Http\Middleware\EnsureTokenIsFull::class,

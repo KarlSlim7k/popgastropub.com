@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\LoyaltyTransaction;
 use App\Models\User;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Crypt;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
@@ -43,7 +43,7 @@ class SocialAuthController extends Controller
         ]);
     }
 
-    public function redirectToProvider(string $provider): RedirectResponse
+    public function redirectToProvider(Request $request, string $provider): RedirectResponse
     {
         $driver = $this->resolveDriver($provider);
 
@@ -62,7 +62,7 @@ class SocialAuthController extends Controller
             $resolved = $this->resolveProvider($driver);
 
             if ($resolved instanceof SocialiteOAuth2Provider) {
-                $resolved = $resolved->with(['state' => $this->generateSignedState()]);
+                $resolved = $resolved->with(['state' => $this->generateSessionState($request, $provider)]);
             }
 
             return $resolved->redirect();
@@ -76,7 +76,7 @@ class SocialAuthController extends Controller
         }
     }
 
-    public function handleProviderCallback(string $provider): RedirectResponse
+    public function handleProviderCallback(Request $request, string $provider): RedirectResponse
     {
         $driver = $this->resolveDriver($provider);
 
@@ -93,7 +93,7 @@ class SocialAuthController extends Controller
 
         $resolved = $this->resolveProvider($driver);
 
-        if ($resolved instanceof SocialiteOAuth2Provider && !$this->verifySignedState(request('state'))) {
+        if ($resolved instanceof SocialiteOAuth2Provider && !$this->verifySessionState($request, $provider)) {
             return $this->redirectToFrontend([
                 'error' => 'invalid_state',
                 'provider' => $provider,
@@ -168,11 +168,10 @@ class SocialAuthController extends Controller
             ])->save();
         }
 
-        $user->tokens()->where('name', 'auth_token')->delete();
-        $token = $user->createToken('auth_token', ['*'])->plainTextToken;
+        Auth::guard('web')->login($user);
+        $request->session()->regenerate();
 
         return $this->redirectToFrontend([
-            'token' => $token,
             'provider' => $provider,
             'status' => $isNewUser ? 'registered' : 'logged_in',
         ]);
@@ -203,37 +202,32 @@ class SocialAuthController extends Controller
         return $provider;
     }
 
-    /**
-     * Genera un `state` autocontenido (sin sesión): payload cifrado con
-     * APP_KEY que incluye un nonce y una expiración corta. `handleProviderCallback`
-     * lo verifica antes de canjear el `code`, evitando que se acepte cualquier
-     * `code` sin pasar primero por `redirectToProvider` (login CSRF).
-     */
-    private function generateSignedState(): string
+    private function generateSessionState(Request $request, string $provider): string
     {
-        return Crypt::encryptString(json_encode([
-            'nonce' => Str::random(32),
-            'exp' => now()->addMinutes(self::STATE_TTL_MINUTES)->getTimestamp(),
-        ]));
+        $state = Str::random(64);
+
+        $request->session()->put("oauth_state.{$provider}", [
+            'hash' => hash('sha256', $state),
+            'expires_at' => now()->addMinutes(self::STATE_TTL_MINUTES)->getTimestamp(),
+        ]);
+
+        return $state;
     }
 
-    private function verifySignedState(?string $state): bool
+    private function verifySessionState(Request $request, string $provider): bool
     {
-        if (!$state) {
+        $state = (string) $request->query('state', '');
+        $stored = $request->session()->pull("oauth_state.{$provider}");
+
+        if ($state === '' || !is_array($stored)) {
             return false;
         }
 
-        try {
-            $payload = json_decode(Crypt::decryptString($state), true);
-        } catch (DecryptException) {
+        if (!isset($stored['hash'], $stored['expires_at']) || now()->getTimestamp() > (int) $stored['expires_at']) {
             return false;
         }
 
-        if (!is_array($payload) || !isset($payload['exp'])) {
-            return false;
-        }
-
-        return now()->getTimestamp() <= (int) $payload['exp'];
+        return hash_equals((string) $stored['hash'], hash('sha256', $state));
     }
 
     private function redirectToFrontend(array $payload): RedirectResponse

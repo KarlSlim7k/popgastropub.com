@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use PragmaRX\Google2FA\Google2FA;
 
 class TwoFactorController extends Controller
@@ -90,10 +92,33 @@ class TwoFactorController extends Controller
     {
         $request->validate(['code' => 'required|string|size:6']);
 
-        $token = $request->user()->currentAccessToken();
+        $pendingUserId = $request->hasSession()
+            ? $request->session()->get('two_factor_user_id')
+            : null;
+        if ($pendingUserId) {
+            $user = User::findOrFail($pendingUserId);
+
+            if (!$user->two_factor_enabled || !$this->google2fa->verifyKey($user->two_factor_secret, $request->code)) {
+                return response()->json(['message' => 'Código incorrecto'], 422);
+            }
+
+            $request->session()->forget('two_factor_user_id');
+            Auth::guard('web')->login($user);
+            $request->session()->regenerate();
+
+            return response()->json([
+                'verified' => true,
+                'user' => $user,
+            ]);
+        }
+
+        abort_unless($request->bearerToken(), 401);
+        $tokenUser = $request->user('sanctum');
+        abort_unless($tokenUser, 401);
+        $token = $tokenUser->currentAccessToken();
         abort_unless($token && ($token->can('2fa:pending') || $token->can('*')), 403);
 
-        $user = $request->user();
+        $user = $tokenUser;
 
         if (!$user->two_factor_enabled) {
             return response()->json(['message' => '2FA no está activado'], 422);

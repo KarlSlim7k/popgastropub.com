@@ -113,6 +113,38 @@ class TwoFactorLoginTest extends TestCase
         ])->assertStatus(401);
     }
 
+    public function test_first_party_2fa_uses_the_pending_browser_session(): void
+    {
+        config(['sanctum.stateful' => ['popgastropub.com']]);
+
+        $google2fa = new Google2FA();
+        $secret = $google2fa->generateSecretKey();
+        $user = $this->makeUser([
+            'two_factor_secret' => $secret,
+            'two_factor_enabled' => true,
+        ]);
+        $headers = ['Origin' => 'https://popgastropub.com'];
+
+        $this->withHeaders($headers)->postJson('/api/auth/login', [
+            'login' => 'cliente@test.com',
+            'password' => 'password123',
+        ])->assertOk()
+            ->assertJson(['requires_2fa' => true])
+            ->assertJsonMissingPath('temp_token');
+
+        $this->assertGuest('web');
+        $this->assertDatabaseMissing('personal_access_tokens', ['tokenable_id' => $user->id]);
+
+        $this->withHeaders($headers)->postJson('/api/auth/2fa/verify', [
+            'code' => $google2fa->getCurrentOtp($secret),
+        ])->assertOk()
+            ->assertJson(['verified' => true])
+            ->assertJsonMissingPath('token');
+
+        $this->assertAuthenticatedAs($user, 'web');
+        $this->assertNull(session('two_factor_user_id'));
+    }
+
     public function test_verify_with_incorrect_code_is_rejected(): void
     {
         $google2fa = new Google2FA();

@@ -3,7 +3,7 @@
 import React, { useMemo, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { useAuth } from "@/lib/auth-provider";
-import { fetchWithAuth } from "@/lib/api";
+import { fetchWithAuth, fetchWithCsrf } from "@/lib/api";
 
 interface QrResponse {
   url: string;
@@ -108,7 +108,7 @@ export default function StaffQrPage() {
     try {
       const data = await fetchWithAuth<HistorialItem[]>("/staff/tickets", session.token);
       setHistorial(data || []);
-    } catch (e) {
+    } catch {
       // silencioso
     } finally {
       setLoadingHist(false);
@@ -174,11 +174,8 @@ export default function StaffQrPage() {
       formData.append("fecha_emision", fechaEmision);
       if (foto) formData.append("foto", foto);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/staff/tickets/generate`, {
+      const res = await fetchWithCsrf(`${process.env.NEXT_PUBLIC_API_URL}/staff/tickets/generate`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.token}`,
-        },
         body: formData,
       });
 

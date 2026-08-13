@@ -2,26 +2,27 @@
 
 import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { getAuthSession } from "@/lib/auth-session";
+import { fetchAPI } from "@/lib/api";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.popgastropub.com/api";
+interface TwoFactorStatus {
+  enabled: boolean;
+  has_secret: boolean;
+}
 
-async function api(path: string, method = "GET", body?: object) {
-  const session = getAuthSession();
-  const res = await fetch(`${API_URL}${path}`, {
+interface TwoFactorSetup {
+  qr_url: string;
+  secret: string;
+}
+
+async function api<T>(path: string, method = "GET", body?: object): Promise<T> {
+  return fetchAPI<T>(path, {
     method,
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.token}` },
     body: body ? JSON.stringify(body) : undefined,
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Error ${res.status}`);
-  }
-  return res.json();
 }
 
 export function TwoFactorSection() {
-  const [status, setStatus] = useState<{ enabled: boolean; has_secret: boolean } | null>(null);
+  const [status, setStatus] = useState<TwoFactorStatus | null>(null);
   const [step, setStep] = useState<"idle" | "setup" | "verify_enable" | "verify_disable">("idle");
   const [qrUrl, setQrUrl] = useState("");
   const [secret, setSecret] = useState("");
@@ -31,7 +32,7 @@ export function TwoFactorSection() {
 
   const loadStatus = async () => {
     try {
-      const s = await api("/auth/2fa/status");
+      const s = await api<TwoFactorStatus>("/auth/2fa/status");
       setStatus(s);
     } catch {}
   };
@@ -46,7 +47,7 @@ export function TwoFactorSection() {
   const handleSetup = async () => {
     setLoading(true);
     try {
-      const data = await api("/auth/2fa/setup", "POST");
+      const data = await api<TwoFactorSetup>("/auth/2fa/setup", "POST");
       setQrUrl(data.qr_url);
       setSecret(data.secret);
       setStep("setup");
@@ -58,7 +59,7 @@ export function TwoFactorSection() {
     if (code.length !== 6) return;
     setLoading(true);
     try {
-      await api("/auth/2fa/enable", "POST", { code });
+      await api<{ message: string }>("/auth/2fa/enable", "POST", { code });
       showMsg("success", "2FA activado correctamente");
       setStep("idle");
       setCode("");
@@ -71,7 +72,7 @@ export function TwoFactorSection() {
     if (code.length !== 6) return;
     setLoading(true);
     try {
-      await api("/auth/2fa/disable", "POST", { code });
+      await api<{ message: string }>("/auth/2fa/disable", "POST", { code });
       showMsg("success", "2FA desactivado");
       setStep("idle");
       setCode("");

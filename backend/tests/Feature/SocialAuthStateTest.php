@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\GoogleProvider;
@@ -25,28 +24,25 @@ class SocialAuthStateTest extends TestCase
         ]);
     }
 
-    private function signedState(int $expiresInMinutes): string
+    private function sessionState(string $state, int $expiresInMinutes = 10): array
     {
-        return Crypt::encryptString(json_encode([
-            'nonce' => Str::random(32),
-            'exp' => now()->addMinutes($expiresInMinutes)->getTimestamp(),
-        ]));
+        return [
+            'oauth_state.google' => [
+                'hash' => hash('sha256', $state),
+                'expires_at' => now()->addMinutes($expiresInMinutes)->getTimestamp(),
+            ],
+        ];
     }
 
-    public function test_redirect_includes_signed_state_for_oauth2_provider(): void
+    public function test_redirect_stores_an_opaque_state_in_the_browser_session(): void
     {
+        $state = null;
         $mock = \Mockery::mock(GoogleProvider::class);
         $mock->shouldReceive('stateless')->once()->andReturnSelf();
-        $mock->shouldReceive('with')->once()->withArgs(function (array $params) {
-            if (!isset($params['state']) || !is_string($params['state'])) {
-                return false;
-            }
+        $mock->shouldReceive('with')->once()->withArgs(function (array $params) use (&$state) {
+            $state = $params['state'] ?? null;
 
-            $payload = json_decode(Crypt::decryptString($params['state']), true);
-
-            return is_array($payload)
-                && isset($payload['exp'], $payload['nonce'])
-                && $payload['exp'] > now()->getTimestamp();
+            return is_string($state) && strlen($state) === 64;
         })->andReturnSelf();
         $mock->shouldReceive('redirect')->once()->andReturn(redirect()->away('https://accounts.google.com/o/oauth2/auth'));
 
@@ -55,6 +51,8 @@ class SocialAuthStateTest extends TestCase
         $response = $this->get('/api/auth/social/google/redirect');
 
         $response->assertRedirect('https://accounts.google.com/o/oauth2/auth');
+        $this->assertSame(hash('sha256', $state), session('oauth_state.google.hash'));
+        $this->assertGreaterThan(now()->getTimestamp(), session('oauth_state.google.expires_at'));
     }
 
     public function test_callback_rejects_missing_state(): void
@@ -66,16 +64,20 @@ class SocialAuthStateTest extends TestCase
 
     public function test_callback_rejects_garbage_state(): void
     {
-        $response = $this->get('/api/auth/social/google/callback?state=garbage&code=abc');
+        $expected = Str::random(64);
+        $response = $this->withSession($this->sessionState($expected))
+            ->get('/api/auth/social/google/callback?state=garbage&code=abc');
 
         $this->assertStringContainsString('error=invalid_state', $response->headers->get('Location'));
+        $this->assertNull(session('oauth_state.google'));
     }
 
     public function test_callback_rejects_expired_state(): void
     {
-        $expired = $this->signedState(-1);
+        $expired = Str::random(64);
 
-        $response = $this->get('/api/auth/social/google/callback?'.http_build_query(['state' => $expired, 'code' => 'abc']));
+        $response = $this->withSession($this->sessionState($expired, -1))
+            ->get('/api/auth/social/google/callback?'.http_build_query(['state' => $expired, 'code' => 'abc']));
 
         $this->assertStringContainsString('error=invalid_state', $response->headers->get('Location'));
     }
@@ -95,13 +97,16 @@ class SocialAuthStateTest extends TestCase
 
         Socialite::shouldReceive('driver')->with('google')->andReturn($mock);
 
-        $state = $this->signedState(10);
+        $state = Str::random(64);
 
-        $response = $this->get('/api/auth/social/google/callback?'.http_build_query(['state' => $state, 'code' => 'abc']));
+        $response = $this->withSession($this->sessionState($state))
+            ->get('/api/auth/social/google/callback?'.http_build_query(['state' => $state, 'code' => 'abc']));
 
         $location = $response->headers->get('Location');
-        $this->assertStringContainsString('token=', $location);
+        $this->assertStringNotContainsString('token=', $location);
         $this->assertStringContainsString('status=registered', $location);
         $this->assertDatabaseHas('users', ['email' => 'oauthuser@example.com']);
+        $this->assertAuthenticatedAs(\App\Models\User::where('email', 'oauthuser@example.com')->first());
+        $this->assertNull(session('oauth_state.google'));
     }
 }

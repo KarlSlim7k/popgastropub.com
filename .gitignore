@@ -41,6 +41,9 @@ Homestead.yaml
 .commandcode/
 .qwen/
 .claude/
+.agents/
+.playwright-cli/
+skills-lock.json
 
 # Test results
 test-results/

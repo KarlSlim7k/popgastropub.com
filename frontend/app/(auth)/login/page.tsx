@@ -1,10 +1,10 @@
 "use client";
 
-import React, { FormEvent, useEffect, useState } from 'react';
+import React, { FormEvent, useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { fetchAPI, fetchWithAuth, APIError } from '@/lib/api';
+import { fetchAPI, APIError } from '@/lib/api';
 import { getRoleDashboard, saveAuthSession } from '@/lib/auth-session';
 import { useAuth } from '@/lib/auth-provider';
 import PasswordInput from '@/components/ui/PasswordInput';
@@ -23,7 +23,7 @@ interface AuthUser {
 
 interface AuthResponse {
   user: AuthUser;
-  token: string;
+  token?: string;
 }
 
 interface LoginResponse {
@@ -35,7 +35,7 @@ interface LoginResponse {
 
 interface TwoFactorVerifyResponse {
   verified: boolean;
-  token: string;
+  token?: string;
   user: AuthUser;
 }
 
@@ -129,18 +129,18 @@ function socialButtonIcon(provider: SocialProvider) {
 
 export default function Login() {
   const router = useRouter();
+  const { refreshSession } = useAuth();
 
-  const redirectAfterAuth = (role?: string) => {
+  const redirectAfterAuth = useCallback((role?: string) => {
     if (typeof window !== 'undefined') {
       const redirect = new URLSearchParams(window.location.search).get('redirect');
-      if (redirect && redirect.startsWith('/')) {
+      if (redirect && redirect.startsWith('/') && !redirect.startsWith('//') && !redirect.includes('\\')) {
         router.push(redirect);
         return;
       }
     }
     router.push(getRoleDashboard(role));
-  };
-  const { refreshSession } = useAuth();
+  }, [router]);
 
   const [activeTab, setActiveTab] = useState<AuthTab>('login');
   const [isSubmitting, setIsSubmitting] = useState<AuthTab | null>(null);
@@ -226,6 +226,7 @@ export default function Login() {
     const token = hashParams.get('token');
     const provider = hashParams.get('provider') ?? 'social';
     const callbackError = hashParams.get('error');
+    const callbackStatus = hashParams.get('status');
 
     window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
 
@@ -235,16 +236,16 @@ export default function Login() {
       return;
     }
 
-    if (!token) {
+    if (!token && !callbackStatus) {
       return;
     }
 
     setStatusError(null);
     setStatusSuccess('Validando sesión social...');
 
-    fetchWithAuth<AuthUser>('/auth/me', token)
+    fetchAPI<AuthUser>('/auth/me')
       .then((user) => {
-        saveAuthSession({ token, user, provider });
+        saveAuthSession({ token: 'http-only-cookie', user, provider });
         setStatusSuccess(`Acceso con ${providerLabel(provider)} completado. Redirigiendo...`);
         refreshSession();
         redirectAfterAuth(user.role);
@@ -253,7 +254,7 @@ export default function Login() {
         setStatusSuccess(null);
         setStatusError('La sesión social no pudo validarse. Intenta acceder nuevamente.');
       });
-  }, [router]);
+  }, [redirectAfterAuth, refreshSession]);
 
   async function handleLoginSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -271,17 +272,17 @@ export default function Login() {
         }),
       });
 
-      if (response.requires_2fa && response.temp_token) {
-        setTwoFactorTempToken(response.temp_token);
+      if (response.requires_2fa) {
+        setTwoFactorTempToken(response.temp_token ?? 'http-only-cookie');
         setStatusSuccess(null);
         return;
       }
 
-      if (!response.token || !response.user) {
+      if (!response.user) {
         throw new Error('Respuesta de inicio de sesión inválida.');
       }
 
-      saveAuthSession({ token: response.token, user: response.user, provider: 'password' });
+      saveAuthSession({ token: 'http-only-cookie', user: response.user, provider: 'password' });
       setStatusSuccess('Inicio de sesión exitoso. Redirigiendo...');
       refreshSession();
       redirectAfterAuth(response.user.role);
@@ -310,12 +311,12 @@ export default function Login() {
     setIsVerifying2FA(true);
 
     try {
-      const response = await fetchWithAuth<TwoFactorVerifyResponse>('/auth/2fa/verify', twoFactorTempToken, {
+      const response = await fetchAPI<TwoFactorVerifyResponse>('/auth/2fa/verify', {
         method: 'POST',
         body: JSON.stringify({ code: twoFactorCode }),
       });
 
-      saveAuthSession({ token: response.token, user: response.user, provider: 'password' });
+      saveAuthSession({ token: 'http-only-cookie', user: response.user, provider: 'password' });
       setStatusSuccess('Verificación exitosa. Redirigiendo...');
       refreshSession();
       redirectAfterAuth(response.user.role);
@@ -368,7 +369,7 @@ export default function Login() {
         }),
       });
 
-      saveAuthSession({ token: response.token, user: response.user, provider: 'password' });
+      saveAuthSession({ token: 'http-only-cookie', user: response.user, provider: 'password' });
       setStatusSuccess('Cuenta creada correctamente. Ya tienes tus puntos de bienvenida.');
       refreshSession();
       redirectAfterAuth(response.user.role);
@@ -397,7 +398,7 @@ export default function Login() {
 
     setStatusError(null);
     setStatusSuccess(`Redirigiendo a ${providerLabel(provider)}...`);
-    window.location.href = `${API_BASE_URL}/api/auth/social/${provider}/redirect`;
+    window.location.assign(`${API_BASE_URL}/api/auth/social/${provider}/redirect`);
   }
 
   const socialButtons = (
