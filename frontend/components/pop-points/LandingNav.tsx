@@ -13,6 +13,9 @@ const NAV_LINKS = [
   { href: "/ubicacion", label: "Ubicación" },
 ];
 
+const FOODBOOKING_URL =
+  "https://www.foodbooking.com/ordering/restaurant/menu?company_uid=04f4d10b-2c07-4411-895d-4437eb890919&restaurant_uid=499ca112-e4ea-46f4-8990-47d5b58748ae&facebook=true";
+
 export default function LandingNav() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
@@ -78,9 +81,19 @@ export default function LandingNav() {
         </div>
 
         <div className="flex items-center gap-3">
+          <a
+            href={FOODBOOKING_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 bg-[#D96725] hover:bg-[#F2C777] text-white hover:text-[#0D0D0D] font-black uppercase tracking-widest text-[10px] md:text-[11px] px-3 md:px-4 py-2 rounded transition-all duration-200"
+          >
+            <span className="material-symbols-outlined text-base">shopping_bag</span>
+            <span className="hidden sm:inline">Ordenar en línea</span>
+            <span className="sm:hidden">Ordenar</span>
+          </a>
           <Link
             href="/login?tab=register"
-            className="hidden md:inline-flex items-center bg-[#D96725] hover:bg-[#F2C777] text-white hover:text-[#0D0D0D] font-black uppercase tracking-widest text-[11px] px-4 py-2 rounded transition-all duration-200"
+            className="hidden md:inline-flex items-center border border-[#F2C777]/40 text-[#F2C777] hover:bg-[#F2C777] hover:text-[#0D0D0D] font-black uppercase tracking-widest text-[11px] px-4 py-2 rounded transition-all duration-200"
           >
             Únete gratis
           </Link>
