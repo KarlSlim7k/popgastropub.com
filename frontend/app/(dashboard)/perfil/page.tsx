@@ -30,7 +30,7 @@ export default function PerfilPage() {
   const [message, setMessage] = useState("");
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
-  const [form, setForm] = useState({ name: "", email: "", phone: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", birth_date: "" });
   const [pwForm, setPwForm] = useState({ current_password: "", password: "", password_confirmation: "" });
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function PerfilPage() {
       .then((res) => {
         const u = res.data ?? res;
         setProfile(u);
-        setForm({ name: u.name || "", email: u.email || "", phone: u.phone || "" });
+        setForm({ name: u.name || "", email: u.email || "", phone: u.phone || "", birth_date: u.birth_date || "" });
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -172,6 +172,10 @@ export default function PerfilPage() {
               <div className="space-y-2">
                 <label className="text-[10px] text-gray-600 font-black uppercase tracking-[0.2em]">Correo Electrónico</label>
                 <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} disabled={!isEditing || loading} className="w-full bg-transparent border-b border-white/10 py-3 text-white font-bold tracking-tight focus:border-pop-gold transition-colors outline-none disabled:text-gray-500" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] text-gray-600 font-black uppercase tracking-[0.2em]">Fecha de nacimiento</label>
+                <input type="date" value={form.birth_date} onChange={(e) => setForm({ ...form, birth_date: e.target.value })} disabled={!isEditing || loading} max={new Date().toISOString().slice(0, 10)} className="w-full bg-transparent border-b border-white/10 py-3 text-white font-bold tracking-tight focus:border-pop-gold transition-colors outline-none disabled:text-gray-500" />
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] text-pop-orange font-black uppercase tracking-[0.2em] flex items-center gap-2">Miembro desde <span className="material-symbols-outlined text-xs">calendar_month</span></label>

@@ -14,7 +14,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "¿Los pedidos a domicilio también generan puntos?",
-    a: "Sí. Todos los pedidos realizados a través de FoodBooking o por WhatsApp generan 1 punto por cada $10 MXN de consumo. El check-in de 25 puntos aplica exclusivamente para visitas presenciales al restaurante.",
+    a: "Sí. Tus compras generan 1 punto por cada $10 MXN. Para acreditarlos, conserva el ticket y escanea el QR generado por el personal en el restaurante.",
   },
   {
     q: "¿Puedo bajar de nivel si dejo de visitar POP?",
@@ -22,7 +22,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "¿Cómo canjeo mis puntos?",
-    a: "Inicia sesión en popgastropub.com, entra a tu perfil y selecciona la recompensa que quieras canjear. Se genera un código o QR que presentas al mesero o a la hostess en tu próxima visita. Para pedidos a domicilio, aplica al momento del pedido por WhatsApp.",
+    a: "Inicia sesión en popgastropub.com, entra a tu perfil y selecciona la recompensa que quieras canjear. Presenta el código generado al personal durante tu próxima visita.",
   },
   {
     q: "¿El bono de bienvenida se acredita automáticamente?",

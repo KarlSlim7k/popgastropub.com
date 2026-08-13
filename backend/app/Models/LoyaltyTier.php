@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\LoyaltyConfig;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -70,18 +71,18 @@ class LoyaltyTier extends Model
      */
     public static function resolveSlugForPoints(int $points): string
     {
-        $tiers = \Illuminate\Support\Facades\Cache::remember('loyalty_tiers_slug_map', 60, function () {
-            return self::active()->ordered()->get(['slug', 'min_points', 'max_points'])->toArray();
-        });
-
-        foreach ($tiers as $tier) {
-            $minOk = $points >= (int) $tier['min_points'];
-            $maxOk = $tier['max_points'] === null || $points <= (int) $tier['max_points'];
-            if ($minOk && $maxOk) {
-                return $tier['slug'];
-            }
+        if ($points >= LoyaltyConfig::tierMin('elite')) {
+            return 'elite';
         }
 
-        return $tiers[0]['slug'] ?? 'fan';
+        if ($points >= LoyaltyConfig::tierMin('vip')) {
+            return 'vip';
+        }
+
+        if ($points >= LoyaltyConfig::tierMin('lover')) {
+            return 'lover';
+        }
+
+        return 'fan';
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Referral;
 use App\Models\User;
+use App\Services\LoyaltyConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -23,12 +24,13 @@ class ReferralController extends Controller
             ->where('referrer_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->get();
+        $convertedCount = $referrals->where('status', 'converted')->count();
 
         return response()->json([
             'referral_code' => $user->referral_code,
             'total_referrals' => $referrals->count(),
-            'converted' => $referrals->where('status', 'converted')->count(),
-            'points_earned' => $referrals->where('status', 'converted')->count() * 200,
+            'converted' => $convertedCount,
+            'points_earned' => $convertedCount * (int) LoyaltyConfig::get('referral_bonus'),
             'referrals' => $referrals->map(fn($r) => [
                 'id' => $r->id,
                 'name' => $r->referred?->name ?? 'Usuario',

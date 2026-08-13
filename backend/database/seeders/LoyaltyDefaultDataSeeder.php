@@ -96,7 +96,7 @@ class LoyaltyDefaultDataSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'action' => 'Por cada $5 MXN gastados',
+                'action' => 'Por cada $10 MXN gastados',
                 'slug' => 'purchase',
                 'points' => 1,
                 'points_type' => 'per_amount',
@@ -105,7 +105,7 @@ class LoyaltyDefaultDataSeeder extends Seeder
                 'is_active' => true,
                 'sort_order' => 1,
                 'description' => 'En consumo dentro del restaurante o en tu pedido a domicilio.',
-                'conditions' => json_encode(['amount' => 5]),
+                'conditions' => json_encode(['amount' => 10]),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

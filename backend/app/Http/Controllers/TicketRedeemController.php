@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\TicketRedeem;
 use App\Services\PuntosService;
 use App\Services\QrSignatureService;
+use App\Services\TicketValidator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class TicketRedeemController extends Controller
 {
-    private const EXPIRY_SECONDS = 72 * 3600;
+    private const EXPIRY_SECONDS = TicketValidator::WINDOW_HOURS * 3600;
 
     public function __construct(
         private readonly PuntosService $puntosService,
@@ -81,8 +82,6 @@ class TicketRedeemController extends Controller
         }
 
         $user = $request->user();
-        $puntos = intdiv($v['total'], 10);
-
         try {
             $ticket = TicketRedeem::where('ref', $v['ref'])->firstOrFail();
 
@@ -91,6 +90,8 @@ class TicketRedeemController extends Controller
             return response()->json([
                 'message' => 'Canje exitoso',
                 'puntos' => $resultado['puntos_sumar'],
+                'puntos_base' => $resultado['puntos_base'],
+                'multiplicador' => $resultado['multiplicador'],
                 'balance' => $resultado['nuevo_saldo'],
                 'tier' => $resultado['tier'],
                 'mesero_asignado' => $resultado['mesero_asignado'],

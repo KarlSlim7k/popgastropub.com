@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\LoyaltyTransaction;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -44,7 +45,7 @@ class LoyaltyTest extends TestCase
         $second->assertStatus(422)->assertJsonPath('message', 'Ya registraste tu check-in de hoy.');
 
         $this->assertSame(25, $this->cliente->fresh()->points);
-        $this->assertSame(1, \App\Models\LoyaltyTransaction::where('user_id', $this->cliente->id)
+        $this->assertSame(1, LoyaltyTransaction::where('user_id', $this->cliente->id)
             ->where('concept', 'Check-in restaurante')->count());
     }
 
@@ -70,9 +71,26 @@ class LoyaltyTest extends TestCase
 
         Setting::where('group', 'loyalty')->where('key', 'tier_lover_min')->update(['value' => '200']);
         Cache::forget('loyalty_settings');
+        $this->cliente->refresh();
 
         $this->actingAs($this->cliente)->getJson('/api/loyalty/tier')
             ->assertOk()
             ->assertJsonPath('current_tier.name', 'POP Lover');
+    }
+
+    public function test_birthday_bonus_is_awarded_once_per_year(): void
+    {
+        $this->cliente->update(['birth_date' => '1995-08-11']);
+
+        $this->artisan('loyalty:award-birthday-points', ['--date' => '2026-08-11'])
+            ->expectsOutput('Bonos de cumpleaños otorgados: 1')
+            ->assertSuccessful();
+
+        $this->artisan('loyalty:award-birthday-points', ['--date' => '2026-08-11'])
+            ->expectsOutput('Bonos de cumpleaños otorgados: 0')
+            ->assertSuccessful();
+
+        $this->assertSame(150, $this->cliente->fresh()->points);
+        $this->assertDatabaseCount('loyalty_transactions', 1);
     }
 }

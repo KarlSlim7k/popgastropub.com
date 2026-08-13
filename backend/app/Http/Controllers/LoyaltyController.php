@@ -17,7 +17,7 @@ class LoyaltyController extends Controller
 
         return response()->json([
             'user' => $user,
-            'recent_transactions' => $user->loyaltyTransactions()->latest()->limit(5)->get()
+            'recent_transactions' => $user->loyaltyTransactions()->latest()->limit(5)->get(),
         ]);
     }
 
@@ -31,10 +31,36 @@ class LoyaltyController extends Controller
             'min' => (int) $t->min_points,
             'max' => $t->max_points !== null ? (int) $t->max_points : null,
         ])->all();
+        $tierMap = array_replace([
+            'fan' => ['name' => 'POP Fan', 'min' => 0, 'max' => null],
+            'lover' => ['name' => 'POP Lover', 'min' => 0, 'max' => null],
+            'vip' => ['name' => 'POP VIP', 'min' => 0, 'max' => null],
+            'elite' => ['name' => 'POP Elite', 'min' => 0, 'max' => null],
+        ], $tierMap);
+
+        $thresholds = [
+            'lover' => LoyaltyConfig::tierMin('lover'),
+            'vip' => LoyaltyConfig::tierMin('vip'),
+            'elite' => LoyaltyConfig::tierMin('elite'),
+        ];
+        foreach ($thresholds as $slug => $min) {
+            if (isset($tierMap[$slug])) {
+                $tierMap[$slug]['min'] = $min;
+            }
+        }
+        if (isset($tierMap['fan'])) {
+            $tierMap['fan']['max'] = $thresholds['lover'] - 1;
+        }
+        if (isset($tierMap['lover'])) {
+            $tierMap['lover']['max'] = $thresholds['vip'] - 1;
+        }
+        if (isset($tierMap['vip'])) {
+            $tierMap['vip']['max'] = $thresholds['elite'] - 1;
+        }
 
         $currentSlug = $user->tier;
         $current = $tierMap[$currentSlug] ?? ['name' => 'POP Fan', 'min' => 0, 'max' => null];
-        $nextTier = $this->getNextTier($currentSlug, $tiers);
+        $nextTier = $this->getNextTier($currentSlug, $tierMap);
 
         return response()->json([
             'user' => $user,
@@ -47,7 +73,7 @@ class LoyaltyController extends Controller
                 'min' => $current['min'],
                 'max' => $current['max'],
                 'next_min' => $nextTier ? $nextTier['min'] : null,
-            ]
+            ],
         ]);
     }
 
@@ -80,7 +106,7 @@ class LoyaltyController extends Controller
         });
 
         return response()->json([
-            'message' => 'Check-in exitoso. +' . (int) LoyaltyConfig::get('checkin_bonus') . ' pts',
+            'message' => 'Check-in exitoso. +'.(int) LoyaltyConfig::get('checkin_bonus').' pts',
             'points' => $user->points,
             'tier' => $user->tier,
         ]);
@@ -142,9 +168,9 @@ class LoyaltyController extends Controller
         ]);
     }
 
-    private function getNextTier(string $currentSlug, $tiers): ?array
+    private function getNextTier(string $currentSlug, array $tierMap): ?array
     {
-        $ordered = $tiers->pluck('slug')->all();
+        $ordered = ['fan', 'lover', 'vip', 'elite'];
         $currentIndex = array_search($currentSlug, $ordered);
 
         if ($currentIndex === false || $currentIndex === count($ordered) - 1) {
@@ -152,17 +178,13 @@ class LoyaltyController extends Controller
         }
 
         $nextSlug = $ordered[$currentIndex + 1];
-        $nextModel = $tiers->firstWhere('slug', $nextSlug);
-
-        if (! $nextModel) {
-            return null;
-        }
+        $next = $tierMap[$nextSlug];
 
         return [
-            'name' => $nextModel->name,
-            'slug' => $nextModel->slug,
-            'min' => (int) $nextModel->min_points,
-            'max' => $nextModel->max_points !== null ? (int) $nextModel->max_points : null,
+            'name' => $next['name'],
+            'slug' => $nextSlug,
+            'min' => $next['min'],
+            'max' => $next['max'],
         ];
     }
 }
