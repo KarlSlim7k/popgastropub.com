@@ -19,6 +19,14 @@ return [
         'redirect' => env('X_REDIRECT_URI', env('TWITTER_REDIRECT_URI', rtrim(env('APP_URL', 'https://popgastropub.com'), '/').'/api/auth/social/x/callback')),
     ],
 
+    // Laravel solo valida el ID token que Next.js recibe de Auth0 (JWKS de este dominio);
+    // el client_secret del intercambio Authorization Code + PKCE vive únicamente en Next.js.
+    'auth0' => [
+        'domain' => env('AUTH0_DOMAIN'),
+        'client_id' => env('AUTH0_CLIENT_ID'),
+        'audience' => env('AUTH0_AUDIENCE', 'https://api.popgastropub.com'),
+    ],
+
     'resend' => [
         'api_key' => env('RESEND_API_KEY'),
         'from_address' => env('RESEND_FROM_ADDRESS', 'noticias@popgastropub.com'),

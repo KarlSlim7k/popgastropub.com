@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\RankingPeriodController;
 use App\Http\Controllers\Admin\StaffSaleController;
 use App\Http\Controllers\Admin\UploadController;
 use App\Http\Controllers\Admin\UsuarioController;
+use App\Http\Controllers\Auth0Controller;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\FacturaController;
@@ -97,6 +98,8 @@ Route::get('/auth/social/{provider}/callback', [SocialAuthController::class, 'ha
     ->whereIn('provider', ['google', 'facebook', 'x'])
     ->middleware(['web', 'throttle:auth-social']);
 Route::post('/auth/2fa/verify', [TwoFactorController::class, 'verify'])->middleware('throttle:auth-login');
+Route::post('/auth/auth0/callback', [Auth0Controller::class, 'callback'])
+    ->middleware('throttle:auth-login');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
