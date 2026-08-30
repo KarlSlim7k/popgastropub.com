@@ -11,3 +11,8 @@ Thumbs.db
 
 # TypeScript build info
 *.tsbuildinfo
+
+# Auth0 credentials
+.auth0-mcp-state.json
+
+.auth0-mcp-writes.log
