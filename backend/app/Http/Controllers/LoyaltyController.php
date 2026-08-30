@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use App\Models\LoyaltyTier;
 use App\Models\LoyaltyTransaction;
 use App\Models\User;
@@ -16,7 +17,7 @@ class LoyaltyController extends Controller
         $user = $request->user();
 
         return response()->json([
-            'user' => $user,
+            'user' => new UserResource($user),
             'recent_transactions' => $user->loyaltyTransactions()->latest()->limit(5)->get(),
         ]);
     }
@@ -63,7 +64,7 @@ class LoyaltyController extends Controller
         $nextTier = $this->getNextTier($currentSlug, $tierMap);
 
         return response()->json([
-            'user' => $user,
+            'user' => new UserResource($user),
             'current_tier' => $current,
             'current_slug' => $currentSlug,
             'points' => $user->points,
