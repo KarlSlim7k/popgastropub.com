@@ -84,7 +84,9 @@ class SocialAuthStateTest extends TestCase
 
     public function test_callback_with_valid_state_logs_in_via_mocked_provider(): void
     {
-        $socialUser = (new SocialiteUser())->map([
+        $socialUser = (new SocialiteUser())->setRaw([
+            'email_verified' => true,
+        ])->map([
             'id' => '12345',
             'email' => 'oauthuser@example.com',
             'name' => 'OAuth User',
@@ -108,5 +110,42 @@ class SocialAuthStateTest extends TestCase
         $this->assertDatabaseHas('users', ['email' => 'oauthuser@example.com']);
         $this->assertAuthenticatedAs(\App\Models\User::where('email', 'oauthuser@example.com')->first());
         $this->assertNull(session('oauth_state.google'));
+    }
+
+    public function test_callback_with_unverified_email_does_not_link_existing_account(): void
+    {
+        $existing = \App\Models\User::create([
+            'name' => 'Victim User',
+            'email' => 'victim@example.com',
+            'password' => bcrypt('password123'),
+            'role' => 'cliente',
+        ]);
+
+        $socialUser = (new SocialiteUser())->setRaw([
+            'email_verified' => false,
+        ])->map([
+            'id' => '99999',
+            'email' => 'victim@example.com',
+            'name' => 'Attacker Controlled Name',
+            'avatar' => null,
+        ]);
+
+        $mock = \Mockery::mock(GoogleProvider::class);
+        $mock->shouldReceive('stateless')->once()->andReturnSelf();
+        $mock->shouldReceive('user')->once()->andReturn($socialUser);
+
+        Socialite::shouldReceive('driver')->with('google')->andReturn($mock);
+
+        $state = Str::random(64);
+
+        $response = $this->withSession($this->sessionState($state))
+            ->get('/api/auth/social/google/callback?'.http_build_query(['state' => $state, 'code' => 'abc']));
+
+        $location = $response->headers->get('Location');
+        $this->assertStringContainsString('error=email_not_verified', $location);
+        $this->assertGuest();
+        $existing->refresh();
+        $this->assertNull($existing->oauth_provider);
+        $this->assertNotSame('Attacker Controlled Name', $existing->name);
     }
 }

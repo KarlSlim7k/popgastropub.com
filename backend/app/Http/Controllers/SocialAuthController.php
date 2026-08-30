@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Contracts\Provider as SocialiteProvider;
 use Laravel\Socialite\Two\AbstractProvider as SocialiteOAuth2Provider;
+use Laravel\Socialite\Two\User as SocialiteOAuth2User;
 use Throwable;
 
 class SocialAuthController extends Controller
@@ -128,6 +129,13 @@ class SocialAuthController extends Controller
             $displayName = Str::headline(Str::before($email, '@'));
         }
 
+        if (!$this->isEmailVerified($driver, $socialUser)) {
+            return $this->redirectToFrontend([
+                'error' => 'email_not_verified',
+                'provider' => $provider,
+            ]);
+        }
+
         $user = User::where('email', $email)->first();
         $isNewUser = false;
 
@@ -175,6 +183,24 @@ class SocialAuthController extends Controller
             'provider' => $provider,
             'status' => $isNewUser ? 'registered' : 'logged_in',
         ]);
+    }
+
+    /**
+     * Antes de crear o vincular una cuenta por email hay que confirmar que el proveedor
+     * realmente verificó esa dirección; de lo contrario un atacante podría apropiarse de
+     * una cuenta existente registrando el mismo email sin confirmarlo.
+     */
+    private function isEmailVerified(string $driver, SocialiteOAuth2User $socialUser): bool
+    {
+        $raw = $socialUser->getRaw();
+
+        return match ($driver) {
+            'google' => in_array($raw['email_verified'] ?? null, [true, 'true', 1, '1'], true),
+            // Meta solo comparte con la app direcciones de correo que la propia plataforma verificó.
+            'facebook' => true,
+            // X normalmente no expone email; el flujo ya se detiene antes por email vacío.
+            default => false,
+        };
     }
 
     private function resolveDriver(string $provider): ?string
