@@ -72,6 +72,7 @@ services:
       - SESSION_DOMAIN=${SESSION_DOMAIN:-.popgastropub.com}
       - SESSION_SECURE_COOKIE=${SESSION_SECURE_COOKIE:-true}
       - SANCTUM_STATEFUL_DOMAINS=${SANCTUM_STATEFUL_DOMAINS:-popgastropub.com,www.popgastropub.com}
+      - CORS_EXTRA_ORIGIN=${CORS_EXTRA_ORIGIN:-}
       - APP_URL=${APP_URL:-https://api.popgastropub.com}
       - FRONTEND_URL=${FRONTEND_URL:-https://popgastropub.com}
       - QR_SECRET=${QR_SECRET:?QR_SECRET requerido}
