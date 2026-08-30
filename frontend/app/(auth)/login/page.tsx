@@ -97,6 +97,26 @@ function socialErrorMessage(code: string, provider: SocialProvider | string): st
   return 'No fue posible completar el acceso social. Verifica permisos y vuelve a intentar.';
 }
 
+function auth0ErrorMessage(code: string): string {
+  switch (code) {
+    case 'email_not_verified':
+      return 'Tu cuenta de Auth0 no tiene el correo verificado. Verifícalo o usa tu correo y contraseña.';
+    case 'email_required':
+      return 'Tu cuenta de Auth0 no compartió un correo. Usa otro método de acceso.';
+    case 'account_inactive':
+      return 'Tu cuenta está inactiva. Contacta a soporte.';
+    case 'account_deleted':
+      return 'No fue posible acceder con esta cuenta.';
+    case 'email_linked_elsewhere':
+      return 'Este correo ya está vinculado a otra cuenta de acceso. Usa tu correo y contraseña.';
+    case 'token_already_used':
+    case 'no_session':
+      return 'Tu sesión de Auth0 expiró. Intenta de nuevo.';
+    default:
+      return 'No fue posible completar el acceso con Auth0. Intenta de nuevo o usa tu correo y contraseña.';
+  }
+}
+
 function socialButtonIcon(provider: SocialProvider) {
   if (provider === 'google') {
     return (
@@ -209,6 +229,22 @@ export default function Login() {
       .catch(() => {
         // Keep optimistic defaults when status endpoint is unavailable.
       });
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const auth0Error = new URLSearchParams(window.location.search).get('auth0_error');
+
+    if (!auth0Error) {
+      return;
+    }
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+    setStatusSuccess(null);
+    setStatusError(auth0ErrorMessage(auth0Error));
   }, []);
 
   useEffect(() => {
@@ -389,6 +425,12 @@ export default function Login() {
     }
   }
 
+  function startAuth0Login() {
+    setStatusError(null);
+    setStatusSuccess('Redirigiendo a Auth0...');
+    window.location.assign('/auth0/login');
+  }
+
   function startSocialAuth(provider: SocialProvider) {
     if (!socialAvailability[provider]) {
       setStatusSuccess(null);
@@ -410,6 +452,17 @@ export default function Login() {
         </span>
         <div className="flex-grow border-t border-outline-variant/20" />
       </div>
+
+      <button
+        type="button"
+        onClick={startAuth0Login}
+        className="w-full flex items-center justify-center gap-2 border border-outline-variant/30 hover:border-secondary hover:bg-secondary/5 rounded-md py-3 px-4 mb-6 transition-all duration-300 group"
+      >
+        <span className="material-symbols-outlined text-lg text-on-surface/60 group-hover:text-secondary">passkey</span>
+        <span className="font-headline font-bold text-xs uppercase tracking-widest text-on-surface/70 group-hover:text-secondary">
+          Continuar con Auth0
+        </span>
+      </button>
 
       <div className="flex justify-center flex-wrap gap-4 mb-2">
         {(['google', 'facebook', 'x'] as SocialProvider[]).map((provider) => (
