@@ -431,6 +431,12 @@ export default function Login() {
     window.location.assign('/auth0/login');
   }
 
+  function startAuth0GoogleLogin() {
+    setStatusError(null);
+    setStatusSuccess('Redirigiendo a Google...');
+    window.location.assign('/auth0/login?connection=google-oauth2');
+  }
+
   function startSocialAuth(provider: SocialProvider) {
     if (!socialAvailability[provider]) {
       setStatusSuccess(null);
@@ -461,6 +467,17 @@ export default function Login() {
         <span className="material-symbols-outlined text-lg text-on-surface/60 group-hover:text-secondary">passkey</span>
         <span className="font-headline font-bold text-xs uppercase tracking-widest text-on-surface/70 group-hover:text-secondary">
           Continuar con Auth0
+        </span>
+      </button>
+
+      <button
+        type="button"
+        onClick={startAuth0GoogleLogin}
+        className="w-full flex items-center justify-center gap-2 border border-outline-variant/30 hover:border-secondary hover:bg-secondary/5 rounded-md py-3 px-4 mb-6 transition-all duration-300 group"
+      >
+        {socialButtonIcon('google')}
+        <span className="font-headline font-bold text-xs uppercase tracking-widest text-on-surface/70 group-hover:text-secondary">
+          Continuar con Google
         </span>
       </button>
 
