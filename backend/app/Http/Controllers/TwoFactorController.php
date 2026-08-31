@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -108,7 +109,7 @@ class TwoFactorController extends Controller
 
             return response()->json([
                 'verified' => true,
-                'user' => $user,
+                'user' => new UserResource($user),
             ]);
         }
 
@@ -134,7 +135,7 @@ class TwoFactorController extends Controller
         $user->tokens()->where('name', 'auth_token')->delete();
         $newToken = $user->createToken('auth_token', ['*'])->plainTextToken;
 
-        return response()->json(['verified' => true, 'token' => $newToken, 'user' => $user]);
+        return response()->json(['verified' => true, 'token' => $newToken, 'user' => new UserResource($user)]);
     }
 
     /**

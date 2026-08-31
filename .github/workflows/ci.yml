@@ -18,6 +18,14 @@ jobs:
     name: Frontend
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      # Placeholders únicamente: silencian el warning de inicialización del SDK
+      # de Auth0 durante `next build` en CI. Nunca son credenciales reales.
+      APP_BASE_URL: http://localhost:3000
+      AUTH0_DOMAIN: ci-placeholder.us.auth0.com
+      AUTH0_CLIENT_ID: ci-placeholder-client-id
+      AUTH0_CLIENT_SECRET: ci-placeholder-client-secret
+      AUTH0_SECRET: ci-placeholder-secret-0123456789abcdef0123456789abcdef
     defaults:
       run:
         working-directory: frontend

@@ -33,6 +33,11 @@ services:
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://api.popgastropub.com/api}
+      - APP_BASE_URL=${APP_BASE_URL:-https://popgastropub.com}
+      - AUTH0_DOMAIN=${AUTH0_DOMAIN:-}
+      - AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID:-}
+      - AUTH0_CLIENT_SECRET=${AUTH0_CLIENT_SECRET:-}
+      - AUTH0_SECRET=${AUTH0_SECRET:-}
     networks:
       - pop_network
       - dokploy-network
@@ -72,6 +77,10 @@ services:
       - SESSION_DOMAIN=${SESSION_DOMAIN:-.popgastropub.com}
       - SESSION_SECURE_COOKIE=${SESSION_SECURE_COOKIE:-true}
       - SANCTUM_STATEFUL_DOMAINS=${SANCTUM_STATEFUL_DOMAINS:-popgastropub.com,www.popgastropub.com}
+      - CORS_EXTRA_ORIGIN=${CORS_EXTRA_ORIGIN:-}
+      - AUTH0_DOMAIN=${AUTH0_DOMAIN:-}
+      - AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID:-}
+      - AUTH0_AUDIENCE=${AUTH0_AUDIENCE:-https://api.popgastropub.com}
       - APP_URL=${APP_URL:-https://api.popgastropub.com}
       - FRONTEND_URL=${FRONTEND_URL:-https://popgastropub.com}
       - QR_SECRET=${QR_SECRET:?QR_SECRET requerido}

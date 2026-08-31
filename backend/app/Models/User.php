@@ -33,6 +33,7 @@ class User extends Authenticatable
         'email_verified_at',
         'oauth_provider',
         'oauth_provider_id',
+        'auth0_sub',
         'avatar_url',
         'two_factor_secret',
         'two_factor_enabled',
@@ -42,6 +43,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'two_factor_secret',
+        'auth0_sub',
     ];
 
     public function getActivitylogOptions(): LogOptions

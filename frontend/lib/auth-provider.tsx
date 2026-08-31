@@ -54,13 +54,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshSession]);
 
   const logout = useCallback(async () => {
+    const provider = session?.provider;
+
+    clearAuthSession();
+    setSession(null);
+
+    if (provider === 'auth0') {
+      // /auth0/signout coordina el cierre: primero Laravel/Sanctum, luego
+      // Auth0 (sesión del SDK + SSO del IdP), regresando a la app.
+      router.push('/auth0/signout');
+      return;
+    }
+
     if (session) {
       try {
         await fetchAPI('/auth/logout', { method: 'POST' });
       } catch {}
     }
-    clearAuthSession();
-    setSession(null);
     router.push('/login');
   }, [session, router]);
 
