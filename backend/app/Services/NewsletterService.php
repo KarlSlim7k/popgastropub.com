@@ -13,7 +13,7 @@ class NewsletterService
     private function client(): PendingRequest
     {
         return Http::baseUrl('https://api.resend.com')
-            ->withToken(config('services.resend.api_key'))
+            ->withToken(config('services.resend.newsletter_api_key') ?: config('services.resend.api_key'))
             ->acceptJson();
     }
 

@@ -29,6 +29,7 @@ return [
 
     'resend' => [
         'api_key' => env('RESEND_API_KEY'),
+        'newsletter_api_key' => env('RESEND_NEWSLETTER_API_KEY'),
         'from_address' => env('RESEND_FROM_ADDRESS', 'noticias@popgastropub.com'),
         'from_name' => env('RESEND_FROM_NAME', 'POP Perote'),
         'newsletter_segment_id' => env('RESEND_NEWSLETTER_SEGMENT_ID'),
